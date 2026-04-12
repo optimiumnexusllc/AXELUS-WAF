@@ -1,0 +1,65 @@
+groups:
+  - name: ironwall.core
+    rules:
+      - alert: IronWallHighAttackRate
+        expr: rate(ironwall_attacks_blocked_total[5m]) > 100
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High attack rate detected"
+          description: "IronWall is blocking more than 100 attacks/sec for 2+ minutes (current: {{ $value }}/sec)"
+
+      - alert: IronWallCriticalAttackRate
+        expr: rate(ironwall_attacks_blocked_total[5m]) > 500
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Critical attack rate — possible DDoS"
+          description: "IronWall is blocking {{ $value }}/sec attacks. Potential DDoS in progress."
+
+      - alert: IronWallMgtDown
+        expr: up{job="ironwall-mgt"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "IronWall management API is down"
+          description: "The management API has been unreachable for more than 1 minute."
+
+      - alert: IronWallPostgresDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "IronWall PostgreSQL is down"
+          description: "The database is unreachable. WAF configuration changes are disabled."
+
+      - alert: IronWallHighErrorRate
+        expr: rate(ironwall_requests_total{status=~"5.."}[5m]) / rate(ironwall_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High upstream error rate"
+          description: "More than 5% of proxied requests are returning 5xx errors."
+
+      - alert: IronWallThreatIntelFeedStale
+        expr: time() - ironwall_threat_intel_last_update_timestamp > 7200
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Threat intelligence feed is stale"
+          description: "The threat intelligence feed has not been updated in over 2 hours."
+
+      - alert: IronWallDiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/data"} / node_filesystem_size_bytes{mountpoint="/data"}) * 100 < 15
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on IronWall data volume"
+          description: "Less than 15% disk space remaining on /data."

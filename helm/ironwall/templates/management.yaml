@@ -1,0 +1,145 @@
+{{- $fullName := include "ironwall.fullname" . }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullName }}-mgt
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+    app.kubernetes.io/component: management
+spec:
+  replicas: {{ .Values.management.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "ironwall.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: management
+  template:
+    metadata:
+      labels:
+        {{- include "ironwall.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: management
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "1443"
+        prometheus.io/scheme: "https"
+        prometheus.io/path: "/api/open/metrics"
+    spec:
+      {{- with .Values.podSecurityContext }}
+      securityContext:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ironwall.serviceAccountName" . }}
+      containers:
+        - name: mgt
+          image: "{{ .Values.management.image.repository }}:{{ .Values.management.image.tag }}"
+          imagePullPolicy: {{ .Values.management.image.pullPolicy }}
+          ports:
+            - name: https
+              containerPort: 1443
+              protocol: TCP
+          env:
+            - name: MGT_PG
+              valueFrom:
+                secretKeyRef:
+                  name: ironwall-postgres-secret
+                  key: dsn
+          livenessProbe:
+            httpGet:
+              path: /api/open/health
+              port: https
+              scheme: HTTPS
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /api/open/health
+              port: https
+              scheme: HTTPS
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          {{- with .Values.management.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- with .Values.securityContext }}
+          securityContext:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          volumeMounts:
+            - name: data
+              mountPath: /app/data
+            - name: logs
+              mountPath: /app/log/nginx
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ $fullName }}-data
+        - name: logs
+          persistentVolumeClaim:
+            claimName: {{ $fullName }}-logs
+      {{- with .Values.management.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.management.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.management.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}-mgt
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+    app.kubernetes.io/component: management
+spec:
+  type: {{ .Values.management.service.type }}
+  ports:
+    - port: {{ .Values.management.service.port }}
+      targetPort: https
+      protocol: TCP
+      name: https
+  selector:
+    {{- include "ironwall.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: management
+{{- if .Values.management.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ $fullName }}-mgt
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+  {{- with .Values.management.ingress.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  ingressClassName: {{ .Values.management.ingress.className }}
+  {{- if .Values.management.ingress.tls }}
+  tls:
+    {{- toYaml .Values.management.ingress.tls | nindent 4 }}
+  {{- end }}
+  rules:
+    {{- range .Values.management.ingress.hosts }}
+    - host: {{ .host | quote }}
+      http:
+        paths:
+          {{- range .paths }}
+          - path: {{ .path }}
+            pathType: {{ .pathType }}
+            backend:
+              service:
+                name: {{ $fullName }}-mgt
+                port:
+                  name: https
+          {{- end }}
+    {{- end }}
+{{- end }}

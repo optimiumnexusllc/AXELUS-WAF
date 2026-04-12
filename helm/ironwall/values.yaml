@@ -1,0 +1,181 @@
+# IronWall Helm Chart - Default Values
+# Override with: helm install ironwall ./helm/ironwall -f my-values.yaml
+
+# ── Global ─────────────────────────────────────────────────────────────────
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+nameOverride: ""
+fullnameOverride: "ironwall"
+
+# ── Namespace ─────────────────────────────────────────────────────────────
+namespace:
+  create: true
+  name: ironwall
+
+# ── Management API ────────────────────────────────────────────────────────
+management:
+  image:
+    repository: chaitin/safeline-mgt
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    type: ClusterIP
+    port: 1443
+  ingress:
+    enabled: false
+    className: nginx
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: HTTPS
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: ironwall.example.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - secretName: ironwall-tls
+        hosts:
+          - ironwall.example.com
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 1000m
+      memory: 1Gi
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+
+# ── Detection Engine ──────────────────────────────────────────────────────
+detector:
+  image:
+    repository: chaitin/safeline-detector
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  resources:
+    requests:
+      cpu: 500m
+      memory: 512Mi
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+
+# ── PostgreSQL ────────────────────────────────────────────────────────────
+postgresql:
+  enabled: true
+  # Set to false and configure externalPostgresql to use an existing DB
+  auth:
+    username: safeline-ce
+    database: safeline-ce
+    existingSecret: ironwall-postgres-secret
+    secretKeys:
+      userPasswordKey: password
+  primary:
+    persistence:
+      size: 20Gi
+    resources:
+      requests:
+        cpu: 250m
+        memory: 256Mi
+
+# ── Redis (Premium) ───────────────────────────────────────────────────────
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    existingSecret: ironwall-redis-secret
+    existingSecretPasswordKey: password
+  master:
+    persistence:
+      size: 5Gi
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+# ── Threat Intelligence (Premium) ────────────────────────────────────────
+threatIntel:
+  enabled: true
+  image:
+    repository: ghcr.io/optimiumnexusllc/ironwall/threat-intel
+    tag: latest
+  config:
+    updateIntervalSecs: 3600
+  existingSecret: ironwall-threat-intel-secret
+
+# ── Alerting (Premium) ────────────────────────────────────────────────────
+alerting:
+  enabled: true
+  image:
+    repository: ghcr.io/optimiumnexusllc/ironwall/alerting
+    tag: latest
+  config:
+    thresholdSeverity: high
+  existingSecret: ironwall-alerting-secret
+
+# ── Monitoring ────────────────────────────────────────────────────────────
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    retention: 30d
+    storageSize: 50Gi
+  grafana:
+    enabled: true
+    adminPasswordSecret: ironwall-grafana-secret
+    persistence:
+      size: 5Gi
+    sidecar:
+      dashboards:
+        enabled: true
+
+# ── Network Policies ──────────────────────────────────────────────────────
+networkPolicies:
+  enabled: true
+  # When enabled, only allowed traffic flows between IronWall components
+
+# ── Pod Disruption Budget ─────────────────────────────────────────────────
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# ── Horizontal Pod Autoscaler ─────────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 75
+  targetMemoryUtilizationPercentage: 80
+
+# ── Service Account ───────────────────────────────────────────────────────
+serviceAccount:
+  create: true
+  annotations: {}
+
+# ── Security Context ──────────────────────────────────────────────────────
+podSecurityContext:
+  fsGroup: 1000
+  runAsNonRoot: true
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  runAsUser: 1000
+  capabilities:
+    drop:
+      - ALL
+
+# ── Persistence ───────────────────────────────────────────────────────────
+persistence:
+  data:
+    size: 20Gi
+    storageClass: ""
+  logs:
+    size: 10Gi
+    storageClass: ""

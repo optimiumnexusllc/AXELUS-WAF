@@ -1,128 +1,222 @@
-<p align="center">
-  <img src="/images/banner.png" width="400" />
-</p>
+<div align="center">
 
-<h4 align="center">
-  SafeLine - Make your web apps secure
-</h4>
+# 🛡️ IronWall
 
-<p align="center">
-  <a target="_blank" href="https://ly.safepoint.cloud/laA8asp">🏠 Website</a> &nbsp; | &nbsp;
-  <a target="_blank" href="https://ly.safepoint.cloud/w2AeHhb">📖 Docs</a> &nbsp; | &nbsp;
-  <a target="_blank" href="https://ly.safepoint.cloud/hSMd4SH">🔍 Live Demo</a> &nbsp; | &nbsp;
-  <a target="_blank" href="https://discord.gg/SVnZGzHFvn">🙋‍♂️ Discord</a> &nbsp; | &nbsp;
-  <a target="_blank" href="/README_CN.md">中文版</a>
-</p>
+### Enterprise-Grade Web Application Firewall
 
-## 👋 INTRODUCTION
+[![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE.md)
+[![Version](https://img.shields.io/badge/version-v1.0.0-green.svg)](version.json)
+[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](compose.yaml)
+[![Go](https://img.shields.io/badge/go-1.21+-00ADD8.svg)](https://golang.org/)
+[![CI](https://github.com/optimiumnexusllc/IronWall/actions/workflows/ci.yml/badge.svg)](https://github.com/optimiumnexusllc/IronWall/actions)
 
-SafeLine is a self-hosted **`WAF(Web Application Firewall)`** to protect your web apps from attacks and exploits.
+**IronWall** is a next-generation, AI-powered Web Application Firewall (WAF) designed for enterprise environments. Built on top of [SafeLine CE](https://github.com/chaitin/safeline), IronWall extends the foundation with advanced threat intelligence, real-time monitoring, Kubernetes-native deployment, SIEM integration, and a premium security dashboard.
 
-A web application firewall helps protect web apps by filtering and monitoring HTTP traffic between a web application and the Internet. It typically protects web apps from attacks such as `SQL injection`, `XSS`, `code injection`, `os command injection`, `CRLF injection`, `ldap injection`, `xpath injection`, `RCE`, `XXE`, `SSRF`, `path traversal`, `backdoor`, `bruteforce`, `http-flood`, `bot abused`, among others.
+[Features](#features) • [Quick Start](#quick-start) • [Architecture](#architecture) • [Documentation](#documentation) • [Contributing](#contributing)
 
-#### 💡 How It Works
+</div>
 
-<img src="/images/how-it-works.png" width="800" />
+---
 
-By deploying a WAF in front of a web application, a shield is placed between the web application and the Internet. While a proxy server protects a client machine’s identity by using an intermediary, a WAF is a type of reverse-proxy, protecting the server from exposure by having clients pass through the WAF before reaching the server.
+## ✨ Features
 
-A WAF protects your web apps by filtering, monitoring, and blocking any malicious HTTP/S traffic traveling to the web application, and prevents any unauthorized data from leaving the app. It does this by adhering to a set of policies that help determine what traffic is malicious and what traffic is safe. Just as a proxy server acts as an intermediary to protect the identity of a client, a WAF operates in similar fashion but acting as a reverse proxy intermediary that protects the web app server from a potentially malicious client.
+### Core (inherited from SafeLine CE)
+- 🔒 **Semantic-based WAF engine** — AI-driven detection, not rule-based
+- 🚫 **OWASP Top 10 protection** — SQLi, XSS, RCE, path traversal, and more
+- 🤖 **Bot & crawler protection** with CAPTCHA challenges
+- 🌐 **Reverse proxy** based on Tengine (battle-tested Nginx fork)
+- 📊 **Real-time attack dashboard**
 
-its core capabilities include:
+### 🆕 IronWall Premium Additions
+- 🧠 **Threat Intelligence Feeds** — automatic sync with AbuseIPDB, Emerging Threats, and custom feeds
+- 📡 **Real-time Alerting** — Slack, Teams, PagerDuty, and email webhooks on critical events
+- 📈 **Prometheus + Grafana monitoring** — 30+ pre-built metrics and dashboards
+- 🗺️ **GeoIP Blocking** — country/region-level access control with MaxMind GeoIP2
+- 🔑 **Advanced API Rate Limiting** — per-IP, per-token, per-endpoint rate controls
+- 🏗️ **Kubernetes-native** — full Helm chart with HPA, PDB, and network policies
+- 🔗 **SIEM Integration** — Splunk, Elasticsearch/OpenSearch, Loki log forwarding
+- 🔐 **mTLS Support** — mutual TLS for upstream service authentication
+- 📋 **Compliance Reports** — automated PCI-DSS, SOC2, ISO 27001 report generation
+- 🔄 **GitOps-ready** — declarative configuration with CI/CD pipeline templates
+- 🛡️ **DDoS Mitigation** — adaptive rate limiting with automatic IP reputation scoring
+- 🔍 **Deep Packet Inspection** — enhanced payload analysis with custom rule engine
 
-- Defenses for web attacks
-- Proactive bot abused defense 
-- HTML & JS code encryption
-- IP-based rate limiting
-- Web Access Control List
+---
 
-#### ⚡️ Screenshots
+## 🚀 Quick Start
 
-| <img src="./images/screenshot-1.png" width=370 /> | <img src="./images/screenshot-2.png" width=370 /> |
-| ------------------------------------------------- | ------------------------------------------------- | 
-| <img src="./images/screenshot-3.png" width=370 /> | <img src="./images/screenshot-4.png" width=370 /> | 
+### Prerequisites
+- Docker 20.10+ and Docker Compose v2+
+- Linux (Ubuntu 20.04+ / Debian 11+ / RHEL 8+ recommended)
+- 2 CPU cores, 4GB RAM minimum (8GB+ recommended for production)
 
-Get [Live Demo](https://demo.waf.chaitin.com:9443/)
+### One-Line Install
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/optimiumnexusllc/IronWall/main/scripts/install.sh)
+```
 
-## 🔥 FEATURES
+### Manual Install
+```bash
+# 1. Clone the repository
+git clone https://github.com/optimiumnexusllc/IronWall.git
+cd IronWall
 
-List of the main features as follows:
+# 2. Configure environment
+cp .env.example .env
+nano .env  # Set your passwords and subnet
 
-- **`Block Web Attacks`**
-  - It defenses for all of web attacks, such as `SQL injection`, `XSS`, `code injection`, `os command injection`, `CRLF injection`, `XXE`, `SSRF`, `path traversal` and so on.
-- **`Rate Limiting`**
-  - Defend your web apps against `DoS attacks`, `bruteforce attempts`, `traffic surges`, and other types of abuse by throttling traffic that exceeds defined limits.
-- **`Anti-Bot Challenge`**
-  - Anti-Bot challenges to protect your website from `bot attacks`, humen users will be allowed, crawlers and bots will be blocked.
-- **`Authentication Challenge`**
-  - When authentication challenge turned on, visitors need to enter the password, otherwise they will be blocked.
-- **`Dynamic Protection`**
-  - When dynamic protection turned on, html and js codes in your web server will be dynamically encrypted by each time you visit.
+# 3. Start IronWall (core only)
+docker compose up -d
 
-#### 🧩 Showcases
+# 4. Start with monitoring stack
+docker compose -f compose.yaml -f compose.monitoring.yaml up -d
 
-|                               | Legitimate User                                     | Malicious User                                                   |
-| ----------------------------- | --------------------------------------------------- | ---------------------------------------------------------------- | 
-| **`Block Web Attacks`**       | <img src="./images/skeleton.png" width=270 />       | <img src="./images/blocked-for-attack-detected.png" width=270 /> |
-| **`Rate Limiting`**           | <img src="./images/skeleton.png" width=270 />       | <img src="./images/blocked-for-access-too-fast.png" width=270 /> |
-| **`Anti-Bot Challenge`**       | <img src="./images/captcha-1.gif" width=270 />      | <img src="./images/captcha-2.gif" width=270 />                     |
-| **`Auth Challenge`**          | <img src="./images/auth-1.gif" width=270 />         | <img src="./images/auth-2.gif" width=270 />                        |
-| **`HTML Dynamic Protection`** | <img src="./images/dynamic-html-1.png" width=270 /> | <img src="./images/dynamic-html-2.png" width=270 />              |
-| **`JS Dynamic Protection`**   | <img src="./images/dynamic-js-1.png" width=270 />   | <img src="./images/dynamic-js-2.png" width=270 />                | 
+# 5. Start with all premium features
+docker compose -f compose.yaml -f compose.monitoring.yaml -f compose.premium.yaml up -d
 
-## 🚀 Quickstart
+# 6. Access the dashboard
+# https://YOUR_SERVER_IP:9443
+docker logs safeline-mgt | grep "Initial password"
+```
 
-> [!WARNING]
-> 中国大陆用户安装国际版可能会导致无法连接云服务，请查看 [中文版安装文档](https://docs.waf-ce.chaitin.cn/zh/%E4%B8%8A%E6%89%8B%E6%8C%87%E5%8D%97/%E5%AE%89%E8%A3%85%E9%9B%B7%E6%B1%A0)
+---
 
-#### 📦 Installing
+## 🏗️ Architecture
 
-Information on how to install SafeLine can be found in the [Install Guide](https://docs.waf.chaitin.com/en/GetStarted/Deploy)
+```
+                          Internet
+                             │
+                    ┌────────▼────────┐
+                    │   Tengine WAF   │  ← IronWall Core (port 80/443)
+                    │  (Reverse Proxy)│
+                    └────────┬────────┘
+                             │
+              ┌──────────────▼──────────────┐
+              │       Detection Engine       │
+              │  AI Semantic Analysis + DPI  │
+              └──────────────┬──────────────┘
+                             │
+         ┌───────────────────┼───────────────────┐
+         │                   │                   │
+  ┌──────▼──────┐   ┌────────▼────────┐  ┌──────▼──────┐
+  │  Management │   │  Threat Intel   │  │  Monitoring  │
+  │   API (mgt) │   │  Feed Syncer    │  │  Prometheus  │
+  └──────┬──────┘   └────────┬────────┘  └──────┬──────┘
+         │                   │                   │
+  ┌──────▼──────┐   ┌────────▼────────┐  ┌──────▼──────┐
+  │ PostgreSQL  │   │   Redis Cache   │  │   Grafana    │
+  └─────────────┘   └─────────────────┘  └─────────────┘
+         │
+  ┌──────▼──────────────────────────────────┐
+  │              SIEM / Alerting             │
+  │   Splunk │ Elasticsearch │ Slack │ PD   │
+  └──────────────────────────────────────────┘
+```
 
-#### ⚙️ Protecting Web Apps
+---
 
-to see [Configuration](https://docs.waf.chaitin.com/en/GetStarted/AddApplication)
+## 📦 Services
 
-## 📋 More Informations
+| Service | Description | Port |
+|---------|-------------|------|
+| `ironwall-tengine` | WAF reverse proxy engine | 80, 443 |
+| `ironwall-mgt` | Management API & Web Dashboard | 9443 |
+| `ironwall-detector` | AI-based attack detection | internal |
+| `ironwall-postgres` | Primary database | internal |
+| `ironwall-redis` | Cache & session store | internal |
+| `ironwall-threat-intel` | Threat intelligence syncer | internal |
+| `ironwall-prometheus` | Metrics collection | 9090 |
+| `ironwall-grafana` | Monitoring dashboards | 3000 |
+| `ironwall-alertmanager` | Alert routing | 9093 |
 
-#### Effect Evaluation
+---
 
-| Metric            | ModSecurity, Level 1 | CloudFlare, Free     | SafeLine, Balance      | SafeLine, Strict      |
-| ----------------- | -------------------- | -------------------- | ---------------------- | --------------------- |
-| Total Samples     | 33669                | 33669                | 33669                  | 33669                 |
-| **Detection**     | 69.74%               | 10.70%               | 71.65%                 | **76.17%**            |
-| **False Positive**| 17.58%               | 0.07%                | **0.07%**              | 0.22%                 |
-| **Accuracy**      | 82.20%               | 98.40%               | **99.45%**             | 99.38%                |
+## 🆕 Premium Features Guide
 
+### Threat Intelligence
+```bash
+# Configure threat feeds in .env
+THREAT_INTEL_ABUSEIPDB_KEY=your_api_key
+THREAT_INTEL_UPDATE_INTERVAL=3600  # seconds
 
-#### Is SafeLine Production-Ready?
+# Manual sync
+docker exec ironwall-threat-intel ./sync --force
+```
 
-Yes, SafeLine is production-ready.
+### GeoIP Blocking
+Configure in the dashboard under **Security → GeoIP Rules**, or via API:
+```bash
+curl -X POST https://localhost:9443/api/open/geoip/rules \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"action":"block","countries":["KP","IR"]}'
+```
 
-- Over 180,000 installations worldwide
-- Protecting over 1,000,000 Websites
-- Handling over 30,000,000,000 HTTP Requests Daily
+### Slack Alerts
+```bash
+# In .env
+ALERT_SLACK_WEBHOOK=https://hooks.slack.com/services/xxx/yyy/zzz
+ALERT_SLACK_CHANNEL=#security-alerts
+ALERT_THRESHOLD_SEVERITY=high  # low|medium|high|critical
+```
 
-#### 🙋‍♂️ Community
+### Prometheus Metrics
+Available at `http://localhost:9090` — pre-built dashboards at `http://localhost:3000`.
 
-Join our [Discord](https://discord.gg/SVnZGzHFvn) to get community support, the core team members are identified by the STAFF role in Discord.
+Key metrics:
+- `ironwall_requests_total` — total proxied requests
+- `ironwall_attacks_blocked_total` — blocked attacks by type
+- `ironwall_threat_intel_matches_total` — IP reputation hits
+- `ironwall_rate_limit_triggered_total` — rate limit events
 
-- channel [#feedback](https://discord.com/channels/1243085666485534830/1243120292822253598): for new features discussion.
-- channel [#FAQ](https://discord.com/channels/1243085666485534830/1263761679619981413): for FAQ.
-- channel [#general](https://discord.com/channels/1243085666485534830/1243115843919806486): for any other questions.
+---
 
-Several contact options exist for our community, the primary one being Discord. These are in addition to GitHub issues for creating a new issue.
+## 📁 Repository Structure
 
-<p align="left">
-  <a target="_blank" href="https://discord.gg/SVnZGzHFvn"><img src="https://img.shields.io/badge/Discord-5865F2?style=flat&logo=discord&logoColor=white"></a> &nbsp;
-  <a target="_blank" href="https://x.com/safeline_waf"><img src="https://img.shields.io/badge/X.com-000000?style=flat&logo=x&logoColor=white"></a> &nbsp;
-  <a target="_blank" href="/images/wechat.png"><img src="https://img.shields.io/badge/WeChat-07C160?style=flat&logo=wechat&logoColor=white"></a>
-</p>
+```
+IronWall/
+├── compose.yaml              # Main Docker Compose (core services)
+├── compose.monitoring.yaml   # Monitoring stack (Prometheus + Grafana)
+├── compose.premium.yaml      # Premium features (Redis, threat-intel, alerting)
+├── .env.example              # Environment variable template
+├── management/               # Management API (Go)
+├── monitoring/               # Prometheus + Grafana configs
+│   ├── prometheus/
+│   ├── grafana/dashboards/
+│   └── alertmanager/
+├── premium/                  # Premium feature modules
+│   ├── threat-intel/         # Threat intelligence syncer (Go)
+│   ├── geoip/                # GeoIP blocking module
+│   ├── alerting/             # Multi-channel alerting service
+│   └── compliance/           # Compliance report generator
+├── helm/                     # Kubernetes Helm chart
+│   └── ironwall/
+├── scripts/                  # Installation & management scripts
+├── sdk/                      # Integration SDKs
+└── yanshi/                   # Traffic replay tool
+```
 
-#### 💪 PRO Edition
+---
 
-Coming soon!
+## 🤝 Contributing
 
-#### 📝 License
+IronWall welcomes contributions! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting a PR.
 
-See [LICENSE](/LICENSE.md) for details.
+1. Fork the repository
+2. Create your feature branch: `git checkout -b feature/AmazingFeature`
+3. Commit: `git commit -m 'feat: add AmazingFeature'`
+4. Push: `git push origin feature/AmazingFeature`
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+IronWall is licensed under the **GNU General Public License v3.0**.
+Based on [SafeLine CE](https://github.com/chaitin/safeline) by Chaitin Technology.
+See [LICENSE.md](LICENSE.md) for details.
+
+---
+
+<div align="center">
+Made with ❤️ by <a href="https://github.com/optimiumnexusllc">OptiumNexus LLC</a>
+</div>

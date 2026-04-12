@@ -1,0 +1,159 @@
+# IronWall - Premium Features Stack
+# Usage: docker compose -f compose.yaml -f compose.monitoring.yaml -f compose.premium.yaml up -d
+
+networks:
+  safeline-ce:
+    external: true
+
+services:
+  redis:
+    container_name: ironwall-redis
+    image: redis:7.2-alpine
+    restart: always
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+      --appendonly yes
+    volumes:
+      - ironwall-redis-data:/data
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      safeline-ce:
+        ipv4_address: ${SUBNET_PREFIX}.30
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  threat-intel:
+    container_name: ironwall-threat-intel
+    image: golang:1.21-alpine
+    restart: always
+    working_dir: /app
+    volumes:
+      - ./premium/threat-intel:/app:ro
+      - ironwall-threat-intel-data:/data
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - ABUSEIPDB_KEY=${THREAT_INTEL_ABUSEIPDB_KEY}
+      - EMERGING_THREATS_KEY=${THREAT_INTEL_EMERGING_THREATS_KEY}
+      - CUSTOM_FEEDS=${THREAT_INTEL_CUSTOM_FEEDS}
+      - UPDATE_INTERVAL=${THREAT_INTEL_UPDATE_INTERVAL:-3600}
+      - REDIS_ADDR=${SUBNET_PREFIX}.30:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MGT_API=https://${SUBNET_PREFIX}.4:1443
+    command: ["sh", "-c", "go run main.go"]
+    depends_on:
+      - redis
+    networks:
+      safeline-ce:
+        ipv4_address: ${SUBNET_PREFIX}.31
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  alerting:
+    container_name: ironwall-alerting
+    image: golang:1.21-alpine
+    restart: always
+    working_dir: /app
+    volumes:
+      - ./premium/alerting:/app:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - THRESHOLD_SEVERITY=${ALERT_THRESHOLD_SEVERITY:-high}
+      - SLACK_WEBHOOK=${ALERT_SLACK_WEBHOOK}
+      - SLACK_CHANNEL=${ALERT_SLACK_CHANNEL:-#security-alerts}
+      - TEAMS_WEBHOOK=${ALERT_TEAMS_WEBHOOK}
+      - PAGERDUTY_KEY=${ALERT_PAGERDUTY_INTEGRATION_KEY}
+      - SMTP_HOST=${ALERT_SMTP_HOST}
+      - SMTP_PORT=${ALERT_SMTP_PORT:-587}
+      - SMTP_USER=${ALERT_SMTP_USER}
+      - SMTP_PASSWORD=${ALERT_SMTP_PASSWORD}
+      - SMTP_FROM=${ALERT_SMTP_FROM}
+      - SMTP_TO=${ALERT_SMTP_TO}
+      - MGT_API=https://${SUBNET_PREFIX}.4:1443
+      - REDIS_ADDR=${SUBNET_PREFIX}.30:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    command: ["sh", "-c", "go run main.go"]
+    depends_on:
+      - redis
+    networks:
+      safeline-ce:
+        ipv4_address: ${SUBNET_PREFIX}.32
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  siem-forwarder:
+    container_name: ironwall-siem
+    image: golang:1.21-alpine
+    restart: always
+    working_dir: /app
+    volumes:
+      - ./premium/siem:/app:ro
+      - ${SAFELINE_DIR:-/data/ironwall}/logs/nginx:/logs/nginx:ro
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - ELASTICSEARCH_URL=${SIEM_ELASTICSEARCH_URL}
+      - ELASTICSEARCH_USER=${SIEM_ELASTICSEARCH_USER}
+      - ELASTICSEARCH_PASSWORD=${SIEM_ELASTICSEARCH_PASSWORD}
+      - ELASTICSEARCH_INDEX=${SIEM_ELASTICSEARCH_INDEX:-ironwall-logs}
+      - SPLUNK_HEC_URL=${SIEM_SPLUNK_HEC_URL}
+      - SPLUNK_HEC_TOKEN=${SIEM_SPLUNK_HEC_TOKEN}
+      - SPLUNK_INDEX=${SIEM_SPLUNK_INDEX:-ironwall}
+      - LOKI_URL=${SIEM_LOKI_URL}
+      - LOG_DIR=/logs/nginx
+    command: ["sh", "-c", "go run main.go"]
+    networks:
+      safeline-ce:
+        ipv4_address: ${SUBNET_PREFIX}.33
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+  compliance:
+    container_name: ironwall-compliance
+    image: python:3.12-slim
+    restart: always
+    working_dir: /app
+    volumes:
+      - ./premium/compliance:/app:ro
+      - ironwall-compliance-reports:/reports
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      - MGT_API=https://${SUBNET_PREFIX}.4:1443
+      - REPORT_SCHEDULE=${COMPLIANCE_REPORT_SCHEDULE:-0 6 * * 1}
+      - REPORT_RECIPIENTS=${COMPLIANCE_REPORT_RECIPIENTS}
+      - SMTP_HOST=${ALERT_SMTP_HOST}
+      - SMTP_PORT=${ALERT_SMTP_PORT:-587}
+      - SMTP_USER=${ALERT_SMTP_USER}
+      - SMTP_PASSWORD=${ALERT_SMTP_PASSWORD}
+    command: ["python", "scheduler.py"]
+    networks:
+      safeline-ce:
+        ipv4_address: ${SUBNET_PREFIX}.34
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
+
+volumes:
+  ironwall-redis-data:
+    name: ironwall-redis-data
+  ironwall-threat-intel-data:
+    name: ironwall-threat-intel-data
+  ironwall-compliance-reports:
+    name: ironwall-compliance-reports

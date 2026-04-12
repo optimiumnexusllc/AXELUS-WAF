@@ -1,0 +1,49 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'ironwall'
+
+rule_files:
+  - 'alerts.yml'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # IronWall management API metrics
+  - job_name: 'ironwall-mgt'
+    scheme: https
+    tls_config:
+      insecure_skip_verify: true
+    static_configs:
+      - targets: ['172.22.222.4:1443']
+    metrics_path: /api/open/metrics
+
+  # Tengine/Nginx exporter
+  - job_name: 'ironwall-nginx'
+    static_configs:
+      - targets: ['ironwall-nginx-exporter:9113']
+
+  # PostgreSQL exporter
+  - job_name: 'ironwall-postgres'
+    static_configs:
+      - targets: ['ironwall-postgres-exporter:9187']
+
+  # Redis exporter
+  - job_name: 'ironwall-redis'
+    static_configs:
+      - targets: ['ironwall-redis-exporter:9121']
+
+  # Threat Intel service
+  - job_name: 'ironwall-threat-intel'
+    static_configs:
+      - targets: ['ironwall-threat-intel:9200']
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
