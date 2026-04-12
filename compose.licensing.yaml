@@ -1,0 +1,38 @@
+# IronWall License Server
+# Usage: docker compose -f compose.licensing.yaml up -d
+
+networks:
+  safeline-ce:
+    external: true
+
+services:
+  license-server:
+    container_name: ironwall-license-server
+    build:
+      context: ./licensing
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - IRONWALL_PRIVATE_KEY=${IRONWALL_PRIVATE_KEY:?set IRONWALL_PRIVATE_KEY}
+      - IRONWALL_PUBLIC_KEY=${IRONWALL_PUBLIC_KEY:?set IRONWALL_PUBLIC_KEY}
+      - IRONWALL_KEY_ID=${IRONWALL_KEY_ID:-default}
+      - LICENSE_ADMIN_KEY=${LICENSE_ADMIN_KEY:?set LICENSE_ADMIN_KEY}
+      - LICENSE_DB_DSN=postgres://safeline-ce:${POSTGRES_PASSWORD}@${SUBNET_PREFIX}.2:5432/ironwall_licenses?sslmode=disable
+      - LICENSE_SERVER_PORT=8090
+      - GIN_MODE=release
+    ports:
+      - "127.0.0.1:8090:8090"
+    depends_on:
+      - postgres
+    networks:
+      safeline-ce:
+        ipv4_address: ${SUBNET_PREFIX}.40
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+
+  postgres:
+    container_name: safeline-pg
+    external: true
