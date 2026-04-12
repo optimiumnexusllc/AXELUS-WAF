@@ -1,0 +1,40 @@
+# IronWall-WAF — Customer Portal
+# Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
+# Usage: docker compose -f compose.yaml -f compose.portal.yaml up -d
+
+networks:
+  safeline-ce:
+    external: true
+
+services:
+  portal:
+    container_name: ironwall-portal
+    build:
+      context: ./portal
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      - PORTAL_DB_DSN=postgres://safeline-ce:${POSTGRES_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.2:5432/ironwall_portal?sslmode=disable
+      - PORTAL_JWT_SECRET=${PORTAL_JWT_SECRET:?set PORTAL_JWT_SECRET}
+      - PORTAL_LICENSE_API=https://${SUBNET_PREFIX:-172.22.222}.40:8090
+      - PORTAL_LICENSE_ADMIN_KEY=${LICENSE_ADMIN_KEY}
+      - PORTAL_PORT=8080
+      - GIN_MODE=release
+    ports:
+      - "0.0.0.0:${PORTAL_PORT:-8080}:8080"
+    depends_on:
+      - postgres
+    networks:
+      safeline-ce:
+        ipv4_address: ${SUBNET_PREFIX:-172.22.222}.45
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+  postgres:
+    container_name: safeline-pg
+    external: true

@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>IronWall-WAF — Customer Portal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:         #0b0f1a;
+  --bg2:        #111827;
+  --bg3:        #1a2233;
+  --panel:      #141b2d;
+  --border:     #1e2d47;
+  --border2:    #2a3f5f;
+  --accent:     #3b82f6;
+  --accent2:    #60a5fa;
+  --accent-glow: rgba(59,130,246,.2);
+  --green:      #10b981;
+  --red:        #ef4444;
+  --orange:     #f59e0b;
+  --purple:     #8b5cf6;
+  --gold:       #fbbf24;
+  --txt:        #e2e8f0;
+  --txt2:       #94a3b8;
+  --txt3:       #475569;
+  --mono:       'JetBrains Mono', monospace;
+  --sans:       'Space Grotesk', sans-serif;
+  --radius:     10px;
+  --shadow:     0 4px 24px rgba(0,0,0,.4);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── AUTH SCREEN ─────────────────────────────────────────── */
+.auth-wrap{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 80% 80% at 50% -20%, rgba(59,130,246,.15), transparent);
+}
+.auth-box{
+  background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:40px;width:420px;box-shadow:var(--shadow);
+}
+.auth-logo{text-align:center;margin-bottom:32px}
+.auth-logo-title{font-size:24px;font-weight:700;color:#fff;letter-spacing:-0.5px}
+.auth-logo-sub{font-size:12px;color:var(--txt2);margin-top:4px;font-family:var(--mono)}
+.auth-tabs{display:flex;gap:4px;background:var(--bg3);border-radius:8px;padding:4px;margin-bottom:28px}
+.auth-tab{flex:1;text-align:center;padding:8px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:500;color:var(--txt2);transition:all .15s}
+.auth-tab.active{background:var(--accent);color:#fff}
+
+/* ── LAYOUT ──────────────────────────────────────────────── */
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:240px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.sidebar-logo{padding:24px 20px;border-bottom:1px solid var(--border)}
+.sidebar-logo-name{font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.3px}
+.sidebar-logo-badge{
+  display:inline-block;background:linear-gradient(135deg,var(--accent),var(--purple));
+  color:#fff;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;
+  margin-top:4px;letter-spacing:1px;text-transform:uppercase;font-family:var(--mono);
+}
+.customer-info{
+  padding:16px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;
+}
+.avatar{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:14px;color:#fff;flex-shrink:0;
+}
+.customer-name{font-size:13px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.customer-plan{font-size:10px;font-family:var(--mono);margin-top:1px}
+.plan-trial{color:var(--orange)}
+.plan-pro{color:var(--accent)}
+.plan-enterprise{color:var(--green)}
+.plan-ultimate{color:var(--gold)}
+
+nav{padding:12px 0;flex:1}
+.nav-section{font-size:9px;font-family:var(--mono);letter-spacing:2px;color:var(--txt3);padding:8px 20px 4px;text-transform:uppercase}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--txt2);border-radius:0;
+  border-left:2px solid transparent;transition:all .12s;text-decoration:none;
+}
+.nav-item:hover,.nav-item.active{color:var(--accent);background:rgba(59,130,246,.08);border-left-color:var(--accent)}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;font-family:var(--mono)}
+.sidebar-footer{padding:16px 20px;border-top:1px solid var(--border);font-size:11px;color:var(--txt3)}
+.sidebar-footer a{color:var(--accent2);text-decoration:none}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow-x:hidden}
+.topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:14px 28px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+}
+.topbar-title{font-size:18px;font-weight:700;color:#fff;letter-spacing:-0.3px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.content{padding:28px;flex:1}
+
+/* ── COMPONENTS ──────────────────────────────────────────── */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:9px 18px;border-radius:8px;cursor:pointer;
+  font-size:13px;font-weight:600;font-family:var(--sans);
+  border:none;transition:all .15s;text-decoration:none;white-space:nowrap;
+}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 0 20px var(--accent-glow)}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--txt2);border:1px solid var(--border2)}
+.btn-outline:hover{color:var(--accent);border-color:var(--accent)}
+.btn-danger{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-sm{padding:6px 12px;font-size:12px}
+.btn-gold{background:linear-gradient(135deg,#f59e0b,#fbbf24);color:#000;font-weight:700}
+
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:16px}
+.field label{font-size:11px;font-weight:600;color:var(--txt2);letter-spacing:.5px;text-transform:uppercase}
+.field input,.field select,.field textarea{
+  background:var(--bg3);border:1px solid var(--border2);color:var(--txt);
+  font-family:var(--sans);font-size:13px;padding:10px 14px;border-radius:8px;outline:none;
+  transition:border-color .15s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.field select option{background:var(--bg2)}
+
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:28px}
+.stat-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;position:relative;overflow:hidden;
+}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.stat-card.blue::before{background:linear-gradient(90deg,#1d4ed8,var(--accent))}
+.stat-card.green::before{background:linear-gradient(90deg,#059669,var(--green))}
+.stat-card.orange::before{background:linear-gradient(90deg,#d97706,var(--orange))}
+.stat-card.purple::before{background:linear-gradient(90deg,#6d28d9,var(--purple))}
+.stat-card.gold::before{background:linear-gradient(90deg,#b45309,var(--gold))}
+.stat-label{font-size:10px;font-family:var(--mono);color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:6px}
+.stat-value{font-size:32px;font-weight:700;color:#fff;line-height:1}
+.stat-sub{font-size:11px;color:var(--txt3);margin-top:6px}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.panel-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-size:14px;font-weight:600;color:#fff}
+.panel-body{padding:20px}
+
+table{width:100%;border-collapse:collapse}
+thead th{font-size:10px;font-family:var(--mono);color:var(--txt3);text-transform:uppercase;letter-spacing:1.5px;padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(30,45,71,.5);transition:background .1s}
+tbody tr:hover{background:rgba(59,130,246,.04)}
+tbody td{padding:12px 14px;font-size:13px}
+
+.badge{display:inline-block;font-size:10px;font-weight:600;font-family:var(--mono);padding:3px 9px;border-radius:6px;text-transform:uppercase;letter-spacing:.5px}
+.badge-active{background:rgba(16,185,129,.1);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+.badge-expired{background:rgba(245,158,11,.1);color:var(--orange);border:1px solid rgba(245,158,11,.25)}
+.badge-revoked{background:rgba(239,68,68,.1);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.badge-lifetime{background:rgba(139,92,246,.1);color:var(--purple);border:1px solid rgba(139,92,246,.25)}
+.badge-trial{background:rgba(245,158,11,.1);color:var(--orange)}
+.badge-pro{background:rgba(59,130,246,.1);color:var(--accent)}
+.badge-enterprise{background:rgba(16,185,129,.1);color:var(--green)}
+.badge-ultimate{background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(251,191,36,.1));color:var(--gold);border:1px solid rgba(251,191,36,.3)}
+
+.lic-key{font-family:var(--mono);font-size:12px;color:var(--accent);letter-spacing:.5px}
+.copy-btn{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:12px;padding:2px 6px;border-radius:4px}
+.copy-btn:hover{color:var(--accent);background:rgba(59,130,246,.1)}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--txt3)}
+.empty-state-icon{font-size:48px;margin-bottom:16px}
+.empty-state h3{font-size:16px;font-weight:600;color:var(--txt2);margin-bottom:6px}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.modal-head{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:16px;font-weight:700;color:#fff}
+.modal-close{background:none;border:none;color:var(--txt3);font-size:20px;cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--red)}
+.modal-body{padding:24px}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px}
+
+.toast-zone{position:fixed;top:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:12px 16px;font-size:13px;min-width:280px;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);animation:slideIn .2s ease;pointer-events:auto}
+.toast.success{border-left:3px solid var(--green);color:var(--green)}
+.toast.error{border-left:3px solid var(--red);color:var(--red)}
+.toast.info{border-left:3px solid var(--accent);color:var(--accent)}
+@keyframes slideIn{from{transform:translateX(60px);opacity:0}to{transform:none;opacity:1}}
+
+.plan-cards{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.plan-card{border:2px solid var(--border);border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .15s;position:relative}
+.plan-card:hover{border-color:var(--accent)}
+.plan-card.selected{border-color:var(--accent);background:rgba(59,130,246,.07)}
+.plan-card.ultimate{border-color:rgba(251,191,36,.3)}
+.plan-card.ultimate.selected{background:rgba(251,191,36,.06);border-color:var(--gold)}
+.plan-card-name{font-size:16px;font-weight:700;margin-bottom:4px}
+.plan-card-price{font-size:22px;font-weight:700;margin-bottom:8px}
+.plan-card-price span{font-size:12px;font-weight:400;color:var(--txt2)}
+.plan-card-features{font-size:11px;color:var(--txt2);line-height:1.8}
+.plan-badge-popular{position:absolute;top:-10px;right:12px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:1px}
+.plan-badge-best{position:absolute;top:-10px;right:12px;background:var(--gold);color:#000;font-size:9px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:1px}
+
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-top:8px}
+.progress-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .5s ease}
+
+.tab-row{display:flex;gap:4px;margin-bottom:20px;background:var(--bg3);padding:4px;border-radius:8px;width:fit-content}
+.tab{padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;color:var(--txt2);transition:all .12s}
+.tab.active{background:var(--bg2);color:var(--accent);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+
+.upgrade-banner{
+  background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(59,130,246,.1));
+  border:1px solid rgba(139,92,246,.3);border-radius:var(--radius);
+  padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" class="auth-wrap">
+<div class="auth-box">
+  <div class="auth-logo">
+    <div class="auth-logo-title">🛡️ IronWall-WAF</div>
+    <div class="auth-logo-sub">Customer Portal · OPTIMIUM NEXUS LLC</div>
+  </div>
+  <div class="auth-tabs">
+    <div class="auth-tab active" onclick="setAuthTab('login',this)">Sign In</div>
+    <div class="auth-tab" onclick="setAuthTab('register',this)">Create Account</div>
+  </div>
+
+  <!-- Login Form -->
+  <div id="loginForm">
+    <div class="field"><label>Email</label><input type="email" id="loginEmail" placeholder="admin@company.com"/></div>
+    <div class="field"><label>Password</label><input type="password" id="loginPassword" placeholder="••••••••"/></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="doLogin()">Sign In</button>
+    <p style="text-align:center;margin-top:16px;font-size:12px;color:var(--txt3)">
+      Forgot password? <a href="#" style="color:var(--accent)">Reset it</a>
+    </p>
+  </div>
+
+  <!-- Register Form -->
+  <div id="registerForm" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+      <div class="field"><label>Company Name</label><input type="text" id="regCompany" placeholder="Acme Corp"/></div>
+      <div class="field"><label>Country</label>
+        <select id="regCountry">
+          <option value="">Select...</option>
+          <option>United States</option><option>France</option><option>Germany</option>
+          <option>United Kingdom</option><option>Canada</option><option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="field"><label>Email</label><input type="email" id="regEmail" placeholder="admin@company.com"/></div>
+    <div class="field"><label>Password</label><input type="password" id="regPassword" placeholder="Min. 8 characters"/></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px" onclick="doRegister()">
+      Create Account & Get Free Trial
+    </button>
+    <p style="text-align:center;margin-top:12px;font-size:11px;color:var(--txt3)">
+      By registering you agree to our <a href="https://www.optimiumnexus.com/tos" style="color:var(--accent)">Terms of Service</a>
+    </p>
+  </div>
+</div>
+</div>
+
+<!-- PORTAL APP -->
+<div id="portalApp" class="app" style="display:none">
+
+<!-- ISSUE LICENSE MODAL -->
+<div class="modal-overlay" id="issueLicModal">
+<div class="modal">
+  <div class="modal-head">
+    <div class="modal-title">⚡ Request New License</div>
+    <button class="modal-close" onclick="closeModal('issueLicModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="field">
+      <label>Tier</label>
+      <select id="newLicTier">
+        <option value="TRIAL">TRIAL — 30 days, all features</option>
+        <option value="PROFESSIONAL">PROFESSIONAL — $299/yr</option>
+        <option value="ENTERPRISE">ENTERPRISE — $1,499/yr</option>
+        <option value="ULTIMATE">ULTIMATE — $4,999/yr</option>
+      </select>
+    </div>
+    <div class="field"><label>Domain (optional)</label><input type="text" id="newLicDomain" placeholder="mycompany.com"/></div>
+    <div class="field"><label>Validity (days, 0=lifetime)</label><input type="number" id="newLicDays" value="365"/></div>
+    <div class="field"><label>Internal Notes</label><input type="text" id="newLicNotes" placeholder="Production server, contract #..."/></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-outline" onclick="closeModal('issueLicModal')">Cancel</button>
+    <button class="btn btn-primary" onclick="doIssueLicense()">⚡ Issue License</button>
+  </div>
+</div>
+</div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-name">🛡️ IronWall-WAF</div>
+    <div class="sidebar-logo-badge" id="planBadge">TRIAL</div>
+  </div>
+
+  <div class="customer-info">
+    <div class="avatar" id="avatarInitial">A</div>
+    <div>
+      <div class="customer-name" id="sidebarCompany">Loading...</div>
+      <div class="customer-plan plan-trial" id="sidebarPlan">Trial Plan</div>
+    </div>
+  </div>
+
+  <nav>
+    <div class="nav-section">Overview</div>
+    <a class="nav-item active" onclick="showPage('dashboard',this)">
+      <span>◈</span> Dashboard
+    </a>
+    <div class="nav-section">Licenses</div>
+    <a class="nav-item" onclick="showPage('licenses',this)">
+      <span>🔑</span> My Licenses
+      <span class="nav-badge" id="nb-lic">0</span>
+    </a>
+    <a class="nav-item" onclick="openModal('issueLicModal')">
+      <span>⊕</span> Request License
+    </a>
+    <div class="nav-section">Analytics</div>
+    <a class="nav-item" onclick="showPage('usage',this)">
+      <span>📊</span> Usage & Stats
+    </a>
+    <div class="nav-section">Account</div>
+    <a class="nav-item" onclick="showPage('billing',this)">
+      <span>💳</span> Billing
+    </a>
+    <a class="nav-item" onclick="showPage('support',this)">
+      <span>💬</span> Support
+      <span class="nav-badge" id="nb-tickets" style="display:none">1</span>
+    </a>
+    <a class="nav-item" onclick="showPage('settings',this)">
+      <span>⚙️</span> Settings
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div style="margin-bottom:4px"><a href="https://www.optimiumnexus.com/docs">📖 Documentation</a></div>
+    <div><a href="mailto:contact@optimiumnexus.com">✉ contact@optimiumnexus.com</a></div>
+    <div style="margin-top:8px;font-size:10px">© OPTIMIUM NEXUS LLC</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+<div class="topbar">
+  <div class="topbar-title" id="pageTitle">Dashboard</div>
+  <div class="topbar-right">
+    <button class="btn btn-outline btn-sm" onclick="showPage('billing',null)">⬆ Upgrade Plan</button>
+    <button class="btn btn-primary btn-sm" onclick="openModal('issueLicModal')">⚡ New License</button>
+    <button class="btn btn-outline btn-sm" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- DASHBOARD PAGE -->
+<div id="page-dashboard">
+  <div id="upgradeBanner" class="upgrade-banner" style="display:none">
+    <div>
+      <div style="font-weight:600;margin-bottom:2px">🚀 Upgrade to Enterprise for unlimited licenses + GeoIP + SIEM</div>
+      <div style="font-size:12px;color:var(--txt2)">You're currently on the Trial plan</div>
+    </div>
+    <button class="btn btn-gold btn-sm" onclick="showPage('billing',null)">Upgrade Now →</button>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-label">Active Licenses</div>
+      <div class="stat-value" id="ds-lic">0</div>
+      <div class="stat-sub" id="ds-lic-max">of 1 allowed</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Requests (30d)</div>
+      <div class="stat-value" id="ds-reqs">–</div>
+      <div class="stat-sub">Total proxied</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">Blocked (30d)</div>
+      <div class="stat-value" id="ds-blocked">–</div>
+      <div class="stat-sub" id="ds-block-rate">0% block rate</div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">License Expiry</div>
+      <div class="stat-value" id="ds-expiry" style="font-size:22px">–</div>
+      <div class="stat-sub">Days remaining</div>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Recent Licenses</div>
+        <a class="btn btn-outline btn-sm" onclick="showPage('licenses',null)">View All</a>
+      </div>
+      <div id="dash-lic-list" style="padding:0"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Quick Actions</div></div>
+      <div class="panel-body" style="display:flex;flex-direction:column;gap:10px">
+        <button class="btn btn-primary" style="justify-content:center" onclick="openModal('issueLicModal')">⚡ Issue New License</button>
+        <button class="btn btn-outline" style="justify-content:center" onclick="showPage('usage',null)">📊 View Usage Analytics</button>
+        <button class="btn btn-outline" style="justify-content:center" onclick="window.open('https://www.optimiumnexus.com/docs','_blank')">📖 Read Documentation</button>
+        <button class="btn btn-outline" style="justify-content:center" onclick="showPage('support',null)">💬 Open Support Ticket</button>
+        <hr style="border-color:var(--border)"/>
+        <button class="btn btn-gold" style="justify-content:center" onclick="showPage('billing',null)">🚀 Upgrade Your Plan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LICENSES PAGE -->
+<div id="page-licenses" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <div>
+      <h2 style="font-size:18px;font-weight:700;color:#fff">My Licenses</h2>
+      <div style="font-size:12px;color:var(--txt2);margin-top:2px" id="lic-quota-info">Loading quota...</div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('issueLicModal')">⚡ New License</button>
+  </div>
+
+  <div class="panel">
+    <div style="padding:0">
+      <table>
+        <thead><tr>
+          <th>License Key</th><th>Tier</th><th>Domain</th>
+          <th>Issued</th><th>Expires</th><th>Status</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="licensesTbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- USAGE PAGE -->
+<div id="page-usage" style="display:none">
+  <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat-card blue">
+      <div class="stat-label">Total Requests (30d)</div>
+      <div class="stat-value" id="u-reqs">–</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Blocked Threats (30d)</div>
+      <div class="stat-value" id="u-blocked">–</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">Block Rate</div>
+      <div class="stat-value" id="u-rate">–%</div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Usage — Last 30 Days</div></div>
+    <div class="panel-body">
+      <div style="font-family:var(--mono);font-size:11px;color:var(--txt3);text-align:center;padding:40px">
+        📊 Usage charts will appear here once your IronWall instance starts reporting metrics.<br/><br/>
+        <a href="https://www.optimiumnexus.com/docs/usage-reporting" style="color:var(--accent)">Learn how to connect your instance →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BILLING PAGE -->
+<div id="page-billing" style="display:none">
+  <div class="plan-cards" style="margin-bottom:24px">
+    <div class="plan-card" onclick="selectPlan('trial',this)">
+      <div class="plan-card-name">Trial</div>
+      <div class="plan-card-price" style="color:var(--green)">Free <span>/ 30 days</span></div>
+      <div class="plan-card-features">✓ 1 license<br>✓ All features (30d)<br>✓ Community support</div>
+    </div>
+    <div class="plan-card" onclick="selectPlan('pro',this)">
+      <div class="plan-badge-popular">POPULAR</div>
+      <div class="plan-card-name" style="color:var(--accent)">Professional</div>
+      <div class="plan-card-price" style="color:var(--accent)">$299 <span>/ year</span></div>
+      <div class="plan-card-features">✓ 10 licenses<br>✓ GeoIP + Rate limiting<br>✓ Email support</div>
+    </div>
+    <div class="plan-card" onclick="selectPlan('enterprise',this)">
+      <div class="plan-card-name" style="color:var(--green)">Enterprise</div>
+      <div class="plan-card-price" style="color:var(--green)">$1,499 <span>/ year</span></div>
+      <div class="plan-card-features">✓ 50 licenses<br>✓ SIEM + Kubernetes<br>✓ Priority support</div>
+    </div>
+    <div class="plan-card ultimate" onclick="selectPlan('ultimate',this)">
+      <div class="plan-badge-best">BEST VALUE</div>
+      <div class="plan-card-name" style="color:var(--gold)">Ultimate</div>
+      <div class="plan-card-price" style="color:var(--gold)">$4,999 <span>/ year</span></div>
+      <div class="plan-card-features">✓ Unlimited licenses<br>✓ Forensics + Zero-Day Shield<br>✓ 24/7 Dedicated support</div>
+    </div>
+  </div>
+  <div style="display:flex;gap:10px;margin-bottom:24px">
+    <button class="btn btn-primary" onclick="requestUpgrade()">🚀 Upgrade Now</button>
+    <button class="btn btn-outline" onclick="toast('Contact contact@optimiumnexus.com for custom enterprise pricing','info')">Contact Sales</button>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Invoices</div></div>
+    <div class="panel-body">
+      <div class="empty-state"><div class="empty-state-icon">🧾</div><h3>No invoices yet</h3><p>Invoices will appear here once you upgrade to a paid plan.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUPPORT PAGE -->
+<div id="page-support" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+    <h2 style="font-size:18px;font-weight:700;color:#fff">Support</h2>
+    <button class="btn btn-primary" onclick="showNewTicket()">+ New Ticket</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
+    <a href="https://www.optimiumnexus.com/docs" target="_blank" class="panel" style="padding:16px;display:flex;gap:12px;align-items:center;text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <span style="font-size:28px">📖</span>
+      <div><div style="font-weight:600;color:#fff">Documentation</div><div style="font-size:12px;color:var(--txt2)">Setup guides, API reference</div></div>
+    </a>
+    <a href="mailto:contact@optimiumnexus.com" class="panel" style="padding:16px;display:flex;gap:12px;align-items:center;text-decoration:none;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <span style="font-size:28px">✉️</span>
+      <div><div style="font-weight:600;color:#fff">Email Support</div><div style="font-size:12px;color:var(--txt2)">contact@optimiumnexus.com</div></div>
+    </a>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">My Tickets</div></div>
+    <div class="panel-body">
+      <div class="empty-state"><div class="empty-state-icon">✅</div><h3>No open tickets</h3><p>Need help? Open a support ticket and we'll respond within 24 hours.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS PAGE -->
+<div id="page-settings" style="display:none">
+  <div style="max-width:600px">
+    <div class="panel" style="margin-bottom:20px">
+      <div class="panel-head"><div class="panel-title">Account Details</div></div>
+      <div class="panel-body">
+        <div class="field"><label>Company Name</label><input type="text" id="settCompany"/></div>
+        <div class="field"><label>Email</label><input type="email" id="settEmail" disabled style="opacity:.5"/></div>
+        <div class="field"><label>Country</label><input type="text" id="settCountry"/></div>
+        <div class="field"><label>Website</label><input type="url" id="settWebsite" placeholder="https://..."/></div>
+        <button class="btn btn-primary" onclick="toast('Account updated','success')">Save Changes</button>
+      </div>
+    </div>
+    <div class="panel" style="margin-bottom:20px">
+      <div class="panel-head"><div class="panel-title">API Key</div></div>
+      <div class="panel-body">
+        <div style="font-family:var(--mono);font-size:12px;background:var(--bg3);padding:12px;border-radius:8px;color:var(--accent);margin-bottom:12px;word-break:break-all" id="apiKeyDisplay">••••••••••••••••••••••••••••••••</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-outline btn-sm" onclick="revealAPIKey()">👁 Reveal</button>
+          <button class="btn btn-outline btn-sm" onclick="rotateAPIKey()">🔄 Rotate Key</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Password</div></div>
+      <div class="panel-body">
+        <div class="field"><label>Current Password</label><input type="password" id="curPwd"/></div>
+        <div class="field"><label>New Password</label><input type="password" id="newPwd"/></div>
+        <button class="btn btn-primary btn-sm" onclick="toast('Password updated','success')">Update Password</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /portal app -->
+
+<div class="toast-zone" id="toastZone"></div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let state = {
+  token: localStorage.getItem('iw_token'),
+  customer: null,
+  licenses: [],
+  selectedPlan: null,
+};
+
+const API = '/portal/api/v1';
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  if (state.token) {
+    showPortal();
+    loadDashboard();
+  }
+});
+
+// ── Auth ─────────────────────────────────────────────────────────────────────
+function setAuthTab(tab, el) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('loginForm').style.display    = tab === 'login'    ? '' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+}
+
+async function doLogin() {
+  const email    = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  if (!email || !password) { toast('Please fill all fields', 'error'); return; }
+
+  // Demo mode — accept any credentials
+  const demo = mockLogin(email);
+  state.token    = 'demo-token-' + Date.now();
+  state.customer = demo;
+  localStorage.setItem('iw_token', state.token);
+  showPortal();
+  loadDashboard();
+  toast('Welcome back, ' + demo.company_name, 'success');
+}
+
+async function doRegister() {
+  const company  = document.getElementById('regCompany').value;
+  const email    = document.getElementById('regEmail').value;
+  const password = document.getElementById('regPassword').value;
+  if (!company || !email || !password) { toast('Please fill all fields', 'error'); return; }
+  if (password.length < 8) { toast('Password must be at least 8 characters', 'error'); return; }
+
+  // Demo registration
+  state.customer = { id: 'cust-' + Date.now(), company_name: company, email, plan: 'trial', max_licenses: 1 };
+  state.token = 'demo-' + Date.now();
+  localStorage.setItem('iw_token', state.token);
+
+  // Auto-issue trial license
+  const trialLic = generateLicKey('TRL');
+  state.licenses = [{ license_key: trialLic, tier: 'TRIAL', status: 'active',
+    issued: new Date().toISOString().split('T')[0],
+    expires: new Date(Date.now() + 30*86400000).toISOString().split('T')[0],
+    days_left: 30, domain: '' }];
+
+  showPortal();
+  loadDashboard();
+  toast('🎉 Welcome! Your 30-day trial license has been issued', 'success');
+}
+
+function logout() {
+  localStorage.removeItem('iw_token');
+  state.token = null; state.customer = null; state.licenses = [];
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('portalApp').style.display  = 'none';
+}
+
+function showPortal() {
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('portalApp').style.display  = 'flex';
+}
+
+// ── Dashboard Load ────────────────────────────────────────────────────────────
+function loadDashboard() {
+  if (!state.customer) {
+    state.customer = { id: 'cust-demo', company_name: 'Demo Corp', email: 'demo@example.com', plan: 'trial', max_licenses: 1 };
+  }
+  if (!state.licenses.length) {
+    state.licenses = [
+      { license_key: generateLicKey('TRL'), tier: 'TRIAL', status: 'active',
+        issued: new Date().toISOString().split('T')[0],
+        expires: new Date(Date.now() + 30*86400000).toISOString().split('T')[0],
+        days_left: 30, domain: '' }
+    ];
+  }
+
+  // Update sidebar
+  const c = state.customer;
+  document.getElementById('avatarInitial').textContent  = (c.company_name || 'U')[0].toUpperCase();
+  document.getElementById('sidebarCompany').textContent  = c.company_name;
+  document.getElementById('sidebarPlan').textContent     = (c.plan || 'trial').charAt(0).toUpperCase() + (c.plan||'trial').slice(1) + ' Plan';
+  document.getElementById('sidebarPlan').className       = 'customer-plan plan-' + (c.plan || 'trial');
+  document.getElementById('planBadge').textContent       = (c.plan || 'TRIAL').toUpperCase();
+  document.getElementById('nb-lic').textContent          = state.licenses.filter(l => l.status === 'active').length;
+
+  // Stats
+  const active = state.licenses.filter(l => l.status === 'active').length;
+  document.getElementById('ds-lic').textContent     = active;
+  document.getElementById('ds-lic-max').textContent = `of ${c.max_licenses === -1 ? '∞' : c.max_licenses} allowed`;
+  document.getElementById('ds-reqs').textContent    = '124,891';
+  document.getElementById('ds-blocked').textContent = '8,471';
+  document.getElementById('ds-block-rate').textContent = '6.8% block rate';
+
+  // Expiry
+  const firstLic = state.licenses[0];
+  if (firstLic) {
+    document.getElementById('ds-expiry').textContent = firstLic.days_left === -1 ? '∞' : firstLic.days_left + 'd';
+  }
+
+  // Show upgrade banner for trial
+  if ((c.plan || 'trial') === 'trial') {
+    document.getElementById('upgradeBanner').style.display = 'flex';
+  }
+
+  // Populate license list on dashboard
+  renderDashLicList();
+  renderLicensesTable();
+
+  // Settings fields
+  document.getElementById('settCompany').value = c.company_name || '';
+  document.getElementById('settEmail').value   = c.email || '';
+}
+
+function renderDashLicList() {
+  const el = document.getElementById('dash-lic-list');
+  if (!state.licenses.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔑</div><h3>No licenses yet</h3></div>';
+    return;
+  }
+  el.innerHTML = '<table>' +
+    '<thead><tr><th>Key</th><th>Tier</th><th>Expires</th><th></th></tr></thead><tbody>' +
+    state.licenses.slice(0,5).map(l => `
+      <tr>
+        <td><span class="lic-key">${l.license_key}</span></td>
+        <td><span class="badge badge-${l.tier.toLowerCase()}">${l.tier}</span></td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--txt2)">${l.expires || 'Lifetime'}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="downloadLic('${l.license_key}')">⬇</button></td>
+      </tr>`).join('') + '</tbody></table>';
+}
+
+function renderLicensesTable() {
+  const tbody = document.getElementById('licensesTbody');
+  if (!state.licenses.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-state-icon">🔑</div><h3>No licenses</h3><p>Click "New License" to get started.</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = state.licenses.map(l => `
+    <tr>
+      <td>
+        <span class="lic-key">${l.license_key}</span>
+        <button class="copy-btn" onclick="copyToClipboard('${l.license_key}')">⧉</button>
+      </td>
+      <td><span class="badge badge-${l.tier.toLowerCase()}">${l.tier}</span></td>
+      <td style="color:var(--txt2)">${l.domain || '—'}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--txt3)">${l.issued}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:${l.days_left <= 7 ? 'var(--red)' : l.days_left <= 30 ? 'var(--orange)' : 'var(--txt2)'}">
+        ${l.expires ? l.expires + (l.days_left >= 0 ? ' (' + l.days_left + 'd)' : '') : 'Lifetime ∞'}
+      </td>
+      <td><span class="badge badge-${l.status}">${l.status}</span></td>
+      <td>
+        <div style="display:flex;gap:4px">
+          <button class="btn btn-outline btn-sm" onclick="downloadLic('${l.license_key}')" title="Download">⬇</button>
+          <button class="btn btn-danger btn-sm" onclick="revokeLic('${l.license_key}')" title="Revoke">✕</button>
+        </div>
+      </td>
+    </tr>`).join('');
+
+  const c = state.customer;
+  const active = state.licenses.filter(l => l.status === 'active').length;
+  const max = c.max_licenses === -1 ? '∞' : c.max_licenses;
+  document.getElementById('lic-quota-info').textContent =
+    `${active} of ${max} licenses used · Upgrade to issue more`;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+function doIssueLicense() {
+  const tier  = document.getElementById('newLicTier').value;
+  const domain = document.getElementById('newLicDomain').value;
+  const days  = parseInt(document.getElementById('newLicDays').value);
+  const notes = document.getElementById('newLicNotes').value;
+
+  const c = state.customer;
+  const max = c.max_licenses;
+  const active = state.licenses.filter(l => l.status === 'active').length;
+
+  if (max !== -1 && active >= max) {
+    toast(`License quota reached (${active}/${max}). Upgrade your plan!`, 'error');
+    closeModal('issueLicModal');
+    showPage('billing', null);
+    return;
+  }
+
+  const prefix = {TRIAL:'TRL',PROFESSIONAL:'PRO',ENTERPRISE:'ENT',ULTIMATE:'ULT',DEVELOPER:'DEV'}[tier] || 'COM';
+  const key = generateLicKey(prefix);
+  const now = new Date();
+  const exp = days > 0 ? new Date(now.getTime() + days * 86400000) : null;
+
+  state.licenses.unshift({
+    license_key: key, tier, domain, notes, status: 'active',
+    issued: now.toISOString().split('T')[0],
+    expires: exp ? exp.toISOString().split('T')[0] : null,
+    days_left: exp ? days : -1,
+  });
+
+  renderDashLicList();
+  renderLicensesTable();
+  document.getElementById('nb-lic').textContent = state.licenses.filter(l => l.status === 'active').length;
+  closeModal('issueLicModal');
+  toast(`✅ License ${key} issued successfully`, 'success');
+}
+
+function revokeLic(key) {
+  if (!confirm(`Revoke license ${key}? This cannot be undone.`)) return;
+  const lic = state.licenses.find(l => l.license_key === key);
+  if (lic) lic.status = 'revoked';
+  renderLicensesTable();
+  renderDashLicList();
+  toast(`License ${key} revoked`, 'info');
+}
+
+function downloadLic(key) {
+  const content = `-----BEGIN IRONWALL LICENSE-----\n${btoa(JSON.stringify({key, portal:'OPTIMIUM NEXUS LLC', ts: Date.now()}))}\n-----END IRONWALL LICENSE-----`;
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content], {type:'text/plain'}));
+  a.download = key + '.lic'; a.click();
+  toast('License file downloaded', 'success');
+}
+
+function selectPlan(plan, el) {
+  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  state.selectedPlan = plan;
+}
+
+function requestUpgrade() {
+  if (!state.selectedPlan) { toast('Please select a plan first', 'error'); return; }
+  toast(`Upgrade to "${state.selectedPlan}" requested — contact@optimiumnexus.com`, 'info');
+}
+
+function revealAPIKey() { document.getElementById('apiKeyDisplay').textContent = 'iwk_' + 'a'.repeat(32).split('').map(() => Math.random().toString(36)[2]).join(''); }
+function rotateAPIKey() { revealAPIKey(); toast('API key rotated — update your integrations', 'success'); }
+
+function copyToClipboard(text) {
+  navigator.clipboard?.writeText(text);
+  toast('Copied to clipboard', 'info');
+}
+
+function showNewTicket() { toast('Support ticket form — connect to backend', 'info'); }
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function showPage(name, el) {
+  document.querySelectorAll('[id^="page-"]').forEach(p => p.style.display = 'none');
+  document.getElementById('page-' + name).style.display = '';
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const titles = { dashboard:'Dashboard', licenses:'My Licenses', usage:'Usage & Analytics',
+    billing:'Billing & Plans', support:'Support', settings:'Account Settings' };
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(id)  { document.getElementById(id).classList.add('open') }
+function closeModal(id) { document.getElementById(id).classList.remove('open') }
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${{success:'✓',error:'✕',info:'ℹ'}[type]||'ℹ'}</span><span>${msg}</span>`;
+  document.getElementById('toastZone').appendChild(el);
+  setTimeout(() => el.remove(), 4500);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function generateLicKey(prefix) {
+  const seg = () => Math.random().toString(36).substring(2,6).toUpperCase().replace(/[0OIL]/g,'X');
+  return `IW-${prefix}-${seg()}-${seg()}-${seg()}-${seg()}`;
+}
+
+function mockLogin(email) {
+  return { id:'cust-demo', company_name: email.split('@')[1]?.split('.')[0] || 'Demo Corp',
+    email, plan:'trial', max_licenses:1, status:'active' };
+}
+</script>
+</body>
+</html>
