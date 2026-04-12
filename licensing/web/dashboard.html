@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>IronWall — License Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg:        #050709;
+  --bg2:       #090d12;
+  --bg3:       #0d1520;
+  --panel:     #0a1119;
+  --border:    #1a2a3a;
+  --border2:   #243447;
+  --accent:    #00c8ff;
+  --accent2:   #0077ff;
+  --green:     #00ff9d;
+  --red:       #ff3c5a;
+  --orange:    #ff8c00;
+  --yellow:    #ffe600;
+  --purple:    #b060ff;
+  --txt:       #c8d8e8;
+  --txt2:      #6a8aaa;
+  --txt3:      #3a5a7a;
+  --glow:      0 0 20px rgba(0,200,255,.25);
+  --glow2:     0 0 40px rgba(0,200,255,.12);
+  --mono:      'Share Tech Mono', monospace;
+  --sans:      'Barlow', sans-serif;
+  --cond:      'Barlow Condensed', sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--txt);
+  font-family:var(--sans);
+  font-size:14px;
+  line-height:1.6;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── SCANLINE OVERLAY ─────────────────────────────── */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:repeating-linear-gradient(
+    0deg,transparent,transparent 2px,
+    rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px
+  );
+  pointer-events:none;z-index:9999;
+}
+
+/* ── GRID BACKGROUND ──────────────────────────────── */
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:
+    linear-gradient(rgba(0,120,200,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,120,200,.04) 1px,transparent 1px);
+  background-size:40px 40px;
+  pointer-events:none;z-index:0;
+}
+
+/* ── LAYOUT ───────────────────────────────────────── */
+.shell{display:flex;min-height:100vh;position:relative;z-index:1}
+
+/* ── SIDEBAR ──────────────────────────────────────── */
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;overflow-y:auto;
+}
+.logo-wrap{
+  padding:24px 20px 20px;
+  border-bottom:1px solid var(--border);
+}
+.logo-main{
+  font-family:var(--cond);
+  font-size:22px;font-weight:900;
+  letter-spacing:3px;text-transform:uppercase;
+  color:#fff;
+  text-shadow:0 0 20px var(--accent);
+}
+.logo-sub{
+  font-family:var(--mono);
+  font-size:9px;color:var(--accent);
+  letter-spacing:2px;margin-top:3px;
+}
+.logo-badge{
+  display:inline-block;margin-top:8px;
+  background:linear-gradient(90deg,var(--accent2),var(--purple));
+  color:#fff;font-size:8px;font-weight:700;
+  letter-spacing:2px;padding:2px 8px;border-radius:2px;
+  text-transform:uppercase;
+}
+nav{padding:16px 0;flex:1}
+.nav-section{
+  font-family:var(--mono);font-size:9px;
+  color:var(--txt3);letter-spacing:2px;
+  padding:8px 20px 4px;text-transform:uppercase;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 20px;cursor:pointer;
+  font-size:13px;font-weight:600;color:var(--txt2);
+  border-left:2px solid transparent;
+  transition:all .15s;text-decoration:none;
+}
+.nav-item:hover,.nav-item.active{
+  color:var(--accent);background:rgba(0,200,255,.06);
+  border-left-color:var(--accent);
+}
+.nav-item .ico{width:16px;text-align:center;font-size:14px}
+.nav-badge{
+  margin-left:auto;background:var(--red);
+  color:#fff;font-size:9px;font-weight:700;
+  padding:1px 6px;border-radius:10px;font-family:var(--mono);
+}
+.sidebar-footer{
+  padding:16px 20px;border-top:1px solid var(--border);
+  font-family:var(--mono);font-size:9px;color:var(--txt3);
+}
+.sys-status{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);
+     box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── MAIN ─────────────────────────────────────────── */
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+
+/* ── TOPBAR ───────────────────────────────────────── */
+.topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:12px 28px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.page-title{font-family:var(--cond);font-size:18px;font-weight:700;
+            letter-spacing:2px;text-transform:uppercase;color:#fff}
+.breadcrumb{font-family:var(--mono);font-size:10px;color:var(--txt3)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-time{font-family:var(--mono);font-size:11px;color:var(--accent);
+             background:rgba(0,200,255,.08);padding:4px 10px;border-radius:3px;
+             border:1px solid rgba(0,200,255,.2)}
+.btn{
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:1px;
+  padding:7px 16px;border-radius:3px;cursor:pointer;
+  border:none;transition:all .15s;text-transform:uppercase;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent2),var(--accent));
+  color:#000;box-shadow:0 0 20px rgba(0,120,255,.4);
+}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 30px rgba(0,120,255,.6)}
+.btn-danger{background:rgba(255,60,90,.15);color:var(--red);
+            border:1px solid rgba(255,60,90,.3)}
+.btn-danger:hover{background:rgba(255,60,90,.25)}
+.btn-ghost{background:transparent;color:var(--txt2);
+           border:1px solid var(--border2)}
+.btn-ghost:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ── CONTENT ──────────────────────────────────────── */
+.content{padding:28px;flex:1}
+
+/* ── STAT CARDS ───────────────────────────────────── */
+.stats-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:16px;margin-bottom:28px;
+}
+.stat-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:4px;padding:20px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s;
+}
+.stat-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+}
+.stat-card.blue::before{background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.stat-card.green::before{background:linear-gradient(90deg,#00aa66,var(--green))}
+.stat-card.red::before{background:linear-gradient(90deg,#cc0033,var(--red))}
+.stat-card.purple::before{background:linear-gradient(90deg,#6600cc,var(--purple))}
+.stat-card.orange::before{background:linear-gradient(90deg,#cc5500,var(--orange))}
+.stat-card:hover{border-color:var(--border2);box-shadow:var(--glow2)}
+.stat-label{
+  font-family:var(--mono);font-size:9px;letter-spacing:2px;
+  color:var(--txt3);text-transform:uppercase;margin-bottom:8px;
+}
+.stat-value{
+  font-family:var(--cond);font-size:36px;font-weight:900;
+  color:#fff;line-height:1;
+}
+.stat-value.accent{color:var(--accent)}
+.stat-value.green{color:var(--green)}
+.stat-value.red{color:var(--red)}
+.stat-value.purple{color:var(--purple)}
+.stat-value.orange{color:var(--orange)}
+.stat-delta{
+  font-family:var(--mono);font-size:10px;
+  color:var(--txt3);margin-top:6px;
+}
+.stat-delta.up{color:var(--green)}
+.stat-delta.down{color:var(--red)}
+.stat-bar{
+  height:3px;background:var(--border);border-radius:2px;
+  margin-top:12px;overflow:hidden;
+}
+.stat-bar-fill{height:100%;border-radius:2px;transition:width 1s ease}
+
+/* ── PANELS ───────────────────────────────────────── */
+.panels-row{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.panels-row.thirds{grid-template-columns:2fr 1fr}
+.panel{
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:4px;overflow:hidden;
+}
+.panel-head{
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.panel-title{
+  font-family:var(--cond);font-size:13px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;color:#fff;
+}
+.panel-subtitle{font-family:var(--mono);font-size:9px;color:var(--txt3);margin-top:2px}
+.panel-body{padding:20px}
+
+/* ── TABLE ────────────────────────────────────────── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{
+  font-family:var(--mono);font-size:9px;letter-spacing:2px;
+  color:var(--txt3);text-transform:uppercase;
+  padding:10px 12px;border-bottom:1px solid var(--border);
+  text-align:left;white-space:nowrap;
+}
+tbody tr{
+  border-bottom:1px solid rgba(26,42,58,.5);
+  transition:background .1s;
+}
+tbody tr:hover{background:rgba(0,200,255,.03)}
+tbody td{padding:11px 12px;font-size:13px;white-space:nowrap}
+.mono{font-family:var(--mono);font-size:11px}
+
+/* ── TIER BADGES ──────────────────────────────────── */
+.tier{
+  display:inline-block;font-family:var(--mono);font-size:9px;
+  font-weight:700;letter-spacing:1.5px;padding:3px 8px;
+  border-radius:2px;text-transform:uppercase;
+}
+.tier-COM{background:rgba(106,138,170,.15);color:#6a8aaa;border:1px solid #2a4060}
+.tier-PRO{background:rgba(0,119,255,.12);color:var(--accent2);border:1px solid rgba(0,119,255,.3)}
+.tier-ENT{background:rgba(0,200,255,.12);color:var(--accent);border:1px solid rgba(0,200,255,.3)}
+.tier-ULT{background:rgba(176,96,255,.15);color:var(--purple);border:1px solid rgba(176,96,255,.3);
+          box-shadow:0 0 10px rgba(176,96,255,.2)}
+.tier-TRL{background:rgba(255,140,0,.1);color:var(--orange);border:1px solid rgba(255,140,0,.3)}
+.tier-DEV{background:rgba(0,255,157,.08);color:var(--green);border:1px solid rgba(0,255,157,.2)}
+
+/* ── STATUS PILLS ─────────────────────────────────── */
+.pill{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  padding:3px 9px;border-radius:10px;letter-spacing:1px;
+}
+.pill-active{background:rgba(0,255,157,.08);color:var(--green);border:1px solid rgba(0,255,157,.25)}
+.pill-expired{background:rgba(255,140,0,.1);color:var(--orange);border:1px solid rgba(255,140,0,.25)}
+.pill-revoked{background:rgba(255,60,90,.1);color:var(--red);border:1px solid rgba(255,60,90,.25)}
+.pill-lifetime{background:rgba(176,96,255,.1);color:var(--purple);border:1px solid rgba(176,96,255,.25)}
+.pill::before{content:'●';font-size:7px}
+
+/* ── KEY FORMAT ───────────────────────────────────── */
+.lic-key{
+  font-family:var(--mono);font-size:12px;
+  color:var(--accent);letter-spacing:1px;
+}
+
+/* ── MODAL ────────────────────────────────────────── */
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.85);z-index:1000;
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(4px);
+}
+.overlay.open{display:flex}
+.modal{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:6px;width:680px;max-width:95vw;max-height:90vh;
+  overflow-y:auto;
+  box-shadow:0 0 60px rgba(0,200,255,.15);
+}
+.modal-head{
+  padding:20px 24px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.modal-title{font-family:var(--cond);font-size:16px;font-weight:700;
+             letter-spacing:2px;text-transform:uppercase;color:#fff}
+.modal-close{
+  background:none;border:none;color:var(--txt3);font-size:20px;
+  cursor:pointer;line-height:1;padding:4px;
+}
+.modal-close:hover{color:var(--red)}
+.modal-body{padding:24px}
+.modal-foot{
+  padding:16px 24px;border-top:1px solid var(--border);
+  display:flex;justify-content:flex-end;gap:10px;
+}
+
+/* ── FORM ─────────────────────────────────────────── */
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-row.full{grid-template-columns:1fr}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-family:var(--mono);font-size:9px;letter-spacing:2px;
+             color:var(--txt3);text-transform:uppercase}
+.field input,.field select,.field textarea{
+  background:var(--bg);border:1px solid var(--border2);
+  color:var(--txt);font-family:var(--mono);font-size:12px;
+  padding:9px 12px;border-radius:3px;outline:none;
+  transition:border-color .15s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  border-color:var(--accent);box-shadow:0 0 0 2px rgba(0,200,255,.1);
+}
+.field select option{background:var(--bg2)}
+.field textarea{resize:vertical;min-height:80px}
+.toggle-group{display:flex;gap:8px;flex-wrap:wrap}
+.toggle-chip{
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  padding:5px 12px;border-radius:3px;cursor:pointer;
+  border:1px solid var(--border2);color:var(--txt3);
+  transition:all .15s;user-select:none;letter-spacing:1px;
+}
+.toggle-chip.on{
+  border-color:var(--accent);color:var(--accent);
+  background:rgba(0,200,255,.1);
+}
+.divider{
+  font-family:var(--mono);font-size:9px;letter-spacing:2px;
+  color:var(--txt3);margin:20px 0 16px;display:flex;align-items:center;gap:10px;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── TIER CARDS ───────────────────────────────────── */
+.tier-select-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}
+.tier-card{
+  border:2px solid var(--border);border-radius:4px;
+  padding:14px;cursor:pointer;transition:all .15s;text-align:center;
+}
+.tier-card:hover{border-color:var(--border2)}
+.tier-card.selected{border-color:var(--accent);background:rgba(0,200,255,.06)}
+.tier-card.selected.ult{border-color:var(--purple);background:rgba(176,96,255,.08)}
+.tier-card-name{font-family:var(--cond);font-size:15px;font-weight:700;letter-spacing:2px}
+.tier-card-sites{font-family:var(--mono);font-size:9px;color:var(--txt3);margin-top:4px}
+.tier-card-price{font-family:var(--cond);font-size:13px;color:var(--accent);margin-top:6px}
+
+/* ── LICENSE OUTPUT ───────────────────────────────── */
+.lic-file-output{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:3px;padding:16px;
+  font-family:var(--mono);font-size:10px;
+  color:var(--green);word-break:break-all;
+  max-height:180px;overflow-y:auto;
+  margin-top:16px;
+}
+
+/* ── ACTIVITY FEED ────────────────────────────────── */
+.feed{display:flex;flex-direction:column;gap:1px}
+.feed-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:10px 0;border-bottom:1px solid rgba(26,42,58,.5);
+}
+.feed-item:last-child{border:none}
+.feed-dot{
+  width:8px;height:8px;border-radius:50%;
+  flex-shrink:0;margin-top:4px;
+}
+.feed-dot.issue{background:var(--green);box-shadow:0 0 6px var(--green)}
+.feed-dot.revoke{background:var(--red);box-shadow:0 0 6px var(--red)}
+.feed-dot.check{background:var(--accent);box-shadow:0 0 6px var(--accent)}
+.feed-dot.expire{background:var(--orange);box-shadow:0 0 6px var(--orange)}
+.feed-content{flex:1;min-width:0}
+.feed-msg{font-size:12px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-meta{font-family:var(--mono);font-size:9px;color:var(--txt3);margin-top:2px}
+
+/* ── DONUT CHART ──────────────────────────────────── */
+.donut-wrap{display:flex;align-items:center;gap:24px}
+.donut-svg{flex-shrink:0}
+.donut-legend{display:flex;flex-direction:column;gap:8px}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.legend-val{font-family:var(--mono);font-size:11px;color:var(--txt2);margin-left:auto}
+
+/* ── TOASTS ───────────────────────────────────────── */
+.toast-zone{position:fixed;top:20px;right:20px;z-index:2000;display:flex;flex-direction:column;gap:8px}
+.toast{
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:4px;padding:12px 16px;
+  font-family:var(--mono);font-size:11px;
+  min-width:280px;max-width:360px;
+  display:flex;align-items:center;gap:10px;
+  animation:slideIn .2s ease;box-shadow:0 4px 30px rgba(0,0,0,.5);
+}
+.toast.success{border-left:3px solid var(--green);color:var(--green)}
+.toast.error{border-left:3px solid var(--red);color:var(--red)}
+.toast.info{border-left:3px solid var(--accent);color:var(--accent)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:none;opacity:1}}
+
+/* ── SEARCH ───────────────────────────────────────── */
+.search-bar{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg);border:1px solid var(--border2);
+  border-radius:3px;padding:0 12px;width:280px;
+}
+.search-bar input{
+  background:none;border:none;color:var(--txt);
+  font-family:var(--mono);font-size:11px;outline:none;
+  padding:8px 0;flex:1;
+}
+.search-bar input::placeholder{color:var(--txt3)}
+
+/* ── FILTER TABS ──────────────────────────────────── */
+.filter-tabs{display:flex;gap:4px;margin-bottom:16px}
+.ftab{
+  font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:1.5px;
+  padding:5px 12px;border-radius:2px;cursor:pointer;
+  background:transparent;border:1px solid var(--border);
+  color:var(--txt3);transition:all .15s;text-transform:uppercase;
+}
+.ftab:hover{color:var(--txt2)}
+.ftab.active{background:rgba(0,200,255,.1);color:var(--accent);border-color:rgba(0,200,255,.3)}
+
+/* ── PROGRESS RING ────────────────────────────────── */
+.ring-wrap{position:relative;width:64px;height:64px;flex-shrink:0}
+.ring-wrap svg{transform:rotate(-90deg)}
+.ring-label{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;
+}
+
+/* ── ACTIONS ──────────────────────────────────────── */
+.action-row{display:flex;gap:6px}
+.icon-btn{
+  background:none;border:1px solid var(--border);
+  color:var(--txt3);padding:5px 8px;border-radius:3px;
+  cursor:pointer;font-size:12px;transition:all .15s;
+}
+.icon-btn:hover.edit{color:var(--accent);border-color:var(--accent);background:rgba(0,200,255,.08)}
+.icon-btn:hover.revoke{color:var(--red);border-color:var(--red);background:rgba(255,60,90,.08)}
+.icon-btn:hover.dl{color:var(--green);border-color:var(--green);background:rgba(0,255,157,.06)}
+</style>
+</head>
+<body>
+
+<div class="toast-zone" id="toastZone"></div>
+
+<!-- ISSUE MODAL -->
+<div class="overlay" id="issueModal">
+<div class="modal">
+  <div class="modal-head">
+    <div>
+      <div class="modal-title">⚡ Issue New License</div>
+    </div>
+    <button class="modal-close" onclick="closeModal('issueModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <!-- Tier Selection -->
+    <div class="divider">SELECT TIER</div>
+    <div class="tier-select-grid">
+      <div class="tier-card" data-tier="COMMUNITY" onclick="selectTier(this)">
+        <div class="tier-card-name" style="color:#6a8aaa">COMMUNITY</div>
+        <div class="tier-card-sites">1 site · 500 RPS</div>
+        <div class="tier-card-price">Free</div>
+      </div>
+      <div class="tier-card" data-tier="PROFESSIONAL" onclick="selectTier(this)">
+        <div class="tier-card-name" style="color:var(--accent2)">PROFESSIONAL</div>
+        <div class="tier-card-sites">10 sites · 5K RPS</div>
+        <div class="tier-card-price">$299/yr</div>
+      </div>
+      <div class="tier-card selected" data-tier="ENTERPRISE" onclick="selectTier(this)">
+        <div class="tier-card-name" style="color:var(--accent)">ENTERPRISE</div>
+        <div class="tier-card-sites">∞ sites · 50K RPS</div>
+        <div class="tier-card-price">$1,499/yr</div>
+      </div>
+      <div class="tier-card ult" data-tier="ULTIMATE" onclick="selectTier(this)">
+        <div class="tier-card-name" style="color:var(--purple)">ULTIMATE</div>
+        <div class="tier-card-sites">∞ sites · ∞ RPS</div>
+        <div class="tier-card-price">$4,999/yr</div>
+      </div>
+      <div class="tier-card" data-tier="TRIAL" onclick="selectTier(this)">
+        <div class="tier-card-name" style="color:var(--orange)">TRIAL</div>
+        <div class="tier-card-sites">∞ (30 days)</div>
+        <div class="tier-card-price">Free</div>
+      </div>
+      <div class="tier-card" data-tier="DEVELOPER" onclick="selectTier(this)">
+        <div class="tier-card-name" style="color:var(--green)">DEVELOPER</div>
+        <div class="tier-card-sites">3 sites · API access</div>
+        <div class="tier-card-price">$99/yr</div>
+      </div>
+    </div>
+
+    <div class="divider">LICENSEE DETAILS</div>
+    <div class="form-row">
+      <div class="field">
+        <label>Company / Name</label>
+        <input type="text" id="f-licensee" placeholder="Acme Corporation"/>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="f-email" placeholder="admin@acme.com"/>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field">
+        <label>Domain (optional binding)</label>
+        <input type="text" id="f-domain" placeholder="acme.com"/>
+      </div>
+      <div class="field">
+        <label>Validity (days — 0 = lifetime)</label>
+        <input type="number" id="f-days" value="365" min="0"/>
+      </div>
+    </div>
+
+    <div class="divider">EXTRA FEATURES</div>
+    <div class="toggle-group" id="extraFeats">
+      <div class="toggle-chip" data-feat="ai_threat_hunting" onclick="toggleFeat(this)">AI Threat Hunting</div>
+      <div class="toggle-chip" data-feat="zero_day_shield" onclick="toggleFeat(this)">Zero-Day Shield</div>
+      <div class="toggle-chip" data-feat="ddos_mitigation" onclick="toggleFeat(this)">DDoS Mitigation</div>
+      <div class="toggle-chip" data-feat="deception_layer" onclick="toggleFeat(this)">Deception Layer</div>
+      <div class="toggle-chip" data-feat="forensics" onclick="toggleFeat(this)">Forensics</div>
+      <div class="toggle-chip" data-feat="custom_branding" onclick="toggleFeat(this)">White-label</div>
+      <div class="toggle-chip" data-feat="multi_tenancy" onclick="toggleFeat(this)">Multi-tenancy</div>
+      <div class="toggle-chip" data-feat="compliance_report" onclick="toggleFeat(this)">Compliance Reports</div>
+    </div>
+
+    <div class="divider">NOTES</div>
+    <div class="form-row full">
+      <div class="field">
+        <label>Internal notes</label>
+        <textarea id="f-notes" placeholder="Contract reference, sales rep, deal notes..."></textarea>
+      </div>
+    </div>
+
+    <!-- Output -->
+    <div id="licOutput" style="display:none">
+      <div class="divider">LICENSE GENERATED</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span class="lic-key" id="licKeyOut"></span>
+        <button class="btn btn-ghost" style="padding:4px 10px;font-size:10px" onclick="copyKey()">COPY KEY</button>
+      </div>
+      <div class="lic-file-output" id="licFileOut"></div>
+      <button class="btn btn-ghost" style="margin-top:10px;padding:6px 14px;font-size:10px" onclick="downloadLic()">⬇ DOWNLOAD .LIC FILE</button>
+    </div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-ghost" onclick="closeModal('issueModal')">Cancel</button>
+    <button class="btn btn-primary" onclick="issueLicense()">⚡ GENERATE LICENSE</button>
+  </div>
+</div>
+</div>
+
+<!-- INSPECT MODAL -->
+<div class="overlay" id="inspectModal">
+<div class="modal" style="width:720px">
+  <div class="modal-head">
+    <div>
+      <div class="modal-title" id="inspectTitle">License Details</div>
+      <div style="font-family:var(--mono);font-size:9px;color:var(--txt3);margin-top:3px" id="inspectID"></div>
+    </div>
+    <button class="modal-close" onclick="closeModal('inspectModal')">✕</button>
+  </div>
+  <div class="modal-body" id="inspectBody"></div>
+</div>
+</div>
+
+<!-- SHELL -->
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="logo-wrap">
+    <div class="logo-main">IronWall</div>
+    <div class="logo-sub">WAF · LICENSE CENTER</div>
+    <div class="logo-badge">PALANTIR-GRADE</div>
+  </div>
+  <nav>
+    <div class="nav-section">Core</div>
+    <a class="nav-item active" onclick="showSection('dashboard')">
+      <span class="ico">◈</span> Dashboard
+    </a>
+    <a class="nav-item" onclick="showSection('licenses')">
+      <span class="ico">⊟</span> Licenses
+      <span class="nav-badge" id="nb-expiring">3</span>
+    </a>
+    <a class="nav-item" onclick="showSection('issue')">
+      <span class="ico">⊕</span> Issue License
+    </a>
+    <div class="nav-section">Security</div>
+    <a class="nav-item" onclick="showSection('geoip')">
+      <span class="ico">◎</span> GeoIP Blocks
+    </a>
+    <a class="nav-item" onclick="showSection('threats')">
+      <span class="ico">⚡</span> Threat Intel
+      <span class="nav-badge" style="background:var(--orange)">!</span>
+    </a>
+    <a class="nav-item" onclick="showSection('events')">
+      <span class="ico">⊞</span> Audit Log
+    </a>
+    <div class="nav-section">System</div>
+    <a class="nav-item" onclick="showSection('keypairs')">
+      <span class="ico">⬡</span> Key Pairs
+    </a>
+    <a class="nav-item" onclick="showSection('settings')">
+      <span class="ico">◇</span> Settings
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="sys-status">
+      <span class="dot"></span> LICENSE SERVER ONLINE
+    </div>
+    <div>v1.0.0 · ED25519 Signed</div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div>
+      <div class="page-title" id="pageTitle">Command Center</div>
+      <div class="breadcrumb" id="pageBread">IRONWALL / LICENSING / DASHBOARD</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="search-bar">
+      <span style="color:var(--txt3)">⌕</span>
+      <input type="text" placeholder="Search licenses..." id="globalSearch" oninput="filterLicenses()"/>
+    </div>
+    <div class="topbar-time" id="clock">--:--:-- UTC</div>
+    <button class="btn btn-primary" onclick="openModal('issueModal')">⚡ NEW LICENSE</button>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+<!-- ── DASHBOARD ──────────────────────────────────── -->
+<div id="sec-dashboard">
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-label">Total Licenses</div>
+      <div class="stat-value accent" id="st-total">142</div>
+      <div class="stat-delta up">▲ 8 this month</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:71%;background:var(--accent)"></div></div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Active</div>
+      <div class="stat-value green" id="st-active">138</div>
+      <div class="stat-delta up">▲ 97.2% health</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:97%;background:var(--green)"></div></div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">Expiring 30d</div>
+      <div class="stat-value orange" id="st-exp30">11</div>
+      <div class="stat-delta">▲ 3 critical (&lt;7d)</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:40%;background:var(--orange)"></div></div>
+    </div>
+    <div class="stat-card red">
+      <div class="stat-label">Revoked</div>
+      <div class="stat-value red" id="st-revoked">2</div>
+      <div class="stat-delta">0 this month</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:5%;background:var(--red)"></div></div>
+    </div>
+    <div class="stat-card purple">
+      <div class="stat-label">Ultimate Tier</div>
+      <div class="stat-value purple" id="st-ult">7</div>
+      <div class="stat-delta up">▲ 2 new deals</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:20%;background:var(--purple)"></div></div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">Validations Today</div>
+      <div class="stat-value accent" id="st-checks">1,847</div>
+      <div class="stat-delta up">▲ 12% vs yesterday</div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:60%;background:var(--accent2)"></div></div>
+    </div>
+  </div>
+
+  <div class="panels-row thirds">
+    <!-- Tier distribution -->
+    <div class="panel">
+      <div class="panel-head">
+        <div>
+          <div class="panel-title">Tier Distribution</div>
+          <div class="panel-subtitle">ACTIVE LICENSE BREAKDOWN</div>
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="donut-wrap">
+          <svg class="donut-svg" width="120" height="120" viewBox="0 0 120 120">
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#0d1520" stroke-width="18"/>
+            <!-- Segments (strokeDasharray = 2πr ≈ 301.6) -->
+            <circle cx="60" cy="60" r="48" fill="none" stroke="var(--accent)" stroke-width="18"
+              stroke-dasharray="85 216" stroke-dashoffset="0" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="var(--accent2)" stroke-width="18"
+              stroke-dasharray="120 181" stroke-dashoffset="-85" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="var(--purple)" stroke-width="18"
+              stroke-dasharray="21 280" stroke-dashoffset="-205" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="var(--orange)" stroke-width="18"
+              stroke-dasharray="18 283" stroke-dashoffset="-226" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="48" fill="none" stroke="#3a5a7a" stroke-width="18"
+              stroke-dasharray="57 244" stroke-dashoffset="-244" transform="rotate(-90 60 60)"/>
+            <text x="60" y="55" text-anchor="middle" fill="#fff" font-family="'Barlow Condensed',sans-serif"
+              font-size="20" font-weight="900">142</text>
+            <text x="60" y="70" text-anchor="middle" fill="var(--txt3)" font-family="'Share Tech Mono',monospace"
+              font-size="8">TOTAL</text>
+          </svg>
+          <div class="donut-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--accent)"></div>
+              Enterprise <span class="legend-val">55</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--accent2)"></div>
+              Professional <span class="legend-val">40</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--purple)"></div>
+              Ultimate <span class="legend-val">7</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--orange)"></div>
+              Trial <span class="legend-val">6</span>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#3a5a7a"></div>
+              Community <span class="legend-val">34</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Live Activity</div>
+      </div>
+      <div class="panel-body" style="padding:12px 20px">
+        <div class="feed" id="activityFeed">
+          <!-- populated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent licenses table -->
+  <div class="panel">
+    <div class="panel-head">
+      <div>
+        <div class="panel-title">Recent Licenses</div>
+        <div class="panel-subtitle">LAST 10 ISSUED</div>
+      </div>
+      <button class="btn btn-ghost" onclick="showSection('licenses')">VIEW ALL</button>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <div class="table-wrap">
+        <table id="recentTable">
+          <thead><tr>
+            <th>Key</th><th>Licensee</th><th>Tier</th>
+            <th>Issued</th><th>Expires</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="recentTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LICENSES ────────────────────────────────────── -->
+<div id="sec-licenses" style="display:none">
+  <div class="filter-tabs">
+    <div class="ftab active" onclick="setFilter('all',this)">ALL <span style="color:var(--txt3)">142</span></div>
+    <div class="ftab" onclick="setFilter('active',this)">ACTIVE <span style="color:var(--txt3)">138</span></div>
+    <div class="ftab" onclick="setFilter('expiring',this)">EXPIRING SOON <span style="color:var(--orange)">11</span></div>
+    <div class="ftab" onclick="setFilter('revoked',this)">REVOKED <span style="color:var(--red)">2</span></div>
+    <div class="ftab" onclick="setFilter('ULTIMATE',this)">ULTIMATE</div>
+    <div class="ftab" onclick="setFilter('ENTERPRISE',this)">ENTERPRISE</div>
+  </div>
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">All Licenses</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" onclick="exportCSV()">⬇ EXPORT CSV</button>
+        <button class="btn btn-primary" onclick="openModal('issueModal')">⚡ ISSUE NEW</button>
+      </div>
+    </div>
+    <div class="panel-body" style="padding:0">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th>Key</th><th>Licensee</th><th>Email</th><th>Tier</th>
+            <th>Issued</th><th>Expires</th><th>Days Left</th><th>Status</th><th>Actions</th>
+          </tr></thead>
+          <tbody id="allLicTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── GEOIP ───────────────────────────────────────── -->
+<div id="sec-geoip" style="display:none">
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="stat-card red">
+      <div class="stat-label">Blocked Countries</div>
+      <div class="stat-value red">12</div>
+      <div class="stat-delta">Active block rules</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">Geo-Blocks Today</div>
+      <div class="stat-value accent">48,291</div>
+      <div class="stat-delta up">▲ 23% vs yesterday</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">Allowlist Countries</div>
+      <div class="stat-value orange">34</div>
+      <div class="stat-delta">Explicit allow rules</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">DB Version</div>
+      <div class="stat-value green" style="font-size:22px">GeoIP2</div>
+      <div class="stat-delta">MaxMind · Updated 2h ago</div>
+    </div>
+  </div>
+
+  <div class="panels-row">
+    <div class="panel">
+      <div class="panel-head">
+        <div class="panel-title">Block Rules</div>
+        <button class="btn btn-primary" onclick="addGeoRule()">+ ADD RULE</button>
+      </div>
+      <div class="panel-body" style="padding:0">
+        <table>
+          <thead><tr><th>Country</th><th>Code</th><th>Action</th><th>Hits Today</th><th>Added</th><th></th></tr></thead>
+          <tbody id="geoTbody"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Top Blocked Origins</div></div>
+      <div class="panel-body" id="geoStats"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── THREATS ─────────────────────────────────────── -->
+<div id="sec-threats" style="display:none">
+  <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+    <div class="stat-card red">
+      <div class="stat-label">Threat IPs Tracked</div>
+      <div class="stat-value red">142,891</div>
+      <div class="stat-delta">AbuseIPDB + custom feeds</div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-label">Last Sync</div>
+      <div class="stat-value orange" style="font-size:22px">47m</div>
+      <div class="stat-delta">ago · Next in 13m</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">Blocked Today</div>
+      <div class="stat-value accent">8,471</div>
+      <div class="stat-delta up">▲ From threat intel</div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-label">Feed Sources</div>
+      <div class="stat-value green">4</div>
+      <div class="stat-delta">All feeds healthy</div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Threat Intelligence Feeds</div>
+      <button class="btn btn-primary" onclick="syncFeeds()">↻ SYNC NOW</button>
+    </div>
+    <div class="panel-body" id="threatFeeds"></div>
+  </div>
+</div>
+
+<!-- OTHER SECTIONS PLACEHOLDER -->
+<div id="sec-events" style="display:none">
+  <div class="panel"><div class="panel-head"><div class="panel-title">Audit Log</div></div>
+  <div class="panel-body"><div class="feed" id="auditFeed"></div></div></div>
+</div>
+<div id="sec-issue" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:center;height:300px">
+    <button class="btn btn-primary" style="font-size:16px;padding:16px 40px" onclick="openModal('issueModal')">
+      ⚡ OPEN LICENSE GENERATOR
+    </button>
+  </div>
+</div>
+<div id="sec-keypairs" style="display:none">
+  <div class="panel"><div class="panel-head">
+    <div class="panel-title">Signing Key Pairs</div>
+    <button class="btn btn-primary" onclick="genKeyPair()">+ GENERATE NEW KEY PAIR</button>
+  </div>
+  <div class="panel-body" id="keypairBody">
+    <div style="font-family:var(--mono);font-size:11px;color:var(--txt2);padding:16px 0">
+      <div style="margin-bottom:12px;padding:14px;background:var(--bg);border:1px solid var(--border2);border-radius:3px">
+        <div style="color:var(--accent);margin-bottom:6px">KEY ID: default</div>
+        <div>PUBLIC KEY: <span style="color:var(--green)">a3f2b1...8c94d0</span></div>
+        <div style="color:var(--txt3);margin-top:4px">Created: 2024-01-01 · Active · 142 licenses signed</div>
+      </div>
+    </div>
+  </div></div>
+</div>
+<div id="sec-settings" style="display:none">
+  <div class="panel"><div class="panel-head"><div class="panel-title">Settings</div></div>
+  <div class="panel-body">
+    <div class="form-row">
+      <div class="field"><label>License Server URL</label><input value="http://localhost:8090"/></div>
+      <div class="field"><label>Admin API Key</label><input type="password" value="••••••••••••••••"/></div>
+    </div>
+  </div></div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+// ── DATA ────────────────────────────────────────────
+const LICENSES = [
+  {id:'a1b2c3d4',key:'IW-ULT-A3F2-B9K1-M7X4-Z2P8',tier:'ULTIMATE',licensee:'Palantir Technologies',email:'security@palantir.com',domain:'palantir.com',issued:'2024-01-15',expires:'LIFETIME',daysLeft:-1,status:'lifetime',features:30},
+  {id:'e5f6g7h8',key:'IW-ENT-X9K2-P4M1-Q7R3-W5N6',tier:'ENTERPRISE',licensee:'BlackRock Inc.',email:'infosec@blackrock.com',domain:'blackrock.com',issued:'2024-02-01',expires:'2025-02-01',daysLeft:312,status:'active',features:19},
+  {id:'i9j0k1l2',key:'IW-ENT-B6T3-C8Y4-D2S5-E4U7',tier:'ENTERPRISE',licensee:'Goldman Sachs',email:'sec-ops@gs.com',domain:'gs.com',issued:'2024-01-20',expires:'2025-01-20',daysLeft:6,status:'expiring',features:19},
+  {id:'m3n4o5p6',key:'IW-PRO-F1V8-G3W9-H5X0-J7Y1',tier:'PROFESSIONAL',licensee:'Acme Corp',email:'admin@acme.com',domain:'acme.com',issued:'2024-03-01',expires:'2025-03-01',daysLeft:337,status:'active',features:11},
+  {id:'q7r8s9t0',key:'IW-TRL-K2Z3-L4A5-M6B7-N8C9',tier:'TRIAL',licensee:'Prospect Security',email:'trial@prospect.io',domain:'',issued:'2024-04-01',expires:'2024-05-01',daysLeft:0,status:'revoked',features:18},
+  {id:'u1v2w3x4',key:'IW-PRO-D0E1-F2G3-H4I5-J6K7',tier:'PROFESSIONAL',licensee:'StartupXYZ',email:'ops@startup.xyz',domain:'startup.xyz',issued:'2024-03-15',expires:'2025-03-15',daysLeft:351,status:'active',features:12},
+  {id:'y5z6a7b8',key:'IW-ENT-L8M9-N0P1-Q2R3-S4T5',tier:'ENTERPRISE',licensee:'Citadel LLC',email:'risk@citadel.com',domain:'citadel.com',issued:'2024-02-10',expires:'2025-02-10',daysLeft:322,status:'active',features:19},
+  {id:'c9d0e1f2',key:'IW-COM-U6V7-W8X9-Y0Z1-A2B3',tier:'COMMUNITY',licensee:'Open Source Project',email:'admin@oss.dev',domain:'',issued:'2024-04-01',expires:'LIFETIME',daysLeft:-1,status:'lifetime',features:4},
+  {id:'g3h4i5j6',key:'IW-ULT-C4D5-E6F7-G8H9-I0J1',tier:'ULTIMATE',licensee:'NATO CCDCOE',email:'sec@ccdcoe.org',domain:'ccdcoe.org',issued:'2024-01-01',expires:'LIFETIME',daysLeft:-1,status:'lifetime',features:30},
+  {id:'k7l8m9n0',key:'IW-ENT-K2L3-M4N5-O6P7-Q8R9',tier:'ENTERPRISE',licensee:'JPMorgan Chase',email:'cyber@jpmorgan.com',domain:'jpmorgan.com',issued:'2024-03-20',expires:'2025-03-20',daysLeft:355,status:'active',features:19},
+];
+
+const GEO_RULES = [
+  {country:'North Korea',code:'KP',action:'BLOCK',hits:1284,added:'2024-01-01'},
+  {country:'Iran',code:'IR',action:'BLOCK',hits:8912,added:'2024-01-01'},
+  {country:'Russia',code:'RU',action:'BLOCK',hits:48291,added:'2024-02-15'},
+  {country:'China',code:'CN',action:'CHALLENGE',hits:124891,added:'2024-02-01'},
+  {country:'Belarus',code:'BY',action:'BLOCK',hits:3421,added:'2024-03-01'},
+  {country:'Syria',code:'SY',action:'BLOCK',hits:892,added:'2024-03-15'},
+];
+
+const FEEDS = [
+  {name:'AbuseIPDB',url:'https://api.abuseipdb.com',ips:89241,lastSync:'47m ago',status:'healthy',color:'var(--green)'},
+  {name:'Emerging Threats',url:'https://rules.emergingthreats.net',ips:42100,lastSync:'1h ago',status:'healthy',color:'var(--green)'},
+  {name:'Firehol Level 1',url:'https://iplists.firehol.org',ips:8921,lastSync:'2h ago',status:'healthy',color:'var(--green)'},
+  {name:'Custom Feed',url:'https://feeds.example.com',ips:2629,lastSync:'3h ago',status:'warning',color:'var(--orange)'},
+];
+
+const EVENTS = [
+  {type:'issue',msg:'License issued to Palantir Technologies (ULTIMATE · lifetime)',time:'2m ago'},
+  {type:'check',msg:'License IW-ENT-X9K2 validated by 192.168.1.42',time:'5m ago'},
+  {type:'expire',msg:'License IW-ENT-B6T3 expires in 6 days — Goldman Sachs',time:'1h ago'},
+  {type:'issue',msg:'License issued to JPMorgan Chase (ENTERPRISE · 365d)',time:'2h ago'},
+  {type:'check',msg:'Feature geoip_blocking checked on IW-ENT-L8M9',time:'3h ago'},
+  {type:'revoke',msg:'License IW-TRL-K2Z3 revoked — payment dispute',time:'5h ago'},
+  {type:'issue',msg:'License issued to StartupXYZ (PROFESSIONAL · 365d)',time:'6h ago'},
+  {type:'check',msg:'1,847 license validations processed today',time:'8h ago'},
+];
+
+let currentFilter = 'all';
+let currentLicenseFile = '';
+let currentLicenseKey = '';
+
+// ── INIT ────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderRecentTable();
+  renderAllLicenses();
+  renderActivity();
+  renderGeoTable();
+  renderGeoStats();
+  renderThreatFeeds();
+  renderAuditLog();
+  startClock();
+});
+
+// ── CLOCK ────────────────────────────────────────────
+function startClock() {
+  const tick = () => {
+    const now = new Date();
+    document.getElementById('clock').textContent =
+      now.toUTCString().split(' ')[4] + ' UTC';
+  };
+  tick(); setInterval(tick, 1000);
+}
+
+// ── NAVIGATION ────────────────────────────────────────
+function showSection(name) {
+  document.querySelectorAll('[id^="sec-"]').forEach(el => el.style.display = 'none');
+  document.getElementById('sec-' + name).style.display = '';
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  event.currentTarget && event.currentTarget.classList.add('active');
+  const titles = {
+    dashboard:'Command Center', licenses:'All Licenses', issue:'Issue License',
+    geoip:'GeoIP Rules', threats:'Threat Intel', events:'Audit Log',
+    keypairs:'Key Pairs', settings:'Settings'
+  };
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+  document.getElementById('pageBread').textContent = `IRONWALL / LICENSING / ${name.toUpperCase()}`;
+}
+
+// ── TABLES ────────────────────────────────────────────
+function renderRecentTable() {
+  const tbody = document.getElementById('recentTbody');
+  tbody.innerHTML = LICENSES.slice(0,7).map(l => rowHTML(l)).join('');
+}
+
+function renderAllLicenses() {
+  const tbody = document.getElementById('allLicTbody');
+  let data = LICENSES;
+  if (currentFilter !== 'all') {
+    if (['active','expiring','revoked','lifetime'].includes(currentFilter))
+      data = data.filter(l => l.status === currentFilter);
+    else data = data.filter(l => l.tier === currentFilter);
+  }
+  const q = document.getElementById('globalSearch')?.value?.toLowerCase() || '';
+  if (q) data = data.filter(l =>
+    l.licensee.toLowerCase().includes(q) || l.key.toLowerCase().includes(q) ||
+    l.email.toLowerCase().includes(q));
+  tbody.innerHTML = data.map(l => rowHTML(l, true)).join('');
+}
+
+function rowHTML(l, full=false) {
+  const tierCls = {ULTIMATE:'tier-ULT',ENTERPRISE:'tier-ENT',PROFESSIONAL:'tier-PRO',
+                   COMMUNITY:'tier-COM',TRIAL:'tier-TRL',DEVELOPER:'tier-DEV'}[l.tier];
+  const statusPill = {
+    active:`<span class="pill pill-active">ACTIVE</span>`,
+    expiring:`<span class="pill" style="background:rgba(255,140,0,.1);color:var(--orange);border:1px solid rgba(255,140,0,.3)">⚠ EXPIRING</span>`,
+    revoked:`<span class="pill pill-revoked">REVOKED</span>`,
+    lifetime:`<span class="pill pill-lifetime">∞ LIFETIME</span>`,
+  }[l.status] || '';
+  const days = l.daysLeft === -1 ? '<span style="color:var(--purple)">∞</span>' :
+               l.daysLeft <= 7 ? `<span style="color:var(--red)">${l.daysLeft}d</span>` :
+               l.daysLeft <= 30 ? `<span style="color:var(--orange)">${l.daysLeft}d</span>` :
+               `<span style="color:var(--txt2)">${l.daysLeft}d</span>`;
+  return `<tr>
+    <td><span class="lic-key">${l.key}</span></td>
+    <td>${l.licensee}</td>
+    ${full ? `<td class="mono" style="color:var(--txt3)">${l.email}</td>` : ''}
+    <td><span class="tier ${tierCls}">${l.tier}</span></td>
+    <td class="mono" style="color:var(--txt3)">${l.issued}</td>
+    <td class="mono" style="color:var(--txt3)">${l.expires}</td>
+    ${full ? `<td class="mono">${days}</td>` : ''}
+    <td>${statusPill}</td>
+    <td>
+      <div class="action-row">
+        <button class="icon-btn edit" onclick='inspectLicense(${JSON.stringify(l)})' title="Inspect">⊟</button>
+        <button class="icon-btn dl" title="Download .lic">⬇</button>
+        ${l.status !== 'revoked' ? `<button class="icon-btn revoke" onclick="revokeLicense('${l.id}','${l.key}')" title="Revoke">✕</button>` : ''}
+      </div>
+    </td>
+  </tr>`;
+}
+
+function filterLicenses() { renderAllLicenses(); }
+function setFilter(f, el) {
+  currentFilter = f;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderAllLicenses();
+}
+
+// ── ACTIVITY ──────────────────────────────────────────
+function renderActivity() {
+  document.getElementById('activityFeed').innerHTML =
+    EVENTS.slice(0,6).map(e => `
+      <div class="feed-item">
+        <div class="feed-dot ${e.type}"></div>
+        <div class="feed-content">
+          <div class="feed-msg">${e.msg}</div>
+          <div class="feed-meta">${e.time}</div>
+        </div>
+      </div>`).join('');
+}
+
+// ── GEOIP ─────────────────────────────────────────────
+function renderGeoTable() {
+  document.getElementById('geoTbody').innerHTML = GEO_RULES.map(r => `
+    <tr>
+      <td>${r.country}</td>
+      <td class="mono" style="color:var(--txt2)">${r.code}</td>
+      <td><span class="tier ${r.action==='BLOCK'?'tier-COM':'tier-TRL'}">${r.action}</span></td>
+      <td class="mono" style="color:var(--red)">${r.hits.toLocaleString()}</td>
+      <td class="mono" style="color:var(--txt3)">${r.added}</td>
+      <td><button class="icon-btn revoke" onclick="removeGeoRule('${r.code}')">✕</button></td>
+    </tr>`).join('');
+}
+
+function renderGeoStats() {
+  document.getElementById('geoStats').innerHTML = GEO_RULES.map(r => {
+    const pct = Math.round(r.hits / GEO_RULES.reduce((a,x)=>a+x.hits,0) * 100);
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;margin-bottom:4px">
+        <span>${r.country} (${r.code})</span>
+        <span style="color:var(--red)">${r.hits.toLocaleString()}</span>
+      </div>
+      <div class="stat-bar"><div class="stat-bar-fill" style="width:${pct}%;background:var(--red)"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function addGeoRule() {
+  const code = prompt('Enter country code to block (e.g. CN):');
+  if (!code) return;
+  toast(`GeoIP block rule added for ${code.toUpperCase()}`, 'success');
+}
+function removeGeoRule(code) {
+  toast(`GeoIP block rule removed for ${code}`, 'info');
+}
+
+// ── THREAT FEEDS ──────────────────────────────────────
+function renderThreatFeeds() {
+  document.getElementById('threatFeeds').innerHTML = FEEDS.map(f => `
+    <div style="display:flex;align-items:center;gap:16px;padding:14px 0;border-bottom:1px solid var(--border)">
+      <div style="width:8px;height:8px;border-radius:50%;background:${f.color};box-shadow:0 0 6px ${f.color};flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:13px">${f.name}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--txt3);margin-top:2px">${f.url}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--mono);font-size:12px;color:var(--accent)">${f.ips.toLocaleString()} IPs</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--txt3)">${f.lastSync}</div>
+      </div>
+      <button class="btn btn-ghost" style="padding:4px 10px;font-size:9px" onclick="syncFeed('${f.name}')">SYNC</button>
+    </div>`).join('');
+}
+
+function syncFeeds() {
+  toast('Syncing all threat intelligence feeds...', 'info');
+  setTimeout(() => toast('All feeds synchronized — 142,891 IPs loaded', 'success'), 2000);
+}
+function syncFeed(name) {
+  toast(`Syncing ${name}...`, 'info');
+}
+
+// ── AUDIT LOG ─────────────────────────────────────────
+function renderAuditLog() {
+  document.getElementById('auditFeed').innerHTML =
+    EVENTS.map(e => `
+      <div class="feed-item">
+        <div class="feed-dot ${e.type}"></div>
+        <div class="feed-content">
+          <div class="feed-msg">${e.msg}</div>
+          <div class="feed-meta">${e.time}</div>
+        </div>
+      </div>`).join('');
+}
+
+// ── MODALS ────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open') }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  document.getElementById('licOutput').style.display='none';
+}
+
+// ── TIER SELECTION ────────────────────────────────────
+function selectTier(el) {
+  document.querySelectorAll('.tier-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function toggleFeat(el) { el.classList.toggle('on') }
+
+// ── ISSUE LICENSE ─────────────────────────────────────
+function issueLicense() {
+  const tier = document.querySelector('.tier-card.selected')?.dataset?.tier || 'ENTERPRISE';
+  const licensee = document.getElementById('f-licensee').value || 'Demo Client';
+  const email = document.getElementById('f-email').value || 'demo@client.com';
+  const days = parseInt(document.getElementById('f-days').value);
+  const extras = [...document.querySelectorAll('.toggle-chip.on')].map(c => c.dataset.feat);
+
+  if (!licensee || !email) { toast('Licensee and email are required', 'error'); return; }
+
+  const prefixes = {COMMUNITY:'COM',PROFESSIONAL:'PRO',ENTERPRISE:'ENT',ULTIMATE:'ULT',TRIAL:'TRL',DEVELOPER:'DEV'};
+  const seg = () => Math.random().toString(36).substring(2,6).toUpperCase().replace(/[0OI1]/g,'X');
+  const key = `IW-${prefixes[tier]}-${seg()}-${seg()}-${seg()}-${seg()}`;
+
+  const payload = {
+    id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2),
+    key, tier, licensee, email,
+    issued_at: new Date().toISOString(),
+    expires_at: days === 0 ? null : new Date(Date.now() + days*86400000).toISOString(),
+    is_lifetime: days === 0,
+    extra_features: extras,
+    signature: btoa(Math.random().toString(36).repeat(4)).substring(0,64) + '...',
+    public_key_id: 'default'
+  };
+
+  const b64 = btoa(JSON.stringify(payload));
+  const wrap = (s, w=64) => s.match(new RegExp(`.{1,${w}}`,'g')).join('\n');
+  const licFile = `-----BEGIN IRONWALL LICENSE-----\n${wrap(b64)}\n-----END IRONWALL LICENSE-----`;
+
+  currentLicenseFile = licFile;
+  currentLicenseKey = key;
+
+  document.getElementById('licKeyOut').textContent = key;
+  document.getElementById('licFileOut').textContent = licFile;
+  document.getElementById('licOutput').style.display = '';
+
+  LICENSES.unshift({id:payload.id, key, tier, licensee, email, domain:'',
+    issued: new Date().toISOString().split('T')[0],
+    expires: days === 0 ? 'LIFETIME' : payload.expires_at.split('T')[0],
+    daysLeft: days === 0 ? -1 : days, status: days === 0 ? 'lifetime' : 'active', features:10});
+  renderRecentTable(); renderAllLicenses();
+  toast(`License issued: ${key}`, 'success');
+}
+
+function copyKey() {
+  navigator.clipboard?.writeText(currentLicenseKey);
+  toast('Key copied to clipboard', 'info');
+}
+
+function downloadLic() {
+  const blob = new Blob([currentLicenseFile], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${currentLicenseKey}.lic`;
+  a.click();
+  toast('License file downloaded', 'success');
+}
+
+// ── INSPECT ───────────────────────────────────────────
+function inspectLicense(l) {
+  document.getElementById('inspectTitle').textContent = l.key;
+  document.getElementById('inspectID').textContent = `UUID: ${l.id}`;
+  const tierCls = {ULTIMATE:'tier-ULT',ENTERPRISE:'tier-ENT',PROFESSIONAL:'tier-PRO',
+                   COMMUNITY:'tier-COM',TRIAL:'tier-TRL',DEVELOPER:'tier-DEV'}[l.tier];
+  const featMap = {
+    COMMUNITY:['core_waf','basic_dashboard','owasp_rules','bot_protection'],
+    PROFESSIONAL:['core_waf','owasp_rules','bot_protection','advanced_rules','api_rate_limit','ssl_offload','multi_site','audit_log','alerting_basic','backup_restore'],
+    ENTERPRISE:['core_waf','owasp_rules','bot_protection','advanced_rules','api_rate_limit','ssl_offload','unlimited_sites','geoip_blocking','threat_intel','alerting_full','siem','prometheus','ha','compliance_report','kubernetes_helm'],
+    ULTIMATE:['core_waf','owasp_rules','bot_protection','advanced_rules','api_rate_limit','ssl_offload','unlimited_sites','geoip_blocking','threat_intel','alerting_full','siem','prometheus','ha','compliance_report','kubernetes_helm','ai_threat_hunting','zero_day_shield','ddos_mitigation','deception_layer','forensics','custom_branding','multi_tenancy','api_full_access','priority_support','custom_integration'],
+    TRIAL:['core_waf','owasp_rules','bot_protection','advanced_rules','geoip_blocking','threat_intel','siem','prometheus'],
+    DEVELOPER:['core_waf','owasp_rules','advanced_rules','api_full_access'],
+  };
+  const features = featMap[l.tier] || [];
+  document.getElementById('inspectBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+      <div>
+        <div class="stat-label" style="margin-bottom:6px">TIER</div>
+        <span class="tier ${tierCls}" style="font-size:12px">${l.tier}</span>
+      </div>
+      <div>
+        <div class="stat-label" style="margin-bottom:6px">STATUS</div>
+        <span class="pill pill-${l.status === 'lifetime' ? 'lifetime' : l.status === 'active' ? 'active' : l.status === 'revoked' ? 'revoked' : 'expired'}">
+          ${l.status.toUpperCase()}
+        </span>
+      </div>
+      <div><div class="stat-label">LICENSEE</div><div style="margin-top:4px">${l.licensee}</div></div>
+      <div><div class="stat-label">EMAIL</div><div class="mono" style="margin-top:4px;color:var(--txt2)">${l.email}</div></div>
+      <div><div class="stat-label">ISSUED</div><div class="mono" style="margin-top:4px;color:var(--txt2)">${l.issued}</div></div>
+      <div><div class="stat-label">EXPIRES</div><div class="mono" style="margin-top:4px;color:${l.daysLeft <= 7 ? 'var(--red)' : 'var(--txt2)'}">${l.expires}</div></div>
+    </div>
+    <div class="divider">INCLUDED FEATURES (${features.length})</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      ${features.map(f => `<div class="toggle-chip on" style="cursor:default">${f}</div>`).join('')}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:20px">
+      <button class="btn btn-ghost" onclick="toast('License file copied','info')">⬇ DOWNLOAD .LIC</button>
+      ${l.status !== 'revoked' ? `<button class="btn btn-danger" onclick="revokeLicense('${l.id}','${l.key}');closeModal('inspectModal')">✕ REVOKE</button>` : ''}
+    </div>
+  `;
+  openModal('inspectModal');
+}
+
+// ── REVOKE ────────────────────────────────────────────
+function revokeLicense(id, key) {
+  if (!confirm(`Revoke license ${key}? This cannot be undone.`)) return;
+  const l = LICENSES.find(x => x.id === id);
+  if (l) l.status = 'revoked';
+  renderRecentTable(); renderAllLicenses();
+  toast(`License ${key} has been revoked`, 'error');
+}
+
+// ── KEY PAIR ──────────────────────────────────────────
+function genKeyPair() {
+  toast('Generating new ED25519 key pair...', 'info');
+  setTimeout(() => toast('New key pair generated — download and store securely!', 'success'), 1000);
+}
+
+// ── EXPORT ────────────────────────────────────────────
+function exportCSV() {
+  const header = 'Key,Licensee,Email,Tier,Issued,Expires,Status\n';
+  const rows = LICENSES.map(l =>
+    `${l.key},"${l.licensee}",${l.email},${l.tier},${l.issued},${l.expires},${l.status}`
+  ).join('\n');
+  const blob = new Blob([header + rows], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `ironwall-licenses-${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  toast('Licenses exported to CSV', 'success');
+}
+
+// ── TOAST ─────────────────────────────────────────────
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icons = {success:'✔',error:'✕',info:'ℹ'};
+  el.innerHTML = `<span>${icons[type]||'ℹ'}</span><span>${msg}</span>`;
+  document.getElementById('toastZone').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ── LIVE SIMULATION ───────────────────────────────────
+let valCount = 1847;
+setInterval(() => {
+  valCount += Math.floor(Math.random() * 3) + 1;
+  document.getElementById('st-checks').textContent = valCount.toLocaleString();
+}, 3000);
+</script>
+</body>
+</html>
