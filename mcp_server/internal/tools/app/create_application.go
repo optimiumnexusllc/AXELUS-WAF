@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 
-	"github.com/chaitin/SafeLine/mcp_server/internal/api/app"
-	"github.com/chaitin/SafeLine/mcp_server/pkg/logger"
+	"github.com/optimiumnexus/IronWall/mcp_server/internal/api/app"
+	"github.com/optimiumnexus/IronWall/mcp_server/pkg/logger"
 )
 
 type CreateApp struct{}

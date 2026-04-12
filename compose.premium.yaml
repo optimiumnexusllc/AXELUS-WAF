@@ -2,7 +2,7 @@
 # Usage: docker compose -f compose.yaml -f compose.monitoring.yaml -f compose.premium.yaml up -d
 
 networks:
-  safeline-ce:
+  ironwall:
     external: true
 
 services:
@@ -20,7 +20,7 @@ services:
       - ironwall-redis-data:/data
       - /etc/localtime:/etc/localtime:ro
     networks:
-      safeline-ce:
+      ironwall:
         ipv4_address: ${SUBNET_PREFIX}.30
     healthcheck:
       test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
@@ -51,7 +51,7 @@ services:
     depends_on:
       - redis
     networks:
-      safeline-ce:
+      ironwall:
         ipv4_address: ${SUBNET_PREFIX}.31
     logging:
       driver: "json-file"
@@ -86,7 +86,7 @@ services:
     depends_on:
       - redis
     networks:
-      safeline-ce:
+      ironwall:
         ipv4_address: ${SUBNET_PREFIX}.32
     logging:
       driver: "json-file"
@@ -115,7 +115,7 @@ services:
       - LOG_DIR=/logs/nginx
     command: ["sh", "-c", "go run main.go"]
     networks:
-      safeline-ce:
+      ironwall:
         ipv4_address: ${SUBNET_PREFIX}.33
     logging:
       driver: "json-file"
@@ -142,7 +142,7 @@ services:
       - SMTP_PASSWORD=${ALERT_SMTP_PASSWORD}
     command: ["python", "scheduler.py"]
     networks:
-      safeline-ce:
+      ironwall:
         ipv4_address: ${SUBNET_PREFIX}.34
     logging:
       driver: "json-file"

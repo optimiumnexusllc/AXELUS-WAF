@@ -3,8 +3,8 @@ package tools
 import (
 	"context"
 
-	"github.com/chaitin/SafeLine/mcp_server/pkg/errors"
-	"github.com/chaitin/SafeLine/mcp_server/pkg/logger"
+	"github.com/optimiumnexus/IronWall/mcp_server/pkg/errors"
+	"github.com/optimiumnexus/IronWall/mcp_server/pkg/logger"
 )
 
 type CalculateSum struct{}

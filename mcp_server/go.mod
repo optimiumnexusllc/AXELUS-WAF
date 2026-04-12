@@ -1,4 +1,4 @@
-module github.com/chaitin/SafeLine/mcp_server
+module github.com/optimiumnexus/IronWall/mcp_server
 
 go 1.24.1
 

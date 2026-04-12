@@ -2,7 +2,7 @@
 # Usage: docker compose -f compose.yaml -f compose.monitoring.yaml up -d
 
 networks:
-  safeline-ce:
+  ironwall:
     external: true
 
 services:
@@ -23,7 +23,7 @@ services:
     ports:
       - "127.0.0.1:9090:9090"
     networks:
-      safeline-ce:
+      ironwall:
         ipv4_address: ${SUBNET_PREFIX}.20
     logging:
       driver: "json-file"
@@ -51,7 +51,7 @@ services:
     depends_on:
       - prometheus
     networks:
-      safeline-ce:
+      ironwall:
         ipv4_address: ${SUBNET_PREFIX}.21
     logging:
       driver: "json-file"
@@ -73,7 +73,7 @@ services:
     ports:
       - "127.0.0.1:9093:9093"
     networks:
-      safeline-ce:
+      ironwall:
         ipv4_address: ${SUBNET_PREFIX}.22
     logging:
       driver: "json-file"
@@ -89,7 +89,7 @@ services:
     command:
       - '-nginx.scrape-uri=http://${SUBNET_PREFIX}.4:8080/nginx_status'
     networks:
-      safeline-ce:
+      ironwall:
         ipv4_address: ${SUBNET_PREFIX}.23
     logging:
       driver: "json-file"
@@ -103,9 +103,9 @@ services:
     image: prometheuscommunity/postgres-exporter:v0.15.0
     restart: always
     environment:
-      - DATA_SOURCE_NAME=postgresql://safeline-ce:${POSTGRES_PASSWORD}@${SUBNET_PREFIX}.2:5432/safeline-ce?sslmode=disable
+      - DATA_SOURCE_NAME=postgresql://ironwall:${POSTGRES_PASSWORD}@${SUBNET_PREFIX}.2:5432/ironwall?sslmode=disable
     networks:
-      safeline-ce:
+      ironwall:
         ipv4_address: ${SUBNET_PREFIX}.24
     logging:
       driver: "json-file"

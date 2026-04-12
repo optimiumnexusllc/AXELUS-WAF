@@ -1,7 +1,7 @@
 package fsl
 
 import (
-	"chaitin.cn/dev/go/errors"
+	"optimiumnexus.com/dev/go/errors"
 )
 
 type State int

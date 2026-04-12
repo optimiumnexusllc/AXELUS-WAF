@@ -7,14 +7,14 @@ import (
 
 	"gorm.io/gorm"
 
-	"chaitin.cn/patronus/safeline-2/management/webserver/pkg/database"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/database"
 
-	"chaitin.cn/patronus/safeline-2/management/webserver/pkg/config"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/config"
 
-	"chaitin.cn/dev/go/errors"
-	"chaitin.cn/dev/go/log"
-	"chaitin.cn/patronus/safeline-2/management/webserver/model"
-	"chaitin.cn/patronus/safeline-2/management/webserver/pkg/fvm/fsl"
+	"optimiumnexus.com/dev/go/errors"
+	"optimiumnexus.com/dev/go/log"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/model"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/fvm/fsl"
 )
 
 const (

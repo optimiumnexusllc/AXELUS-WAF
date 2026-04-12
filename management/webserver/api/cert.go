@@ -8,9 +8,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"chaitin.cn/patronus/safeline-2/management/webserver/api/response"
-	"chaitin.cn/patronus/safeline-2/management/webserver/pkg/config"
-	"chaitin.cn/patronus/safeline-2/management/webserver/utils"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/api/response"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/config"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/utils"
 )
 
 type postSSLCertRequest struct {

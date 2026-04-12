@@ -3,9 +3,9 @@ package rule
 import (
 	"context"
 
-	"github.com/chaitin/SafeLine/mcp_server/internal/api"
-	"github.com/chaitin/SafeLine/mcp_server/internal/api/rule"
-	"github.com/chaitin/SafeLine/mcp_server/pkg/logger"
+	"github.com/optimiumnexus/IronWall/mcp_server/internal/api"
+	"github.com/optimiumnexus/IronWall/mcp_server/internal/api/rule"
+	"github.com/optimiumnexus/IronWall/mcp_server/pkg/logger"
 )
 
 type CreateBlacklistRule struct{}

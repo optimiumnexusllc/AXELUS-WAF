@@ -1,27 +1,28 @@
-# IronWall Helm Chart - Default Values
-# Override with: helm install ironwall ./helm/ironwall -f my-values.yaml
+# IronWall-WAF Helm Chart — Default Values
+# Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
+# Contact:   contact@optimiumnexus.com
+# Override:  helm install ironwall ./helm/ironwall -f my-values.yaml
 
-# ── Global ─────────────────────────────────────────────────────────────────
 global:
-  imageRegistry: ""
+  imageRegistry: "ghcr.io/optimiumnexusllc"
   imagePullSecrets: []
   storageClass: ""
+  publisher: "OPTIMIUM NEXUS LLC"
+  website: "https://www.optimiumnexus.com"
 
 nameOverride: ""
 fullnameOverride: "ironwall"
 
-# ── Namespace ─────────────────────────────────────────────────────────────
 namespace:
   create: true
   name: ironwall
 
-# ── Management API ────────────────────────────────────────────────────────
 management:
   image:
-    repository: chaitin/safeline-mgt
-    tag: latest
+    repository: ironwall/management
+    tag: "1.0.0"
     pullPolicy: IfNotPresent
-  replicaCount: 1
+  replicaCount: 2
   service:
     type: ClusterIP
     port: 1443
@@ -38,53 +39,42 @@ management:
             pathType: Prefix
     tls:
       - secretName: ironwall-tls
-        hosts:
-          - ironwall.example.com
+        hosts: [ironwall.example.com]
   resources:
-    requests:
-      cpu: 200m
-      memory: 256Mi
-    limits:
-      cpu: 1000m
-      memory: 1Gi
+    requests: {cpu: 200m, memory: 256Mi}
+    limits:   {cpu: 1000m, memory: 1Gi}
   nodeSelector: {}
   tolerations: []
   affinity: {}
 
-# ── Detection Engine ──────────────────────────────────────────────────────
 detector:
   image:
-    repository: chaitin/safeline-detector
-    tag: latest
+    repository: ironwall/detector
+    tag: "1.0.0"
     pullPolicy: IfNotPresent
-  replicaCount: 1
+  replicaCount: 2
   resources:
-    requests:
-      cpu: 500m
-      memory: 512Mi
-    limits:
-      cpu: 2000m
-      memory: 2Gi
+    requests: {cpu: 500m, memory: 512Mi}
+    limits:   {cpu: 4000m, memory: 4Gi}
 
-# ── PostgreSQL ────────────────────────────────────────────────────────────
 postgresql:
   enabled: true
-  # Set to false and configure externalPostgresql to use an existing DB
   auth:
-    username: safeline-ce
-    database: safeline-ce
+    username: ironwall
+    database: ironwall
     existingSecret: ironwall-postgres-secret
     secretKeys:
       userPasswordKey: password
   primary:
-    persistence:
-      size: 20Gi
+    persistence: {size: 50Gi}
     resources:
-      requests:
-        cpu: 250m
-        memory: 256Mi
+      requests: {cpu: 500m, memory: 512Mi}
+      limits:   {cpu: 2000m, memory: 2Gi}
+    extendedConfiguration: |
+      max_connections = 600
+      shared_buffers = 256MB
+      work_mem = 4MB
 
-# ── Redis (Premium) ───────────────────────────────────────────────────────
 redis:
   enabled: true
   auth:
@@ -92,90 +82,133 @@ redis:
     existingSecret: ironwall-redis-secret
     existingSecretPasswordKey: password
   master:
-    persistence:
-      size: 5Gi
+    persistence: {size: 10Gi}
     resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
+      requests: {cpu: 100m, memory: 256Mi}
+  replica:
+    replicaCount: 1
 
-# ── Threat Intelligence (Premium) ────────────────────────────────────────
 threatIntel:
   enabled: true
   image:
-    repository: ghcr.io/optimiumnexusllc/ironwall/threat-intel
-    tag: latest
-  config:
-    updateIntervalSecs: 3600
+    repository: ironwall/threat-intel
+    tag: "1.0.0"
+  updateIntervalSecs: 3600
   existingSecret: ironwall-threat-intel-secret
+  resources:
+    requests: {cpu: 100m, memory: 128Mi}
 
-# ── Alerting (Premium) ────────────────────────────────────────────────────
 alerting:
   enabled: true
   image:
-    repository: ghcr.io/optimiumnexusllc/ironwall/alerting
-    tag: latest
-  config:
-    thresholdSeverity: high
+    repository: ironwall/alerting
+    tag: "1.0.0"
+  thresholdSeverity: high
   existingSecret: ironwall-alerting-secret
+  resources:
+    requests: {cpu: 50m, memory: 64Mi}
 
-# ── Monitoring ────────────────────────────────────────────────────────────
+siem:
+  enabled: false
+  image:
+    repository: ironwall/siem
+    tag: "1.0.0"
+  existingSecret: ironwall-siem-secret
+  resources:
+    requests: {cpu: 100m, memory: 128Mi}
+
+# ── Forensics + PCAP (Ultimate tier) ─────────────────────────────────────────
+forensics:
+  enabled: false
+  image:
+    repository: ironwall/forensics
+    tag: "1.0.0"
+  captureMode: threat        # full|session|threat|header
+  ringBufferSize: 100000
+  maxFileSizeMB: 256
+  retentionDays: 30
+  bpfFilter: "tcp port 80 or tcp port 443"
+  storage:
+    size: 100Gi
+    storageClass: ""
+  resources:
+    requests: {cpu: 200m, memory: 512Mi}
+    limits:   {cpu: 2000m, memory: 4Gi}
+
+licenseServer:
+  enabled: true
+  image:
+    repository: ironwall/license-server
+    tag: "1.0.0"
+  existingSecret: ironwall-license-secret
+  port: 8090
+  resources:
+    requests: {cpu: 100m, memory: 128Mi}
+
+geoip:
+  enabled: true
+  maxmindSecret: ironwall-maxmind-secret
+  dbPath: /data/geoip/GeoIP2-City.mmdb
+  updateSchedule: "0 4 * * 3"
+  defaultRules:
+    enabled: true
+    autoBlock: ["KP", "IR", "SY", "BY"]
+    autoChallenge: []
+
 monitoring:
   enabled: true
   prometheus:
     enabled: true
     retention: 30d
     storageSize: 50Gi
+    resources:
+      requests: {cpu: 200m, memory: 512Mi}
   grafana:
     enabled: true
     adminPasswordSecret: ironwall-grafana-secret
-    persistence:
-      size: 5Gi
+    persistence: {size: 10Gi}
     sidecar:
-      dashboards:
-        enabled: true
+      dashboards: {enabled: true}
+  alertmanager:
+    enabled: true
 
-# ── Network Policies ──────────────────────────────────────────────────────
 networkPolicies:
   enabled: true
-  # When enabled, only allowed traffic flows between IronWall components
 
-# ── Pod Disruption Budget ─────────────────────────────────────────────────
 podDisruptionBudget:
   enabled: true
   minAvailable: 1
 
-# ── Horizontal Pod Autoscaler ─────────────────────────────────────────────
 autoscaling:
-  enabled: false
+  enabled: true
   minReplicas: 1
-  maxReplicas: 5
-  targetCPUUtilizationPercentage: 75
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
   targetMemoryUtilizationPercentage: 80
 
-# ── Service Account ───────────────────────────────────────────────────────
 serviceAccount:
   create: true
   annotations: {}
 
-# ── Security Context ──────────────────────────────────────────────────────
 podSecurityContext:
   fsGroup: 1000
   runAsNonRoot: true
+  seccompProfile:
+    type: RuntimeDefault
 
 securityContext:
   allowPrivilegeEscalation: false
   readOnlyRootFilesystem: false
   runAsUser: 1000
   capabilities:
-    drop:
-      - ALL
+    drop: ["ALL"]
 
-# ── Persistence ───────────────────────────────────────────────────────────
 persistence:
-  data:
-    size: 20Gi
-    storageClass: ""
-  logs:
-    size: 10Gi
-    storageClass: ""
+  data:  {size: 20Gi, storageClass: ""}
+  logs:  {size: 20Gi, storageClass: ""}
+
+compliance:
+  enabled: false
+  schedule: "0 6 * * 1"
+  recipients: ""
+  existingSecret: ironwall-compliance-secret

@@ -10,13 +10,13 @@ import (
 	"syscall"
 	"time"
 
-	"chaitin.cn/patronus/safeline-2/management/tcontrollerd/controller"
-	"chaitin.cn/patronus/safeline-2/management/tcontrollerd/pkg/cron"
-	"chaitin.cn/patronus/safeline-2/management/tcontrollerd/pkg/ngcmd"
+	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/controller"
+	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/cron"
+	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/ngcmd"
 
-	"chaitin.cn/patronus/safeline-2/management/tcontrollerd/pkg/config"
-	"chaitin.cn/patronus/safeline-2/management/tcontrollerd/pkg/constants"
-	"chaitin.cn/patronus/safeline-2/management/tcontrollerd/pkg/log"
+	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/config"
+	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/constants"
+	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/log"
 )
 
 var (

@@ -27,5 +27,5 @@ func CheckHealthy(url string) bool {
 
 func CheckWafHealthy() bool {
 	// todo: not check the healthy status
-	return CheckHealthy("http://safeline-mario:3335") && CheckHealthy("http://safeline-detector:8001/stat")
+	return CheckHealthy("http://ironwall-mario:3335") && CheckHealthy("http://ironwall-detector:8001/stat")
 }

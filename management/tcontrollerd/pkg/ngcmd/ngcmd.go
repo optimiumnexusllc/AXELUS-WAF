@@ -5,8 +5,8 @@ import (
 	"os/exec"
 	"strings"
 
-	"chaitin.cn/dev/go/errors"
-	"chaitin.cn/patronus/safeline-2/management/tcontrollerd/pkg/log"
+	"optimiumnexus.com/dev/go/errors"
+	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/log"
 )
 
 var logger = log.GetLogger("ngcmd")

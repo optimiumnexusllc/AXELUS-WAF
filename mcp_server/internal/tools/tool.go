@@ -1,8 +1,8 @@
 package tools
 
 import (
-	"github.com/chaitin/SafeLine/mcp_server/pkg/logger"
-	"github.com/chaitin/SafeLine/mcp_server/pkg/mcp"
+	"github.com/optimiumnexus/IronWall/mcp_server/pkg/logger"
+	"github.com/optimiumnexus/IronWall/mcp_server/pkg/mcp"
 )
 
 // By deferring the concretization of generic types to the Register method,

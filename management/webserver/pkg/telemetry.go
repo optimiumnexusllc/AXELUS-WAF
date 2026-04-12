@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"time"
 
-	"chaitin.cn/patronus/safeline-2/management/webserver/pkg/constants"
-	"chaitin.cn/patronus/safeline-2/management/webserver/utils"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/constants"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/utils"
 )
 
 type WebsiteResult struct {
@@ -40,7 +40,7 @@ type SafelineInfo struct {
 
 type TelemetryRequest struct {
 	Telemetry TelemetryInfo `json:"telemetry"`
-	Safeline  SafelineInfo  `json:"safeline"`
+	Safeline  SafelineInfo  `json:"ironwall"`
 }
 
 func GetUploadTimestamp() string {

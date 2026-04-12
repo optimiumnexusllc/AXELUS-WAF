@@ -1,0 +1,44 @@
+# IronWall-WAF — Forensics + PCAP Service
+# Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
+# Usage: docker compose -f compose.yaml -f compose.forensics.yaml up -d
+
+networks:
+  safeline-ce:
+    external: true
+
+services:
+  forensics:
+    container_name: ironwall-forensics
+    build:
+      context: ./premium/forensics
+      dockerfile: Dockerfile
+    restart: always
+    cap_add:
+      - NET_RAW          # Required for packet capture
+      - NET_ADMIN
+    network_mode: host   # Must be host to capture WAF traffic
+    environment:
+      - FORENSICS_STORE_PATH=/data/forensics
+      - FORENSICS_INTERFACE=${FORENSICS_INTERFACE:-any}
+      - FORENSICS_RING_SIZE=${FORENSICS_RING_SIZE:-100000}
+      - FORENSICS_MAX_FILE_MB=${FORENSICS_MAX_FILE_MB:-256}
+      - FORENSICS_RETENTION_DAYS=${FORENSICS_RETENTION_DAYS:-30}
+      - FORENSICS_CAPTURE_MODE=${FORENSICS_CAPTURE_MODE:-threat}
+      - FORENSICS_BPF_FILTER=${FORENSICS_BPF_FILTER:-tcp port 80 or tcp port 443}
+      - REDIS_ADDR=${SUBNET_PREFIX:-172.22.222}.30:6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - MGT_API=https://${SUBNET_PREFIX:-172.22.222}.4:1443
+      - FORENSICS_API_PORT=8095
+      - GIN_MODE=release
+    volumes:
+      - ironwall-forensics-data:/data/forensics
+      - /etc/localtime:/etc/localtime:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+
+volumes:
+  ironwall-forensics-data:
+    name: ironwall-forensics-data

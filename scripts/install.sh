@@ -120,7 +120,7 @@ docker compose $COMPOSE_FILES up -d
 header "✅ Installation Complete"
 
 SERVER_IP=$(curl -fsSL https://ipv4.icanhazip.com 2>/dev/null || hostname -I | awk '{print $1}')
-INIT_PASS=$(docker logs safeline-mgt 2>/dev/null | grep -i "initial password" | tail -1 | awk '{print $NF}' || echo "(check: docker logs safeline-mgt)")
+INIT_PASS=$(docker logs ironwall-mgt 2>/dev/null | grep -i "initial password" | tail -1 | awk '{print $NF}' || echo "(check: docker logs ironwall-mgt)")
 
 echo ""
 echo -e "${GREEN}╔══════════════════════════════════════════════╗${NC}"
@@ -136,6 +136,6 @@ fi
 echo -e "${GREEN}╚══════════════════════════════════════════════╝${NC}"
 echo ""
 log "Manage IronWall: cd $COMPOSE_DIR && docker compose ps"
-log "View logs:       docker logs safeline-mgt -f"
+log "View logs:       docker logs ironwall-mgt -f"
 log "Stop:            docker compose $COMPOSE_FILES down"
 echo ""

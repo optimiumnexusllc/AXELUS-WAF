@@ -1,0 +1,118 @@
+{{- $fullName := include "ironwall.fullname" . }}
+# ── Forensics Engine Deployment ───────────────────────────────────────────────
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $fullName }}-forensics
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forensics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "ironwall.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: forensics
+  template:
+    metadata:
+      labels:
+        {{- include "ironwall.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: forensics
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9096"
+    spec:
+      serviceAccountName: {{ include "ironwall.serviceAccountName" . }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+      containers:
+        - name: forensics
+          image: "ghcr.io/optimiumnexusllc/ironwall/forensics:{{ .Values.management.image.tag }}"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: api
+              containerPort: 8095
+            - name: metrics
+              containerPort: 9096
+          env:
+            - name: FORENSICS_STORE_PATH
+              value: /data/forensics
+            - name: FORENSICS_RING_SIZE
+              value: "100000"
+            - name: FORENSICS_MAX_FILE_MB
+              value: "256"
+            - name: FORENSICS_RETENTION_DAYS
+              value: "30"
+            - name: FORENSICS_CAPTURE_MODE
+              value: "threat"
+            - name: REDIS_ADDR
+              value: "{{ $fullName }}-redis-master:6379"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: ironwall-redis-secret
+                  key: password
+            - name: MGT_API
+              value: "https://{{ $fullName }}-mgt:1443"
+          volumeMounts:
+            - name: forensics-data
+              mountPath: /data/forensics
+          resources:
+            requests:
+              cpu: 200m
+              memory: 512Mi
+            limits:
+              cpu: 2000m
+              memory: 4Gi
+          livenessProbe:
+            httpGet: {path: /health, port: api}
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet: {path: /health, port: api}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+      volumes:
+        - name: forensics-data
+          persistentVolumeClaim:
+            claimName: {{ $fullName }}-forensics-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $fullName }}-forensics
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+    app.kubernetes.io/component: forensics
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8095
+      targetPort: api
+      name: api
+    - port: 9096
+      targetPort: metrics
+      name: metrics
+  selector:
+    {{- include "ironwall.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: forensics
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ $fullName }}-forensics-data
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+spec:
+  accessModes: ["ReadWriteOnce"]
+  resources:
+    requests:
+      storage: 100Gi
+  {{- if .Values.global.storageClass }}
+  storageClassName: {{ .Values.global.storageClass }}
+  {{- end }}

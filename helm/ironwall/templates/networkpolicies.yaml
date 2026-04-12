@@ -1,33 +1,115 @@
 {{- if .Values.networkPolicies.enabled }}
-# IronWall Network Policies — restricts inter-pod communication to minimum required
 {{- $fullName := include "ironwall.fullname" . }}
----
-# Management API: allow ingress from ingress controller + detector + prometheus
+{{- $ns := .Values.namespace.name }}
+
+# ═══════════════════════════════════════════════════════════════════════════
+# IronWall-WAF — Zero-Trust NetworkPolicies
+# Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
+# Default posture: DENY ALL. Only explicitly listed flows are permitted.
+# ═══════════════════════════════════════════════════════════════════════════
+
+# ── 0. Default deny-all ──────────────────────────────────────────────────────
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
-  name: {{ $fullName }}-mgt
-  namespace: {{ .Values.namespace.name }}
+  name: {{ $fullName }}-default-deny-all
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+spec:
+  podSelector: {}
+  policyTypes: ["Ingress", "Egress"]
+---
+# ── 1. Tengine WAF proxy ─────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullName }}-tengine
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
-      app.kubernetes.io/component: management
-  policyTypes:
-    - Ingress
-    - Egress
+      app.kubernetes.io/component: tengine
+  policyTypes: ["Ingress", "Egress"]
   ingress:
+    - ports:
+        - port: 80
+          protocol: TCP
+        - port: 443
+          protocol: TCP
     - from:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: ingress-nginx
+      ports:
+        - port: 8080
+          protocol: TCP
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: management
+      ports:
+        - port: 1443
+          protocol: TCP
+    - to:
         - podSelector:
             matchLabels:
               app.kubernetes.io/component: detector
+      ports:
+        - port: 8000
+          protocol: TCP
+    - to:
+        - namespaceSelector: {}
+      ports:
+        - port: 80
+          protocol: TCP
+        - port: 443
+          protocol: TCP
+        - port: 8080
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+---
+# ── 2. Management API ────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullName }}-management
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: management
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    - from:
         - podSelector:
             matchLabels:
-              app.kubernetes.io/component: monitoring
+              app.kubernetes.io/component: tengine
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: ironwall
+        - namespaceSelector:
+            matchLabels:
+              ironwall.io/admin: "true"
       ports:
         - port: 1443
+          protocol: TCP
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - port: 1443
+          protocol: TCP
   egress:
     - to:
         - podSelector:
@@ -35,41 +117,137 @@ spec:
               app.kubernetes.io/name: postgresql
       ports:
         - port: 5432
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - port: 6379
+          protocol: TCP
     - to:
         - podSelector:
             matchLabels:
               app.kubernetes.io/component: detector
+      ports:
+        - port: 8000
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
 ---
-# Detector: only accept traffic from management and tengine
+# ── 3. Detection Engine ──────────────────────────────────────────────────────
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: {{ $fullName }}-detector
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
       app.kubernetes.io/component: detector
-  policyTypes:
-    - Ingress
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: tengine
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: management
+      ports:
+        - port: 8000
+          protocol: TCP
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: management
+      ports:
+        - port: 1443
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+---
+# ── 4. PostgreSQL ────────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullName }}-postgres
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: postgresql
+  policyTypes: ["Ingress"]
   ingress:
     - from:
         - podSelector:
             matchLabels:
               app.kubernetes.io/component: management
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: threat-intel
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: compliance
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: license-server
+      ports:
+        - port: 5432
+          protocol: TCP
 ---
-# Threat Intel: egress to internet only (for feed fetching)
+# ── 5. Redis ─────────────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullName }}-redis
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: redis
+  policyTypes: ["Ingress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: ironwall
+      ports:
+        - port: 6379
+          protocol: TCP
+---
+# ── 6. Threat Intelligence (egress to internet only) ─────────────────────────
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   name: {{ $fullName }}-threat-intel
-  namespace: {{ .Values.namespace.name }}
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
       app.kubernetes.io/component: threat-intel
-  policyTypes:
-    - Egress
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - port: 9200
+          protocol: TCP
   egress:
     - to:
         - ipBlock:
@@ -78,8 +256,169 @@ spec:
               - 10.0.0.0/8
               - 172.16.0.0/12
               - 192.168.0.0/16
+              - 100.64.0.0/10
+      ports:
+        - port: 443
+          protocol: TCP
+        - port: 80
+          protocol: TCP
     - to:
         - podSelector:
             matchLabels:
               app.kubernetes.io/name: redis
+      ports:
+        - port: 6379
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: management
+      ports:
+        - port: 1443
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+---
+# ── 7. Forensics ─────────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullName }}-forensics
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: forensics
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: management
+        - namespaceSelector:
+            matchLabels:
+              ironwall.io/admin: "true"
+      ports:
+        - port: 8095
+          protocol: TCP
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/component: management
+      ports:
+        - port: 1443
+          protocol: TCP
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: redis
+      ports:
+        - port: 6379
+          protocol: TCP
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16
+      ports:
+        - port: 443
+          protocol: TCP
+        - port: 9200
+          protocol: TCP
+        - port: 8088
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+---
+# ── 8. Prometheus ────────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullName }}-prometheus
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/name: prometheus
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: grafana
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: alertmanager
+        - namespaceSelector:
+            matchLabels:
+              ironwall.io/admin: "true"
+      ports:
+        - port: 9090
+          protocol: TCP
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: ironwall
+    - to:
+        - podSelector: {}
+      ports:
+        - port: 9187
+          protocol: TCP
+        - port: 9121
+          protocol: TCP
+        - port: 9113
+          protocol: TCP
+        - port: 9200
+          protocol: TCP
+        - port: 9093
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
+---
+# ── 9. License Server ────────────────────────────────────────────────────────
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ $fullName }}-license-server
+  namespace: {{ $ns }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/component: license-server
+  policyTypes: ["Ingress", "Egress"]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/part-of: ironwall
+        - namespaceSelector:
+            matchLabels:
+              ironwall.io/admin: "true"
+      ports:
+        - port: 8090
+          protocol: TCP
+  egress:
+    - to:
+        - podSelector:
+            matchLabels:
+              app.kubernetes.io/name: postgresql
+      ports:
+        - port: 5432
+          protocol: TCP
+    - ports:
+        - port: 53
+          protocol: UDP
 {{- end }}

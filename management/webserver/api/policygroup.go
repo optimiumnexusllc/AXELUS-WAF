@@ -7,13 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	"chaitin.cn/dev/go/errors"
+	"optimiumnexus.com/dev/go/errors"
 
-	"chaitin.cn/patronus/safeline-2/management/webserver/api/response"
-	"chaitin.cn/patronus/safeline-2/management/webserver/model"
-	"chaitin.cn/patronus/safeline-2/management/webserver/pkg/constants"
-	"chaitin.cn/patronus/safeline-2/management/webserver/pkg/database"
-	"chaitin.cn/patronus/safeline-2/management/webserver/pkg/fvm"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/api/response"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/model"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/constants"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/database"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/fvm"
 )
 
 func PutPolicyGroupGlobal(ctx *gin.Context) {

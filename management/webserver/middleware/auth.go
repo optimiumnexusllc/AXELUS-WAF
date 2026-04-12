@@ -6,8 +6,8 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 
-	"chaitin.cn/patronus/safeline-2/management/webserver/api/response"
-	"chaitin.cn/patronus/safeline-2/management/webserver/pkg/constants"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/api/response"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/constants"
 )
 
 func AuthRequired(c *gin.Context) {

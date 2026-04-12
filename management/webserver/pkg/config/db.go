@@ -4,7 +4,7 @@ import (
 	"net/url"
 	"os"
 
-	"chaitin.cn/dev/go/settings"
+	"optimiumnexus.com/dev/go/settings"
 )
 
 type DBConfig struct {
@@ -15,7 +15,7 @@ type DBConfig struct {
 
 func DefaultDBConfig() DBConfig {
 	return DBConfig{
-		URL:     "postgres://safeline-ce:safeline-ce@127.0.0.1/safeline-ce",
+		URL:     "postgres://ironwall:ironwall@127.0.0.1/ironwall",
 		LogSQL:  false,
 		SSLMode: false,
 	}

@@ -1,6 +1,6 @@
 # Server Configuration
 server:
-  name: "SafeLine MCP Server"
+  name: "IronWall MCP Server"
   version: "1.0.0"
   # Can be overridden by environment variable LISTEN_PORT
   port: 5678

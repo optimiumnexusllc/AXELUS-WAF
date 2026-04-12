@@ -4,7 +4,7 @@ import (
 	"fmt"
 )
 
-// see : https://chaitin.cn/patronus/fvm/-/blob/master/src/util/StrUtil.cpp#L18
+// see : https://optimiumnexus.com/patronus/fvm/-/blob/master/src/util/StrUtil.cpp#L18
 
 func appendEscapedByte(buf []byte, b byte) []byte {
 	if b >= 0x20 && b <= 0x7e && b != '\'' && b != '"' && b != '\\' {

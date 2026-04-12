@@ -1,0 +1,106 @@
+{{- $fullName := include "ironwall.fullname" . }}
+# ── ServiceAccount ────────────────────────────────────────────────────────────
+{{- if .Values.serviceAccount.create }}
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "ironwall.serviceAccountName" . }}
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+  {{- with .Values.serviceAccount.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+automountServiceAccountToken: false
+{{- end }}
+---
+# ── Role — WAF namespace-scoped permissions ───────────────────────────────────
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ $fullName }}-waf
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+rules:
+  # Read own config and secrets
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+    resourceNames:
+      - {{ $fullName }}-config
+      - ironwall-postgres-secret
+      - ironwall-redis-secret
+  # Manage own endpoints (for health checks)
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch"]
+  # Pod status for HPA
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  # Events for audit
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+---
+# ── RoleBinding ───────────────────────────────────────────────────────────────
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ $fullName }}-waf
+  namespace: {{ .Values.namespace.name }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "ironwall.serviceAccountName" . }}
+    namespace: {{ .Values.namespace.name }}
+roleRef:
+  kind: Role
+  name: {{ $fullName }}-waf
+  apiGroup: rbac.authorization.k8s.io
+---
+# ── ClusterRole — read nodes for GeoIP/network info ──────────────────────────
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ $fullName }}-cluster-reader
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses", "ingressclasses"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ $fullName }}-cluster-reader
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ include "ironwall.serviceAccountName" . }}
+    namespace: {{ .Values.namespace.name }}
+roleRef:
+  kind: ClusterRole
+  name: {{ $fullName }}-cluster-reader
+  apiGroup: rbac.authorization.k8s.io
+---
+# ── Namespace (if managed by Helm) ───────────────────────────────────────────
+{{- if .Values.namespace.create }}
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.namespace.name }}
+  labels:
+    {{- include "ironwall.labels" . | nindent 4 }}
+    pod-security.kubernetes.io/enforce: restricted
+    pod-security.kubernetes.io/audit: restricted
+    pod-security.kubernetes.io/warn: restricted
+{{- end }}

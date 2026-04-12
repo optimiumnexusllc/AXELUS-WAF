@@ -20,7 +20,7 @@ func DefaultGlobalConfig() Config {
 		Detector:     DefaultDetectorConfig(),
 		Telemetry:    DefaultTelemetryConfig(),
 		GPRC:         DefaultGRPCConfig(),
-		PlatformAddr: "https://waf-ce.chaitin.cn",
+		PlatformAddr: "https://waf-ce.optimiumnexus.com",
 		MgtResDir:    "/resources/management",
 		NgxResDir:    "/resources/nginx",
 	}

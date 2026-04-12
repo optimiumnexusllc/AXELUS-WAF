@@ -3,7 +3,7 @@ package model
 import (
 	"gorm.io/gorm"
 
-	"chaitin.cn/patronus/safeline-2/management/webserver/pkg/database"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/database"
 )
 
 func InitModels() error {

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"chaitin.cn/dev/go/settings"
+	"optimiumnexus.com/dev/go/settings"
 )
 
 type LogConfig struct {

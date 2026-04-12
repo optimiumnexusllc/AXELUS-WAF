@@ -13,13 +13,13 @@ Open an issue with:
 - IronWall version and OS
 - Steps to reproduce
 - Expected vs actual behavior
-- Relevant logs (`docker logs safeline-mgt`)
+- Relevant logs (`docker logs ironwall-mgt`)
 
 ### Proposing Features
 Open a Discussion before implementing large features. For small improvements, a PR is fine directly.
 
 ### Security Vulnerabilities
-**Do NOT open a public issue.** Email security@optimiumnexusllc.com with details. We aim to respond within 48 hours.
+**Do NOT open a public issue.** Email contact@optimiumnexus.com with details. We aim to respond within 48 hours.
 
 ## Development Setup
 

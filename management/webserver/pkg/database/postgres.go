@@ -6,8 +6,8 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 
-	"chaitin.cn/dev/go/errors"
-	"chaitin.cn/patronus/safeline-2/management/webserver/pkg/config"
+	"optimiumnexus.com/dev/go/errors"
+	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/config"
 )
 
 type PostgresDB struct {

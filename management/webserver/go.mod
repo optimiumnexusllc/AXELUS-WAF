@@ -1,13 +1,13 @@
-module chaitin.cn/patronus/safeline-2/management/webserver
+module optimiumnexus.com/patronus/ironwall-2/management/webserver
 
 go 1.21
 
 toolchain go1.21.3
 
 require (
-	chaitin.cn/dev/go/errors v0.0.0-20210324055134-dc5247602af6
-	chaitin.cn/dev/go/log v0.0.0-20221220104336-05125760b10c
-	chaitin.cn/dev/go/settings v0.0.0-20221220104336-05125760b10c
+	optimiumnexus.com/dev/go/errors v0.0.0-20210324055134-dc5247602af6
+	optimiumnexus.com/dev/go/log v0.0.0-20221220104336-05125760b10c
+	optimiumnexus.com/dev/go/settings v0.0.0-20221220104336-05125760b10c
 	github.com/gin-contrib/sessions v0.0.5
 	github.com/gin-gonic/gin v1.10.0
 	github.com/pquerna/otp v1.4.0

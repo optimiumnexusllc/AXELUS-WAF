@@ -207,7 +207,7 @@ func FeatureGate(l *lic.License, f lic.Feature) error {
 		return fmt.Errorf("no license loaded — feature %q requires a valid license", f)
 	}
 	if !l.HasFeature(f) {
-		return fmt.Errorf("feature %q not available on %s tier — upgrade your license at https://ironwall.io/upgrade", f, l.Tier)
+		return fmt.Errorf("feature %q not available on %s tier — upgrade your license at https://www.optimiumnexus.com/upgrade", f, l.Tier)
 	}
 	return nil
 }

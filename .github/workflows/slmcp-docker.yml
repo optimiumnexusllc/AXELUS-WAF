@@ -35,7 +35,7 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: |
-            chaitin/safeline-mcp:latest
-            chaitin/safeline-mcp:${{ github.ref_name }}
-          cache-from: type=registry,ref=chaitin/safeline-mcp:buildcache
-          cache-to: type=registry,ref=chaitin/safeline-mcp:buildcache,mode=max
+            optimiumnexus/ironwall-mcp:latest
+            optimiumnexus/ironwall-mcp:${{ github.ref_name }}
+          cache-from: type=registry,ref=optimiumnexus/ironwall-mcp:buildcache
+          cache-to: type=registry,ref=optimiumnexus/ironwall-mcp:buildcache,mode=max

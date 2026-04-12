@@ -28,13 +28,13 @@ log "Starting IronWall backup → $BACKUP_PATH"
 
 # ── 1. PostgreSQL dump ────────────────────────────────────────────────────────
 log "Dumping PostgreSQL..."
-if docker ps --format '{{.Names}}' | grep -q safeline-pg; then
-    docker exec safeline-pg pg_dump -U safeline-ce -d safeline-ce \
+if docker ps --format '{{.Names}}' | grep -q ironwall-pg; then
+    docker exec ironwall-pg pg_dump -U ironwall -d ironwall \
         --no-password --format=custom \
         > "$BACKUP_PATH/postgres.dump"
     log "PostgreSQL dump: $(du -sh "$BACKUP_PATH/postgres.dump" | cut -f1)"
 else
-    warn "safeline-pg container not running — skipping DB backup"
+    warn "ironwall-pg container not running — skipping DB backup"
 fi
 
 # ── 2. Configuration backup ───────────────────────────────────────────────────

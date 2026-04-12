@@ -3,7 +3,7 @@ package config
 import (
 	"os"
 
-	"chaitin.cn/dev/go/settings"
+	"optimiumnexus.com/dev/go/settings"
 )
 
 var (

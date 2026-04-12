@@ -12,10 +12,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"chaitin.cn/patronus/safeline-2/management/tcontrollerd/model"
-	"chaitin.cn/patronus/safeline-2/management/tcontrollerd/pkg/ngcmd"
-	pb "chaitin.cn/patronus/safeline-2/management/tcontrollerd/proto/website"
-	"chaitin.cn/patronus/safeline-2/management/tcontrollerd/utils"
+	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/model"
+	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/ngcmd"
+	pb "optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/proto/website"
+	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/utils"
 )
 
 const (

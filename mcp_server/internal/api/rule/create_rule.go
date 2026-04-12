@@ -3,8 +3,8 @@ package rule
 import (
 	"context"
 
-	"github.com/chaitin/SafeLine/mcp_server/internal/api"
-	"github.com/chaitin/SafeLine/mcp_server/pkg/errors"
+	"github.com/optimiumnexus/IronWall/mcp_server/internal/api"
+	"github.com/optimiumnexus/IronWall/mcp_server/pkg/errors"
 )
 
 type CreateRuleRequest struct {

@@ -1,5 +1,9 @@
 {
-  "latest_version": "v9.2.7",
-  "rec_version": "v9.2.7",
-  "lts_version": "v9.1.0-lts"
+  "product": "IronWall-WAF",
+  "publisher": "OPTIMIUM NEXUS LLC",
+  "website": "https://www.optimiumnexus.com",
+  "contact": "contact@optimiumnexus.com",
+  "latest_version": "v1.0.0",
+  "rec_version": "v1.0.0",
+  "lts_version": "v1.0.0-lts"
 }

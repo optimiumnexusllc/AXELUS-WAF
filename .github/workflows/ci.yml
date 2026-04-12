@@ -177,7 +177,7 @@ jobs:
             ```
 
             ### Docker Images
-            Premium service images are available at `ghcr.io/optimiumnexusllc/ironwall/*:${{ github.ref_name }}`
+            Premium service images are available at `ghcr.io/optimiumnexusllc/IronWAll-WAF/*:${{ github.ref_name }}`
           draft: false
           prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
 

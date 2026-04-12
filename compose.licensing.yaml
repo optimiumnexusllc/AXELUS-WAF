@@ -2,7 +2,7 @@
 # Usage: docker compose -f compose.licensing.yaml up -d
 
 networks:
-  safeline-ce:
+  ironwall:
     external: true
 
 services:
@@ -17,7 +17,7 @@ services:
       - IRONWALL_PUBLIC_KEY=${IRONWALL_PUBLIC_KEY:?set IRONWALL_PUBLIC_KEY}
       - IRONWALL_KEY_ID=${IRONWALL_KEY_ID:-default}
       - LICENSE_ADMIN_KEY=${LICENSE_ADMIN_KEY:?set LICENSE_ADMIN_KEY}
-      - LICENSE_DB_DSN=postgres://safeline-ce:${POSTGRES_PASSWORD}@${SUBNET_PREFIX}.2:5432/ironwall_licenses?sslmode=disable
+      - LICENSE_DB_DSN=postgres://ironwall:${POSTGRES_PASSWORD}@${SUBNET_PREFIX}.2:5432/ironwall_licenses?sslmode=disable
       - LICENSE_SERVER_PORT=8090
       - GIN_MODE=release
     ports:
@@ -25,7 +25,7 @@ services:
     depends_on:
       - postgres
     networks:
-      safeline-ce:
+      ironwall:
         ipv4_address: ${SUBNET_PREFIX}.40
     logging:
       driver: "json-file"
@@ -34,5 +34,5 @@ services:
         max-file: "5"
 
   postgres:
-    container_name: safeline-pg
+    container_name: ironwall-pg
     external: true
