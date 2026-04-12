@@ -1,0 +1,138 @@
+# IronWall-WAF — Kong Declarative Config (deck)
+# Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
+# Usage: deck sync -s kong-ironwall.yaml
+
+_format_version: "3.0"
+_transform: true
+
+# ── Global Plugins ─────────────────────────────────────────────────────────────
+plugins:
+  - name: ironwall-waf
+    config:
+      ironwall_host: ironwall-mgt
+      ironwall_port: 9443
+      admin_key: "{{ env \"IRONWALL_ADMIN_KEY\" }}"
+      timeout_ms: 50
+      geoip_enabled: true
+      threat_intel_enabled: true
+      dpi_enabled: true
+      rate_limit_enabled: true
+      honeypot_enabled: true
+      inspect_body: true
+      block_status: 403
+      block_response_json: true
+      fail_open: true
+
+  - name: correlation-id
+    config:
+      header_name: X-Request-ID
+      generator: uuid#counter
+      echo_downstream: true
+
+  - name: request-size-limiting
+    config:
+      allowed_payload_size: 10
+      size_unit: megabytes
+      require_content_length: false
+
+  - name: response-headers
+    config:
+      add:
+        headers:
+          - "X-WAF-Provider: IronWall-WAF"
+          - "X-Publisher: OPTIMIUM NEXUS LLC"
+          - "X-Frame-Options: DENY"
+          - "X-Content-Type-Options: nosniff"
+          - "X-XSS-Protection: 1; mode=block"
+          - "Referrer-Policy: strict-origin-when-cross-origin"
+          - "Permissions-Policy: geolocation=(), camera=(), microphone=()"
+      remove:
+        headers:
+          - Server
+          - X-Powered-By
+          - X-AspNet-Version
+
+  - name: prometheus
+    config:
+      status_code_metrics: true
+      latency_metrics: true
+      bandwidth_metrics: true
+      upstream_health_metrics: true
+
+# ── Services ──────────────────────────────────────────────────────────────────
+services:
+  - name: api-backend
+    url: http://api-backend:8080
+    connect_timeout: 5000
+    write_timeout: 60000
+    read_timeout: 60000
+    retries: 3
+    routes:
+      - name: api-v1
+        paths: ["/api/v1"]
+        strip_path: false
+        methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+        headers:
+          X-IronWall-Inspected: ["1"]
+    plugins:
+      - name: ironwall-waf
+        config:
+          dpi_enabled: true
+          rate_limit_enabled: true
+          block_status: 403
+
+  - name: auth-service
+    url: http://auth-service:8080
+    routes:
+      - name: auth-login
+        paths: ["/auth"]
+        methods: [POST]
+    plugins:
+      - name: ironwall-waf
+        config:
+          rate_limit_enabled: true
+          dpi_enabled: true
+          # Strict login protection — brute force + credential stuffing
+          timeout_ms: 100
+
+  - name: public-api
+    url: http://public-backend:3000
+    routes:
+      - name: public-routes
+        paths: ["/"]
+        methods: [GET, HEAD, OPTIONS]
+    plugins:
+      - name: ironwall-waf
+        config:
+          dpi_enabled: false   # Read-only, lower inspection overhead
+          rate_limit_enabled: true
+          geoip_enabled: true
+
+# ── Consumers (for license-gated APIs) ────────────────────────────────────────
+consumers:
+  - username: enterprise-client
+    custom_id: enterprise-001
+    plugins:
+      - name: ironwall-waf
+        config:
+          license_check_header: X-IronWall-License
+          license_required_feature: api_full_access
+
+# ── Upstreams (load balancing) ────────────────────────────────────────────────
+upstreams:
+  - name: api-backend
+    algorithm: round-robin
+    healthchecks:
+      active:
+        http_path: /health
+        healthy:
+          interval: 10
+          successes: 2
+        unhealthy:
+          interval: 5
+          http_failures: 3
+    targets:
+      - target: api-backend-1:8080
+        weight: 100
+      - target: api-backend-2:8080
+        weight: 100
