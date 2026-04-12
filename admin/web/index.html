@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>IronWall-WAF — Admin Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#07090f;--bg2:#0e1118;--bg3:#131720;--panel:#0f1520;
+  --border:#192030;--border2:#1f2d42;--accent:#00d4ff;--accent2:#0099cc;
+  --green:#00e676;--red:#ff1744;--orange:#ff9100;--purple:#d500f9;
+  --gold:#ffd600;--txt:#cdd6e0;--txt2:#7a8fa8;--txt3:#3a5068;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+  --r:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:13px;line-height:1.6;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background:
+  radial-gradient(ellipse 60% 40% at 0% 0%,rgba(0,212,255,.06),transparent),
+  radial-gradient(ellipse 40% 60% at 100% 100%,rgba(213,0,249,.04),transparent);
+  pointer-events:none;z-index:0}
+
+/* ── LAYOUT ───────────────── */
+.shell{display:flex;min-height:100vh;position:relative;z-index:1}
+.sidebar{width:230px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo{padding:20px;border-bottom:1px solid var(--border)}
+.logo-name{font-family:var(--mono);font-size:15px;font-weight:700;color:#fff;letter-spacing:2px}
+.logo-tag{font-size:9px;font-family:var(--mono);color:var(--accent);letter-spacing:3px;margin-top:2px;text-transform:uppercase}
+.logo-role{display:inline-block;margin-top:8px;background:rgba(213,0,249,.15);border:1px solid rgba(213,0,249,.3);color:var(--purple);font-size:9px;font-family:var(--mono);padding:2px 8px;border-radius:3px;letter-spacing:1.5px;text-transform:uppercase}
+
+nav{padding:10px 0;flex:1}
+.nav-group{font-size:8px;font-family:var(--mono);letter-spacing:3px;color:var(--txt3);padding:10px 16px 3px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;color:var(--txt2);cursor:pointer;font-size:12px;font-weight:500;border-left:2px solid transparent;transition:all .12s;border-radius:0}
+.nav-item:hover,.nav-item.active{color:var(--accent);background:rgba(0,212,255,.06);border-left-color:var(--accent)}
+.nav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--border2)}
+.nav-item.active .nav-dot,.nav-item:hover .nav-dot{background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;font-size:8px;font-weight:700;padding:1px 6px;border-radius:10px;font-family:var(--mono)}
+.sidebar-bottom{padding:14px 16px;border-top:1px solid var(--border)}
+.admin-chip{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:6px;border:1px solid var(--border)}
+.admin-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--purple));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;color:#fff;flex-shrink:0}
+.admin-name{font-size:11px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-role{font-size:9px;font-family:var(--mono);color:var(--purple)}
+
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.page-title{font-family:var(--mono);font-size:14px;font-weight:700;color:#fff;letter-spacing:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.search{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:0 10px;width:240px}
+.search input{background:none;border:none;color:var(--txt);font-size:12px;font-family:var(--mono);outline:none;padding:7px 0;flex:1}
+.search input::placeholder{color:var(--txt3)}
+.content{padding:24px;flex:1}
+
+/* ── COMPONENTS ───────────────── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:var(--sans);border:none;transition:all .13s;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#000;box-shadow:0 0 16px rgba(0,212,255,.3)}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-outline{background:transparent;color:var(--txt2);border:1px solid var(--border2)}
+.btn-outline:hover{color:var(--accent);border-color:var(--accent)}
+.btn-danger{background:rgba(255,23,68,.1);color:var(--red);border:1px solid rgba(255,23,68,.25)}
+.btn-warning{background:rgba(255,145,0,.1);color:var(--orange);border:1px solid rgba(255,145,0,.25)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-purple{background:linear-gradient(135deg,rgba(213,0,249,.2),rgba(0,212,255,.15));color:var(--accent);border:1px solid rgba(0,212,255,.3)}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:18px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat.c1::after{background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.stat.c2::after{background:linear-gradient(90deg,#00994d,var(--green))}
+.stat.c3::after{background:linear-gradient(90deg,#cc7000,var(--orange))}
+.stat.c4::after{background:linear-gradient(90deg,#9900bb,var(--purple))}
+.stat.c5::after{background:linear-gradient(90deg,#cc9900,var(--gold))}
+.stat-label{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--txt3);text-transform:uppercase;margin-bottom:6px}
+.stat-value{font-family:var(--mono);font-size:28px;font-weight:700;color:#fff;line-height:1}
+.stat-sub{font-size:10px;color:var(--txt3);margin-top:5px}
+.stat-trend{font-size:10px;margin-top:4px}
+.stat-trend.up{color:var(--green)}
+.stat-trend.dn{color:var(--red)}
+
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.panel-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.panel-title{font-family:var(--mono);font-size:12px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase}
+.panel-body{padding:18px}
+
+table{width:100%;border-collapse:collapse}
+thead th{font-family:var(--mono);font-size:8px;letter-spacing:2px;color:var(--txt3);text-transform:uppercase;padding:10px 14px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+tbody tr{border-bottom:1px solid rgba(25,32,48,.6);transition:background .1s}
+tbody tr:hover{background:rgba(0,212,255,.03)}
+tbody td{padding:11px 14px;font-size:12px}
+
+.badge{display:inline-block;font-family:var(--mono);font-size:8px;font-weight:700;padding:2px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.5px}
+.badge-active{background:rgba(0,230,118,.08);color:var(--green);border:1px solid rgba(0,230,118,.2)}
+.badge-suspended{background:rgba(255,145,0,.08);color:var(--orange);border:1px solid rgba(255,145,0,.2)}
+.badge-deleted{background:rgba(255,23,68,.08);color:var(--red);border:1px solid rgba(255,23,68,.2)}
+.badge-trial{background:rgba(255,145,0,.08);color:var(--orange)}
+.badge-pro{background:rgba(0,212,255,.08);color:var(--accent)}
+.badge-enterprise{background:rgba(0,230,118,.08);color:var(--green)}
+.badge-ultimate{background:rgba(255,214,0,.08);color:var(--gold);border:1px solid rgba(255,214,0,.2)}
+
+.role-chip{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:9px;padding:2px 8px;border-radius:10px;border:1px solid}
+.role-super_admin{color:var(--purple);border-color:rgba(213,0,249,.3);background:rgba(213,0,249,.08)}
+.role-admin{color:var(--accent);border-color:rgba(0,212,255,.3);background:rgba(0,212,255,.08)}
+.role-support{color:var(--green);border-color:rgba(0,230,118,.2);background:rgba(0,230,118,.06)}
+.role-viewer{color:var(--txt2);border-color:var(--border)}
+
+.mono{font-family:var(--mono);font-size:11px}
+.actions{display:flex;gap:5px}
+
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(6px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;width:540px;max-width:95vw;max-height:90vh;overflow-y:auto;box-shadow:0 20px 80px rgba(0,0,0,.7)}
+.modal-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:var(--mono);font-size:13px;font-weight:700;color:#fff;letter-spacing:1px}
+.modal-close{background:none;border:none;color:var(--txt3);font-size:18px;cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--red)}
+.modal-body{padding:22px}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:14px}
+.field label{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--txt3);text-transform:uppercase}
+.field input,.field select,.field textarea{background:var(--bg3);border:1px solid var(--border2);color:var(--txt);font-size:12px;font-family:var(--sans);padding:9px 12px;border-radius:6px;outline:none;transition:border-color .13s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.field select option{background:var(--bg2)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.toast-z{position:fixed;top:18px;right:18px;z-index:200;display:flex;flex-direction:column;gap:7px}
+.toast{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:11px;min-width:270px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 24px rgba(0,0,0,.6);animation:si .2s ease}
+.toast.ok{border-left:3px solid var(--green);color:var(--green)}
+.toast.err{border-left:3px solid var(--red);color:var(--red)}
+.toast.info{border-left:3px solid var(--accent);color:var(--accent)}
+@keyframes si{from{transform:translateX(50px);opacity:0}to{transform:none;opacity:1}}
+
+.mrr-box{background:linear-gradient(135deg,rgba(213,0,249,.1),rgba(0,212,255,.08));border:1px solid rgba(0,212,255,.2);border-radius:var(--r);padding:16px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.mrr-label{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--txt2);text-transform:uppercase}
+.mrr-value{font-family:var(--mono);font-size:32px;font-weight:700;background:linear-gradient(90deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+.impersonate-btn{background:linear-gradient(135deg,rgba(255,214,0,.15),rgba(255,145,0,.1));border:1px solid rgba(255,214,0,.3);color:var(--gold)}
+.impersonate-btn:hover{background:rgba(255,214,0,.2)}
+
+.audit-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(25,32,48,.5)}
+.audit-row:last-child{border:none}
+.audit-action{font-family:var(--mono);font-size:10px;color:var(--accent);flex-shrink:0;width:200px}
+.audit-detail{font-size:11px;color:var(--txt2)}
+.audit-meta{font-family:var(--mono);font-size:9px;color:var(--txt3);margin-top:1px}
+.audit-status-ok{color:var(--green)}
+.audit-status-fail{color:var(--red)}
+
+.filter-bar{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.filter-chip{font-family:var(--mono);font-size:9px;padding:4px 12px;border-radius:4px;cursor:pointer;border:1px solid var(--border);color:var(--txt3);transition:all .12s}
+.filter-chip:hover{color:var(--txt2)}
+.filter-chip.on{background:rgba(0,212,255,.1);color:var(--accent);border-color:rgba(0,212,255,.3)}
+</style>
+</head>
+<body>
+<div class="toast-z" id="tz"></div>
+
+<!-- CREATE TENANT MODAL -->
+<div class="modal-bg" id="modCreateTenant">
+<div class="modal">
+  <div class="modal-head">
+    <div class="modal-title">CREATE TENANT</div>
+    <button class="modal-close" onclick="closeM('modCreateTenant')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="form-row">
+      <div class="field"><label>Tenant Name</label><input id="ct-name" placeholder="Acme Corporation"/></div>
+      <div class="field"><label>Plan</label>
+        <select id="ct-plan">
+          <option value="trial">Trial</option>
+          <option value="pro">Professional</option>
+          <option value="enterprise" selected>Enterprise</option>
+          <option value="ultimate">Ultimate</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Contact Email</label><input id="ct-email" type="email" placeholder="admin@acme.com"/></div>
+      <div class="field"><label>Region</label>
+        <select id="ct-region">
+          <option>us-east-1</option><option>eu-west-1</option><option>ap-southeast-1</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="field"><label>Max Users</label><input id="ct-maxusers" type="number" value="10"/></div>
+      <div class="field"><label>Max Sites</label><input id="ct-maxsites" type="number" value="-1" placeholder="-1 = unlimited"/></div>
+    </div>
+    <div class="field"><label>Notes</label><input id="ct-notes" placeholder="Contract details, reseller info..."/></div>
+  </div>
+  <div class="modal-foot">
+    <button class="btn btn-outline" onclick="closeM('modCreateTenant')">Cancel</button>
+    <button class="btn btn-primary" onclick="doCreateTenant()">⊕ Create Tenant</button>
+  </div>
+</div>
+</div>
+
+<!-- SHELL -->
+<div class="shell">
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-name">IRONWALL</div>
+    <div class="logo-tag">Admin Center</div>
+    <div class="logo-role">⬡ SUPER ADMIN</div>
+  </div>
+  <nav>
+    <div class="nav-group">Overview</div>
+    <div class="nav-item active" onclick="show('dashboard',this)"><div class="nav-dot"></div>Platform Dashboard</div>
+    <div class="nav-item" onclick="show('tenants',this)"><div class="nav-dot"></div>Tenants
+      <span class="nav-badge" id="nb-tenants">0</span>
+    </div>
+    <div class="nav-group">Management</div>
+    <div class="nav-item" onclick="show('users',this)"><div class="nav-dot"></div>Admin Users</div>
+    <div class="nav-item" onclick="show('licenses',this)"><div class="nav-dot"></div>All Licenses</div>
+    <div class="nav-group">Security</div>
+    <div class="nav-item" onclick="show('audit',this)"><div class="nav-dot"></div>Audit Log
+      <span class="nav-badge" id="nb-audit" style="display:none">!</span>
+    </div>
+    <div class="nav-item" onclick="show('notifications',this)"><div class="nav-dot"></div>Notifications
+      <span class="nav-badge" style="background:var(--orange)">3</span>
+    </div>
+    <div class="nav-group">System</div>
+    <div class="nav-item" onclick="show('settings',this)"><div class="nav-dot"></div>Settings</div>
+    <div class="nav-item" onclick="window.open('/docs','_blank')"><div class="nav-dot"></div>API Docs ↗</div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="admin-chip">
+      <div class="admin-avatar">SA</div>
+      <div>
+        <div class="admin-name">Super Admin</div>
+        <div class="admin-role">OPTIMIUM NEXUS LLC</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
+<div class="topbar">
+  <div class="page-title" id="pt">PLATFORM DASHBOARD</div>
+  <div class="topbar-right">
+    <div class="search"><span style="color:var(--txt3)">⌕</span><input placeholder="Search tenants, users..." id="gs" oninput="filterAll()"/></div>
+    <button class="btn btn-primary btn-sm" onclick="openM('modCreateTenant')">⊕ New Tenant</button>
+    <button class="btn btn-outline btn-sm" onclick="toast('Logged out','info')">Exit</button>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- DASHBOARD -->
+<div id="p-dashboard">
+  <div class="mrr-box">
+    <div>
+      <div class="mrr-label">Estimated Monthly Recurring Revenue</div>
+      <div class="mrr-value" id="mrr-val">$0</div>
+    </div>
+    <div style="text-align:right">
+      <div class="mrr-label">Annual Run Rate</div>
+      <div style="font-family:var(--mono);font-size:20px;font-weight:700;color:var(--gold)" id="arr-val">$0</div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat c1"><div class="stat-label">Total Tenants</div><div class="stat-value" id="st-ten">0</div><div class="stat-trend up" id="st-ten-sub">↑ 0 this month</div></div>
+    <div class="stat c2"><div class="stat-label">Active Tenants</div><div class="stat-value" id="st-act">0</div><div class="stat-sub">Running instances</div></div>
+    <div class="stat c3"><div class="stat-label">Suspended</div><div class="stat-value" id="st-sus">0</div><div class="stat-sub">Action needed</div></div>
+    <div class="stat c4"><div class="stat-label">Platform Users</div><div class="stat-value" id="st-usr">0</div><div class="stat-sub">Across all tenants</div></div>
+    <div class="stat c5"><div class="stat-label">Ultimate Tier</div><div class="stat-value" id="st-ult">0</div><div class="stat-trend up">Highest value</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Plan Distribution</div></div>
+      <div class="panel-body" id="plan-breakdown"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">Recent Audit Events</div></div>
+      <div style="padding:12px 18px" id="recent-audit"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TENANTS -->
+<div id="p-tenants" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div class="filter-bar">
+      <div class="filter-chip on" onclick="setTenantFilter('all',this)">ALL</div>
+      <div class="filter-chip" onclick="setTenantFilter('active',this)">ACTIVE</div>
+      <div class="filter-chip" onclick="setTenantFilter('suspended',this)">SUSPENDED</div>
+      <div class="filter-chip" onclick="setTenantFilter('trial',this)">TRIAL</div>
+      <div class="filter-chip" onclick="setTenantFilter('enterprise',this)">ENTERPRISE</div>
+      <div class="filter-chip" onclick="setTenantFilter('ultimate',this)">ULTIMATE</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openM('modCreateTenant')">⊕ New Tenant</button>
+  </div>
+  <div class="panel">
+    <table>
+      <thead><tr><th>Tenant</th><th>Plan</th><th>Status</th><th>Users</th><th>Region</th><th>Contact</th><th>Created</th><th>Actions</th></tr></thead>
+      <tbody id="tenants-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- USERS -->
+<div id="p-users" style="display:none">
+  <div class="panel">
+    <div class="panel-head">
+      <div class="panel-title">Admin Users</div>
+      <button class="btn btn-primary btn-sm" onclick="toast('Create user form','info')">⊕ Add User</button>
+    </div>
+    <table>
+      <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Tenant</th><th>Last Login</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="users-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- LICENSES -->
+<div id="p-licenses" style="display:none">
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">All Platform Licenses</div></div>
+    <table>
+      <thead><tr><th>Key</th><th>Tenant</th><th>Tier</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody id="lic-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- AUDIT -->
+<div id="p-audit" style="display:none">
+  <div style="display:flex;gap:8px;margin-bottom:14px">
+    <select style="background:var(--bg3);border:1px solid var(--border2);color:var(--txt);padding:6px 10px;border-radius:6px;font-size:11px;font-family:var(--mono)" id="audit-filter" onchange="renderAudit()">
+      <option value="">All Actions</option>
+      <option>tenant.create</option><option>tenant.suspend</option><option>tenant.delete</option>
+      <option>auth.login</option><option>auth.login.failed</option>
+      <option>admin_user.create</option><option>license.revoke</option>
+    </select>
+    <button class="btn btn-outline btn-sm" onclick="toast('Audit export initiated','ok')">⬇ Export CSV</button>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Platform Audit Log</div><div style="font-family:var(--mono);font-size:9px;color:var(--txt3)">IMMUTABLE · TAMPER-EVIDENT</div></div>
+    <div style="padding:12px 18px" id="audit-list"></div>
+  </div>
+</div>
+
+<!-- NOTIFICATIONS -->
+<div id="p-notifications" style="display:none">
+  <div class="stats-row" style="grid-template-columns:repeat(3,1fr)">
+    <div class="stat c3"><div class="stat-label">Trials Expiring (7d)</div><div class="stat-value" style="color:var(--orange)">3</div><div class="stat-sub">Upgrade opportunity</div></div>
+    <div class="stat c1"><div class="stat-label">Licenses Expiring (30d)</div><div class="stat-value" style="color:var(--accent)">11</div><div class="stat-sub">Send renewal notices</div></div>
+    <div class="stat c2"><div class="stat-label">Suspended Tenants</div><div class="stat-value" style="color:var(--green)">0</div><div class="stat-sub">All clear</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div class="panel-title">Pending Actions</div><button class="btn btn-primary btn-sm" onclick="toast('Sending batch notifications...','info');setTimeout(()=>toast('14 emails queued','ok'),1500)">📧 Send All Renewal Emails</button></div>
+    <div class="panel-body" id="notif-list"></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="p-settings" style="display:none">
+  <div style="max-width:560px">
+    <div class="panel" style="margin-bottom:16px">
+      <div class="panel-head"><div class="panel-title">Platform Configuration</div></div>
+      <div class="panel-body">
+        <div class="field"><label>Platform Name</label><input value="IronWall-WAF Admin Center"/></div>
+        <div class="field"><label>Support Email</label><input value="contact@optimiumnexus.com"/></div>
+        <div class="field"><label>Stripe Public Key</label><input value="pk_live_••••••••••••••••" type="password"/></div>
+        <div class="field"><label>Default Tenant Plan</label><select><option>trial</option><option>pro</option></select></div>
+        <button class="btn btn-primary btn-sm" onclick="toast('Settings saved','ok')">Save Configuration</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title">JWT Secret Rotation</div></div>
+      <div class="panel-body">
+        <div style="font-size:11px;color:var(--txt2);margin-bottom:12px">Rotating the JWT secret will invalidate all active sessions. All users will need to re-authenticate.</div>
+        <button class="btn btn-danger btn-sm" onclick="toast('JWT secret rotated — all sessions invalidated','err')">🔄 Rotate JWT Secret</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+// ── Data ─────────────────────────────────────────────────────────────────────
+const TENANTS = [
+  {id:'t1',name:'Palantir Technologies',slug:'palantir',plan:'ultimate',status:'active',region:'us-east-1',contact:'security@palantir.com',users:48,created:'2024-01-15',notes:'Strategic partner'},
+  {id:'t2',name:'BlackRock Inc.',slug:'blackrock',plan:'enterprise',status:'active',region:'us-east-1',contact:'infosec@blackrock.com',users:32,created:'2024-02-01',notes:''},
+  {id:'t3',name:'Goldman Sachs',slug:'goldman',plan:'enterprise',status:'active',region:'eu-west-1',contact:'sec-ops@gs.com',users:25,created:'2024-01-20',notes:'EMEA expansion'},
+  {id:'t4',name:'StartupXYZ',slug:'startupxyz',plan:'trial',status:'active',region:'us-east-1',contact:'ops@startup.xyz',users:3,created:'2024-04-01',notes:'Trial expires in 5 days'},
+  {id:'t5',name:'Citadel LLC',slug:'citadel',plan:'ultimate',status:'active',region:'us-east-1',contact:'risk@citadel.com',users:41,created:'2024-02-10',notes:''},
+  {id:'t6',name:'Old Corp',slug:'oldcorp',plan:'pro',status:'suspended',region:'ap-southeast-1',contact:'it@oldcorp.com',users:8,created:'2023-12-01',notes:'Payment lapsed'},
+  {id:'t7',name:'NATO CCDCOE',slug:'nato-ccdcoe',plan:'ultimate',status:'active',region:'eu-west-1',contact:'sec@ccdcoe.org',users:22,created:'2024-01-01',notes:'Gov contract'},
+  {id:'t8',name:'JPMorgan Chase',slug:'jpmorgan',plan:'enterprise',status:'active',region:'us-east-1',contact:'cyber@jpmorgan.com',users:67,created:'2024-03-20',notes:''},
+];
+
+const ADMIN_USERS = [
+  {id:'u1',email:'admin@optimiumnexus.com',name:'Super Admin',role:'super_admin',tenant:'–',lastLogin:'2 min ago',active:true},
+  {id:'u2',email:'support@optimiumnexus.com',name:'Support Agent',role:'support',tenant:'–',lastLogin:'1h ago',active:true},
+  {id:'u3',email:'ops@optimiumnexus.com',name:'Ops Engineer',role:'admin',tenant:'–',lastLogin:'3h ago',active:true},
+];
+
+const LICENSES = [
+  {key:'IW-ULT-A3F2-B9K1-M7X4-Z2P8',tenant:'Palantir Technologies',tier:'ULTIMATE',expires:'Lifetime',status:'active'},
+  {key:'IW-ENT-X9K2-P4M1-Q7R3-W5N6',tenant:'BlackRock Inc.',tier:'ENTERPRISE',expires:'2025-02-01',status:'active'},
+  {key:'IW-ENT-B6T3-C8Y4-D2S5-E4U7',tenant:'Goldman Sachs',tier:'ENTERPRISE',expires:'2024-12-20',status:'expiring'},
+  {key:'IW-ULT-C4D5-E6F7-G8H9-I0J1',tenant:'NATO CCDCOE',tier:'ULTIMATE',expires:'Lifetime',status:'active'},
+  {key:'IW-TRL-K2Z3-L4A5-M6B7-N8C9',tenant:'StartupXYZ',tier:'TRIAL',expires:'2024-05-06',status:'expiring'},
+];
+
+const AUDIT_LOGS = [
+  {ts:'2m ago',action:'tenant.create',resource:'tenant',detail:'Created "JPMorgan Chase" (ENTERPRISE)',user:'admin@optimiumnexus.com',status:'success'},
+  {ts:'15m ago',action:'auth.login',resource:'admin_user',detail:'Login from 192.168.1.42',user:'ops@optimiumnexus.com',status:'success'},
+  {ts:'1h ago',action:'tenant.suspend',resource:'tenant',detail:'Suspended "Old Corp" — payment lapsed',user:'admin@optimiumnexus.com',status:'success'},
+  {ts:'2h ago',action:'license.revoke',resource:'license',detail:'Revoked IW-TRL-XXXX for payment dispute',user:'support@optimiumnexus.com',status:'success'},
+  {ts:'3h ago',action:'auth.login.failed',resource:'admin_user',detail:'Failed login from 45.32.11.99',user:'unknown@external.com',status:'failure'},
+  {ts:'5h ago',action:'admin_user.create',resource:'admin_user',detail:'Created support agent account',user:'admin@optimiumnexus.com',status:'success'},
+  {ts:'1d ago',action:'tenant.create',resource:'tenant',detail:'Created "Citadel LLC" (ULTIMATE)',user:'admin@optimiumnexus.com',status:'success'},
+  {ts:'1d ago',action:'tenant.update',resource:'tenant',detail:'Updated plan: pro → enterprise for BlackRock',user:'admin@optimiumnexus.com',status:'success'},
+];
+
+const NOTIFICATIONS = [
+  {type:'trial_expiring',tenant:'StartupXYZ',msg:'Trial expires in 5 days',action:'Send reminder'},
+  {type:'license_expiring',tenant:'Goldman Sachs',msg:'Enterprise license expires Dec 20',action:'Send renewal'},
+  {type:'payment_failed',tenant:'Old Corp',msg:'Payment failed — tenant suspended',action:'Contact billing'},
+  {type:'license_expiring',tenant:'Another Corp',msg:'License expires in 28 days',action:'Send renewal'},
+];
+
+let tenantFilter = 'all';
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadDashboard();
+  renderTenants();
+  renderUsers();
+  renderLicenses();
+  renderAudit();
+  renderNotifications();
+});
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+function loadDashboard() {
+  const active    = TENANTS.filter(t => t.status === 'active').length;
+  const suspended = TENANTS.filter(t => t.status === 'suspended').length;
+  const ult       = TENANTS.filter(t => t.plan === 'ultimate').length;
+  const totalUsers = TENANTS.reduce((a,t) => a+t.users, 0);
+
+  document.getElementById('st-ten').textContent = TENANTS.length;
+  document.getElementById('st-act').textContent = active;
+  document.getElementById('st-sus').textContent = suspended;
+  document.getElementById('st-usr').textContent = totalUsers;
+  document.getElementById('st-ult').textContent = ult;
+  document.getElementById('nb-tenants').textContent = TENANTS.length;
+
+  // MRR
+  const prices = {trial:0,pro:299,enterprise:1499,ultimate:4999};
+  const mrr = TENANTS.reduce((a,t) => a + (prices[t.plan]||0), 0);
+  document.getElementById('mrr-val').textContent = '$' + mrr.toLocaleString();
+  document.getElementById('arr-val').textContent = '$' + (mrr*12).toLocaleString();
+
+  // Plan breakdown
+  const plans = {trial:0,pro:0,enterprise:0,ultimate:0};
+  TENANTS.forEach(t => plans[t.plan] = (plans[t.plan]||0)+1);
+  const colors = {trial:'var(--orange)',pro:'var(--accent)',enterprise:'var(--green)',ultimate:'var(--gold)'};
+  const total = TENANTS.length;
+  document.getElementById('plan-breakdown').innerHTML = Object.entries(plans).map(([plan,count]) => `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;margin-bottom:4px">
+        <span style="color:${colors[plan]}">${plan.toUpperCase()}</span>
+        <span style="color:var(--txt2)">${count} (${Math.round(count/total*100)}%)</span>
+      </div>
+      <div style="height:4px;background:var(--border);border-radius:2px">
+        <div style="height:4px;border-radius:2px;width:${count/total*100}%;background:${colors[plan]};transition:width .5s"></div>
+      </div>
+    </div>`).join('');
+
+  // Recent audit
+  document.getElementById('recent-audit').innerHTML = AUDIT_LOGS.slice(0,5).map(l => `
+    <div class="audit-row">
+      <div>
+        <div class="audit-action">${l.action}</div>
+        <div class="audit-meta">${l.ts} · ${l.user}</div>
+      </div>
+      <div class="audit-detail" style="flex:1">${l.detail}</div>
+      <div class="audit-status-${l.status==='success'?'ok':'fail'}">${l.status==='success'?'✓':'✕'}</div>
+    </div>`).join('');
+}
+
+// ── Tenants ───────────────────────────────────────────────────────────────────
+function renderTenants() {
+  const q = document.getElementById('gs')?.value?.toLowerCase() || '';
+  let data = TENANTS;
+  if (tenantFilter === 'active')   data = data.filter(t => t.status === 'active');
+  else if (tenantFilter === 'suspended') data = data.filter(t => t.status === 'suspended');
+  else if (['trial','pro','enterprise','ultimate'].includes(tenantFilter)) {
+    data = data.filter(t => t.plan === tenantFilter);
+  }
+  if (q) data = data.filter(t => t.name.toLowerCase().includes(q) || t.contact.toLowerCase().includes(q));
+
+  document.getElementById('tenants-tbody').innerHTML = data.map(t => `
+    <tr>
+      <td>
+        <div style="font-weight:600;color:#fff">${t.name}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--txt3)">${t.slug}</div>
+      </td>
+      <td><span class="badge badge-${t.plan}">${t.plan.toUpperCase()}</span></td>
+      <td><span class="badge badge-${t.status}">${t.status}</span></td>
+      <td class="mono">${t.users}</td>
+      <td class="mono" style="color:var(--txt2)">${t.region}</td>
+      <td style="font-size:11px;color:var(--txt2)">${t.contact}</td>
+      <td class="mono" style="color:var(--txt3)">${t.created}</td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-outline btn-sm" onclick="viewTenant('${t.id}','${t.name}')">View</button>
+          ${t.status==='active'
+            ? `<button class="btn btn-warning btn-sm" onclick="suspendTenant('${t.id}','${t.name}')">Suspend</button>`
+            : `<button class="btn btn-outline btn-sm" onclick="activateTenant('${t.id}','${t.name}')">Activate</button>`}
+          <button class="btn impersonate-btn btn-sm" onclick="impersonate('${t.name}')">👁</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+function setTenantFilter(f, el) {
+  tenantFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  renderTenants();
+}
+
+function filterAll() { renderTenants(); }
+
+function viewTenant(id, name) { toast(`Viewing tenant: ${name}`, 'info'); }
+function suspendTenant(id, name) {
+  if (!confirm(`Suspend "${name}"? This will block all access.`)) return;
+  const t = TENANTS.find(x => x.id === id); if (t) t.status = 'suspended';
+  renderTenants(); loadDashboard();
+  toast(`Tenant "${name}" suspended`, 'err');
+}
+function activateTenant(id, name) {
+  const t = TENANTS.find(x => x.id === id); if (t) t.status = 'active';
+  renderTenants(); loadDashboard();
+  toast(`Tenant "${name}" activated`, 'ok');
+}
+function impersonate(name) { toast(`🔐 Impersonating "${name}" — all actions logged`, 'info'); }
+
+// ── Create Tenant ─────────────────────────────────────────────────────────────
+function doCreateTenant() {
+  const name = document.getElementById('ct-name').value;
+  const plan = document.getElementById('ct-plan').value;
+  const email = document.getElementById('ct-email').value;
+  if (!name || !email) { toast('Name and email required', 'err'); return; }
+
+  const id = 't' + Date.now();
+  TENANTS.unshift({
+    id, name, slug: name.toLowerCase().replace(/\s+/g,'-'),
+    plan, status: 'active', region: document.getElementById('ct-region').value,
+    contact: email, users: 0, created: new Date().toISOString().split('T')[0], notes: '',
+  });
+  renderTenants(); loadDashboard();
+  closeM('modCreateTenant');
+  toast(`Tenant "${name}" created (${plan.toUpperCase()})`, 'ok');
+}
+
+// ── Users ─────────────────────────────────────────────────────────────────────
+function renderUsers() {
+  document.getElementById('users-tbody').innerHTML = ADMIN_USERS.map(u => `
+    <tr>
+      <td class="mono" style="color:var(--accent)">${u.email}</td>
+      <td>${u.name}</td>
+      <td><span class="role-chip role-${u.role}">${u.role.replace('_',' ')}</span></td>
+      <td class="mono" style="color:var(--txt3)">${u.tenant}</td>
+      <td style="font-size:11px;color:var(--txt2)">${u.lastLogin}</td>
+      <td><span class="badge badge-active">Active</span></td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-outline btn-sm" onclick="toast('Edit user form','info')">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="toast('User deactivated','err')">Disable</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ── Licenses ──────────────────────────────────────────────────────────────────
+function renderLicenses() {
+  document.getElementById('lic-tbody').innerHTML = LICENSES.map(l => `
+    <tr>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--accent)">${l.key}</td>
+      <td style="color:var(--txt2)">${l.tenant}</td>
+      <td><span class="badge badge-${l.tier.toLowerCase()}">${l.tier}</span></td>
+      <td style="font-family:var(--mono);font-size:11px;color:${l.expires==='Lifetime'?'var(--purple)':l.status==='expiring'?'var(--orange)':'var(--txt2)'}">${l.expires}</td>
+      <td><span class="badge badge-${l.status}">${l.status}</span></td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-outline btn-sm" onclick="toast('License detail view','info')">View</button>
+          <button class="btn btn-danger btn-sm" onclick="toast('License revoked','err')">Revoke</button>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ── Audit ─────────────────────────────────────────────────────────────────────
+function renderAudit() {
+  const filter = document.getElementById('audit-filter')?.value || '';
+  let data = AUDIT_LOGS;
+  if (filter) data = data.filter(l => l.action === filter);
+  document.getElementById('audit-list').innerHTML = data.map(l => `
+    <div class="audit-row">
+      <div class="audit-action">${l.action}</div>
+      <div style="flex:1">
+        <div class="audit-detail">${l.detail}</div>
+        <div class="audit-meta">${l.ts} · ${l.user}</div>
+      </div>
+      <div class="audit-status-${l.status==='success'?'ok':'fail'}" style="font-family:var(--mono);font-size:10px">
+        ${l.status==='success'?'✓ ok':'✕ fail'}
+      </div>
+    </div>`).join('');
+}
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+function renderNotifications() {
+  const icons = {trial_expiring:'⏳',license_expiring:'🔑',payment_failed:'💳'};
+  const colors = {trial_expiring:'var(--orange)',license_expiring:'var(--accent)',payment_failed:'var(--red)'};
+  document.getElementById('notif-list').innerHTML = NOTIFICATIONS.map(n => `
+    <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:20px">${icons[n.type]||'📢'}</span>
+      <div style="flex:1">
+        <div style="font-weight:600;color:${colors[n.type]||'var(--txt)'}">${n.tenant}</div>
+        <div style="font-size:11px;color:var(--txt2)">${n.msg}</div>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="toast('${n.action} sent for ${n.tenant}','ok')">${n.action}</button>
+    </div>`).join('');
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function show(name, el) {
+  document.querySelectorAll('[id^="p-"]').forEach(p => p.style.display='none');
+  document.getElementById('p-'+name).style.display='';
+  document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+  if (el) el.classList.add('active');
+  const titles = {dashboard:'PLATFORM DASHBOARD',tenants:'TENANT MANAGEMENT',
+    users:'ADMIN USERS',licenses:'ALL LICENSES',audit:'AUDIT LOG',
+    notifications:'NOTIFICATIONS',settings:'SETTINGS'};
+  document.getElementById('pt').textContent = titles[name]||name.toUpperCase();
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openM(id) { document.getElementById(id).classList.add('open') }
+function closeM(id) { document.getElementById(id).classList.remove('open') }
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+function toast(msg, type='info') {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<span>${{ok:'✓',err:'✕',info:'ℹ'}[type]||'ℹ'}</span><span>${msg}</span>`;
+  document.getElementById('tz').appendChild(el);
+  setTimeout(() => el.remove(), 4500);
+}
+</script>
+</body>
+</html>

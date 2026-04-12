@@ -1,0 +1,1271 @@
+openapi: "3.1.0"
+
+info:
+  title: IronWall-WAF API
+  version: "1.0.0"
+  description: |
+    # IronWall-WAF REST API
+
+    Complete API reference for the IronWall-WAF platform by **OPTIMIUM NEXUS LLC**.
+
+    ## Authentication
+
+    Most endpoints require one of:
+    - **Bearer Token** (JWT): `Authorization: Bearer <token>`
+    - **API Key**: `X-Admin-Key: <key>` (admin endpoints) or `X-API-Key: <key>` (portal endpoints)
+
+    ## Base URLs
+
+    | Environment | URL |
+    |------------|-----|
+    | Management API | `https://YOUR_WAF_HOST:9443` |
+    | License Server | `http://YOUR_WAF_HOST:8090` |
+    | Customer Portal | `http://YOUR_WAF_HOST:8080` |
+    | Admin Center | `http://YOUR_WAF_HOST:8085` |
+
+    ## Rate Limits
+
+    All API endpoints are rate-limited. Responses include:
+    - `X-RateLimit-Limit`: Request limit per window
+    - `X-RateLimit-Remaining`: Remaining requests
+    - `X-RateLimit-Reset`: Unix timestamp when limit resets
+
+  contact:
+    name: OPTIMIUM NEXUS LLC
+    url: https://www.optimiumnexus.com
+    email: contact@optimiumnexus.com
+  license:
+    name: Proprietary
+    url: https://www.optimiumnexus.com/license
+
+servers:
+  - url: https://{host}:9443
+    description: Management API
+    variables:
+      host:
+        default: localhost
+        description: Your IronWall server hostname
+
+  - url: http://{host}:8090
+    description: License Server API
+    variables:
+      host:
+        default: localhost
+
+  - url: http://{host}:8080
+    description: Customer Portal API
+    variables:
+      host:
+        default: localhost
+
+tags:
+  - name: Health
+    description: System health and readiness endpoints
+  - name: License — Public
+    description: Public license validation (no auth required)
+  - name: License — Admin
+    description: License management (admin key required)
+  - name: GeoIP
+    description: Geographic IP blocking rules
+  - name: Zero-Day Shield
+    description: ML-based anomaly detection
+  - name: DDoS Mitigation
+    description: Volumetric DDoS protection and blacklisting
+  - name: Forensics
+    description: PCAP capture and attack timeline analysis
+  - name: Portal — Auth
+    description: Customer portal authentication
+  - name: Portal — Licenses
+    description: Self-service license management
+  - name: Portal — Billing
+    description: Subscription and invoice management
+  - name: Admin — Tenants
+    description: Multi-tenant administration
+  - name: Admin — Audit
+    description: Immutable audit log
+
+# ── Security Schemes ──────────────────────────────────────────────────────────
+
+components:
+  securitySchemes:
+    AdminKey:
+      type: apiKey
+      in: header
+      name: X-Admin-Key
+      description: Admin API key for license and admin endpoints
+
+    BearerToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from /auth/login
+
+    PortalAPIKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: Customer portal API key
+
+  # ── Schemas ───────────────────────────────────────────────────────────────────
+
+  schemas:
+
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:  { type: string, description: "Human-readable error message" }
+        code:   { type: string, description: "Machine-readable error code" }
+        details: { type: object }
+
+    ValidationResult:
+      type: object
+      properties:
+        valid:           { type: boolean }
+        tier:            { type: string, enum: [COMMUNITY, PROFESSIONAL, ENTERPRISE, ULTIMATE, TRIAL, DEVELOPER] }
+        licensee:        { type: string }
+        email:           { type: string, format: email }
+        key:             { type: string, example: "IW-ENT-A3F2-B9K1-M7X4-Z2P8" }
+        is_lifetime:     { type: boolean }
+        days_remaining:  { type: integer, description: "-1 = lifetime" }
+        expires_at:      { type: string, format: date-time, nullable: true }
+        features:        { type: array, items: { type: string } }
+        extra_features:  { type: array, items: { type: string } }
+        limits:
+          $ref: '#/components/schemas/LicenseLimits'
+        errors:          { type: array, items: { type: string } }
+        warnings:        { type: array, items: { type: string } }
+        feature_available: { type: boolean, nullable: true, description: "Only set when feature parameter provided" }
+
+    LicenseLimits:
+      type: object
+      properties:
+        max_sites:             { type: integer }
+        max_requests_per_sec:  { type: integer }
+        max_nodes:             { type: integer }
+        max_users:             { type: integer }
+        max_custom_rules:      { type: integer }
+        support_level:         { type: string, enum: [community, email, priority, dedicated] }
+        update_channel:        { type: string, enum: [stable, lts, edge] }
+
+    LicenseResponse:
+      type: object
+      properties:
+        id:            { type: string, format: uuid }
+        key:           { type: string, example: "IW-ENT-A3F2-B9K1-M7X4-Z2P8" }
+        tier:          { type: string }
+        licensee:      { type: string }
+        email:         { type: string }
+        domain:        { type: string, nullable: true }
+        issued_at:     { type: string, format: date-time }
+        expires_at:    { type: string, format: date-time, nullable: true }
+        is_lifetime:   { type: boolean }
+        is_revoked:    { type: boolean }
+        days_remaining: { type: integer }
+        features:      { type: array, items: { type: string } }
+        limits:
+          $ref: '#/components/schemas/LicenseLimits'
+        status:        { type: string }
+        license_file:  { type: string, description: "PEM-encoded license (only on creation)" }
+
+    IssueLicenseRequest:
+      type: object
+      required: [tier, licensee, email]
+      properties:
+        tier:
+          type: string
+          enum: [COMMUNITY, PROFESSIONAL, ENTERPRISE, ULTIMATE, TRIAL, DEVELOPER]
+        licensee:        { type: string, example: "Acme Corporation" }
+        email:           { type: string, format: email }
+        domain:          { type: string, description: "Optional domain binding" }
+        hardware_id:     { type: string, description: "Optional hardware fingerprint binding" }
+        valid_for_days:  { type: integer, default: 365, description: "0 = lifetime" }
+        extra_features:  { type: array, items: { type: string } }
+        disabled_features: { type: array, items: { type: string } }
+        custom_limits:
+          $ref: '#/components/schemas/LicenseLimits'
+        notes:           { type: string }
+
+    GeoRule:
+      type: object
+      properties:
+        id:         { type: string }
+        target:     { type: string, enum: [country, asn, continent, cidr] }
+        value:      { type: string, example: "KP" }
+        action:     { type: string, enum: [block, challenge, log, allow] }
+        priority:   { type: integer }
+        enabled:    { type: boolean }
+        note:       { type: string }
+        created_at: { type: string, format: date-time }
+        hit_count:  { type: integer }
+
+    GeoLookup:
+      type: object
+      properties:
+        ip:            { type: string }
+        country_code:  { type: string, example: "US" }
+        country_name:  { type: string }
+        continent:     { type: string }
+        city:          { type: string }
+        asn:           { type: integer }
+        asn_org:       { type: string }
+        latitude:      { type: number }
+        longitude:     { type: number }
+        is_vpn:        { type: boolean }
+        is_tor:        { type: boolean }
+        is_proxy:      { type: boolean }
+        is_hosting:    { type: boolean }
+        risk_score:    { type: integer, minimum: 0, maximum: 100 }
+
+    AnomalyScore:
+      type: object
+      properties:
+        score:               { type: number, minimum: 0, maximum: 1 }
+        level:               { type: string, enum: [normal, suspect, anomaly, zero_day] }
+        is_zero_day:         { type: boolean }
+        confidence:          { type: number }
+        baseline_deviation:  { type: number }
+        explanation:         { type: string }
+        top_features:
+          type: array
+          items:
+            type: object
+            properties:
+              feature:   { type: string }
+              value:     { type: number }
+              deviation: { type: number }
+              weight:    { type: number }
+
+    DDoSEvent:
+      type: object
+      properties:
+        attack_type:    { type: string, enum: [volumetric, http_flood, slow_loris, amplification, syn_flood, rudy] }
+        source_ip:      { type: string }
+        source_cidr:    { type: string }
+        target_path:    { type: string }
+        rps:            { type: number }
+        action:         { type: string, enum: [allow, challenge, throttle, block, tarpit, null_route] }
+        started_at:     { type: string, format: date-time }
+        detected_at:    { type: string, format: date-time }
+        auto_mitigated: { type: boolean }
+
+    Tenant:
+      type: object
+      properties:
+        id:             { type: string }
+        name:           { type: string }
+        slug:           { type: string }
+        plan:           { type: string, enum: [trial, pro, enterprise, ultimate] }
+        status:         { type: string, enum: [active, suspended, deleted] }
+        region:         { type: string }
+        max_users:      { type: integer }
+        max_sites:      { type: integer }
+        contact_email:  { type: string }
+        country:        { type: string }
+        created_at:     { type: string, format: date-time }
+
+    AuditLog:
+      type: object
+      properties:
+        id:          { type: integer }
+        tenant_id:   { type: string }
+        user_email:  { type: string }
+        action:      { type: string }
+        resource:    { type: string }
+        resource_id: { type: string }
+        details:     { type: string }
+        ip_address:  { type: string }
+        status:      { type: string, enum: [success, failure] }
+        occurred_at: { type: string, format: date-time }
+
+    Pagination:
+      type: object
+      properties:
+        total:     { type: integer }
+        page:      { type: integer }
+        page_size: { type: integer }
+        pages:     { type: integer }
+
+# ── Paths ─────────────────────────────────────────────────────────────────────
+
+paths:
+
+  # ── HEALTH ──────────────────────────────────────────────────────────────────
+
+  /api/open/health:
+    get:
+      tags: [Health]
+      summary: Management API health check
+      operationId: getHealth
+      security: []
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:  { type: string, example: ok }
+                  version: { type: string, example: "1.0.0" }
+
+  /api/v1/licensing/health:
+    get:
+      tags: [Health]
+      summary: License Server health check
+      operationId: getLicenseServerHealth
+      security: []
+      responses:
+        '200':
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:  { type: string }
+                  service: { type: string }
+
+  # ── LICENSE — PUBLIC ─────────────────────────────────────────────────────────
+
+  /api/v1/licensing/validate:
+    post:
+      tags: [License — Public]
+      summary: Validate a license
+      description: |
+        Validates a license file or key. Optionally checks if a specific feature is available.
+        This endpoint is public and can be called without authentication.
+      operationId: validateLicense
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                license_file:
+                  type: string
+                  description: PEM-encoded license file content
+                  example: "-----BEGIN IRONWALL LICENSE-----\n...\n-----END IRONWALL LICENSE-----"
+                license_key:
+                  type: string
+                  description: Human-readable license key
+                  example: "IW-ENT-A3F2-B9K1-M7X4-Z2P8"
+                feature:
+                  type: string
+                  description: Optional feature to check availability for
+                  example: "geoip_blocking"
+            examples:
+              validate_by_file:
+                summary: Validate by PEM file
+                value:
+                  license_file: "-----BEGIN IRONWALL LICENSE-----\neyJpZ...\n-----END IRONWALL LICENSE-----"
+              validate_with_feature:
+                summary: Validate and check feature
+                value:
+                  license_file: "-----BEGIN IRONWALL LICENSE-----\neyJpZ...\n-----END IRONWALL LICENSE-----"
+                  feature: "ai_threat_hunting"
+      responses:
+        '200':
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+        '403':
+          description: License is invalid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResult'
+
+  # ── LICENSE — ADMIN ──────────────────────────────────────────────────────────
+
+  /api/v1/licensing/admin/licenses:
+    get:
+      tags: [License — Admin]
+      summary: List all licenses
+      operationId: listLicenses
+      security:
+        - AdminKey: []
+      parameters:
+        - name: tier
+          in: query
+          schema: { type: string, enum: [COMMUNITY, PROFESSIONAL, ENTERPRISE, ULTIMATE, TRIAL, DEVELOPER] }
+        - name: revoked
+          in: query
+          schema: { type: boolean, default: false }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: page_size
+          in: query
+          schema: { type: integer, default: 20, maximum: 100 }
+      responses:
+        '200':
+          description: License list with pagination
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Pagination'
+                  - type: object
+                    properties:
+                      licenses:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/LicenseResponse'
+        '401':
+          description: Missing or invalid admin key
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+    post:
+      tags: [License — Admin]
+      summary: Issue a new license
+      operationId: issueLicense
+      security:
+        - AdminKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IssueLicenseRequest'
+            examples:
+              enterprise_365:
+                summary: Enterprise license, 1 year
+                value:
+                  tier: ENTERPRISE
+                  licensee: "Acme Corporation"
+                  email: "admin@acme.com"
+                  domain: "acme.com"
+                  valid_for_days: 365
+              ultimate_lifetime:
+                summary: Ultimate lifetime license
+                value:
+                  tier: ULTIMATE
+                  licensee: "BigCo International"
+                  email: "cto@bigco.com"
+                  valid_for_days: 0
+      responses:
+        '201':
+          description: License issued successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicenseResponse'
+
+  /api/v1/licensing/admin/licenses/{id}:
+    get:
+      tags: [License — Admin]
+      summary: Get a specific license
+      operationId: getLicense
+      security:
+        - AdminKey: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: License details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LicenseResponse'
+        '404':
+          description: License not found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /api/v1/licensing/admin/licenses/{id}/revoke:
+    delete:
+      tags: [License — Admin]
+      summary: Revoke a license
+      operationId: revokeLicense
+      security:
+        - AdminKey: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string, example: "Payment dispute" }
+      responses:
+        '200':
+          description: License revoked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  id:      { type: string }
+
+  /api/v1/licensing/admin/licenses/{id}/download:
+    get:
+      tags: [License — Admin]
+      summary: Download license file
+      operationId: downloadLicense
+      security:
+        - AdminKey: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: License file download
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+
+  /api/v1/licensing/admin/licenses/bulk:
+    post:
+      tags: [License — Admin]
+      summary: Bulk issue licenses (up to 100)
+      operationId: bulkIssueLicenses
+      security:
+        - AdminKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              maxItems: 100
+              items:
+                $ref: '#/components/schemas/IssueLicenseRequest'
+      responses:
+        '201':
+          description: Batch results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  issued:   { type: integer }
+                  errors:   { type: array, items: { type: string } }
+                  licenses: { type: array, items: { $ref: '#/components/schemas/LicenseResponse' } }
+
+  /api/v1/licensing/admin/stats:
+    get:
+      tags: [License — Admin]
+      summary: License statistics dashboard
+      operationId: getLicenseStats
+      security:
+        - AdminKey: []
+      responses:
+        '200':
+          description: License statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:       { type: integer }
+                  active:      { type: integer }
+                  revoked:     { type: integer }
+                  expired:     { type: integer }
+                  expiring_7d: { type: integer }
+                  expiring_30d: { type: integer }
+                  by_tier:
+                    type: object
+                    additionalProperties: { type: integer }
+
+  # ── GEOIP ────────────────────────────────────────────────────────────────────
+
+  /api/open/geoip/lookup/{ip}:
+    get:
+      tags: [GeoIP]
+      summary: Look up geographic info for an IP
+      operationId: geoipLookup
+      security:
+        - AdminKey: []
+      parameters:
+        - name: ip
+          in: path
+          required: true
+          schema: { type: string, example: "8.8.8.8" }
+      responses:
+        '200':
+          description: GeoIP lookup result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeoLookup'
+
+  /api/open/geoip/evaluate:
+    post:
+      tags: [GeoIP]
+      summary: Evaluate action for an IP against all rules
+      operationId: geoipEvaluate
+      security:
+        - AdminKey: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [ip]
+              properties:
+                ip: { type: string, example: "45.32.11.99" }
+      responses:
+        '200':
+          description: Evaluation result with action
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  action:       { type: string, enum: [allow, block, challenge, log] }
+                  reason:       { type: string }
+                  matched_rule: { $ref: '#/components/schemas/GeoRule' }
+                  lookup:       { $ref: '#/components/schemas/GeoLookup' }
+                  latency_us:   { type: integer }
+
+  /api/open/geoip/rules:
+    get:
+      tags: [GeoIP]
+      summary: List all GeoIP rules
+      operationId: listGeoRules
+      security:
+        - AdminKey: []
+      responses:
+        '200':
+          description: GeoIP rules
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  rules:
+                    type: array
+                    items: { $ref: '#/components/schemas/GeoRule' }
+
+    post:
+      tags: [GeoIP]
+      summary: Add a GeoIP rule
+      operationId: addGeoRule
+      security:
+        - AdminKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GeoRule'
+            examples:
+              block_country:
+                summary: Block a country
+                value:
+                  target: country
+                  value: KP
+                  action: block
+                  priority: 1
+                  enabled: true
+              block_cidr:
+                summary: Block a CIDR range
+                value:
+                  target: cidr
+                  value: "10.0.99.0/24"
+                  action: block
+                  priority: 10
+                  enabled: true
+      responses:
+        '201':
+          description: Rule created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GeoRule' }
+
+  /api/open/geoip/rules/{id}:
+    delete:
+      tags: [GeoIP]
+      summary: Delete a GeoIP rule
+      operationId: deleteGeoRule
+      security:
+        - AdminKey: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Rule deleted
+
+  # ── ZERO-DAY SHIELD ──────────────────────────────────────────────────────────
+
+  /api/open/zerodayshield/score:
+    post:
+      tags: [Zero-Day Shield]
+      summary: Score a request for anomaly detection
+      description: Runs the request through the Isolation Forest ML model and returns an anomaly score.
+      operationId: scoreRequest
+      security:
+        - AdminKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ip:         { type: string }
+                method:     { type: string }
+                path:       { type: string }
+                query:      { type: string }
+                body:       { type: string }
+                user_agent: { type: string }
+                headers:
+                  type: object
+                  additionalProperties: { type: string }
+      responses:
+        '200':
+          description: Anomaly score result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnomalyScore'
+
+  /api/open/zerodayshield/stats:
+    get:
+      tags: [Zero-Day Shield]
+      summary: Model statistics and thresholds
+      operationId: getZeroDayStats
+      security:
+        - AdminKey: []
+      responses:
+        '200':
+          description: Model stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trained:        { type: boolean }
+                  samples_count:  { type: integer }
+                  model_ready:    { type: boolean }
+                  thresholds:
+                    type: object
+                    properties:
+                      zero_day: { type: number }
+                      anomaly:  { type: number }
+                      suspect:  { type: number }
+
+  # ── DDoS MITIGATION ──────────────────────────────────────────────────────────
+
+  /api/open/ddos/stats:
+    get:
+      tags: [DDoS Mitigation]
+      summary: DDoS engine statistics
+      operationId: getDDoSStats
+      security:
+        - AdminKey: []
+      responses:
+        '200':
+          description: Engine statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total_events:         { type: integer }
+                  blacklisted_ips:      { type: integer }
+                  global_rps:           { type: integer }
+                  adaptive_multiplier:  { type: number }
+                  thresholds:
+                    type: object
+                    properties:
+                      ip_challenge: { type: number }
+                      ip_block:     { type: number }
+                      subnet_block: { type: number }
+
+  /api/open/ddos/events:
+    get:
+      tags: [DDoS Mitigation]
+      summary: Recent DDoS events
+      operationId: getDDoSEvents
+      security:
+        - AdminKey: []
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50, maximum: 1000 }
+      responses:
+        '200':
+          description: Recent events
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  events:
+                    type: array
+                    items: { $ref: '#/components/schemas/DDoSEvent' }
+
+  /api/open/ddos/blacklist/{ip}:
+    post:
+      tags: [DDoS Mitigation]
+      summary: Manually blacklist an IP
+      operationId: blacklistIP
+      security:
+        - AdminKey: []
+      parameters:
+        - name: ip
+          in: path
+          required: true
+          schema: { type: string }
+        - name: duration
+          in: query
+          description: Duration (e.g. "5m", "1h", "24h")
+          schema: { type: string, default: "5m" }
+      responses:
+        '200':
+          description: IP blacklisted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ip:         { type: string }
+                  expires_in: { type: string }
+
+    delete:
+      tags: [DDoS Mitigation]
+      summary: Remove an IP from the blacklist
+      operationId: unblacklistIP
+      security:
+        - AdminKey: []
+      parameters:
+        - name: ip
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: IP removed from blacklist
+
+  # ── FORENSICS ────────────────────────────────────────────────────────────────
+
+  /api/open/forensics/stats:
+    get:
+      tags: [Forensics]
+      summary: Capture engine statistics
+      operationId: getForensicsStats
+      security:
+        - AdminKey: []
+      responses:
+        '200':
+          description: Capture stats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  packets_captured:  { type: integer }
+                  bytes_captured:    { type: integer }
+                  sessions_tracked:  { type: integer }
+                  threat_packets:    { type: integer }
+                  pcap_files:        { type: integer }
+
+  /api/open/forensics/sessions/{id}/pcap:
+    get:
+      tags: [Forensics]
+      summary: Download session as PCAP file
+      operationId: downloadSessionPCAP
+      security:
+        - AdminKey: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: PCAP file download
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+
+  /api/open/forensics/evidence:
+    post:
+      tags: [Forensics]
+      summary: Create sealed evidence package
+      operationId: createEvidencePackage
+      security:
+        - AdminKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [incident_id]
+              properties:
+                incident_id:  { type: string }
+                description:  { type: string }
+                created_by:   { type: string }
+      responses:
+        '201':
+          description: Evidence package created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  package:  { type: object }
+                  zip_path: { type: string }
+                  download: { type: string }
+
+  # ── PORTAL — AUTH ────────────────────────────────────────────────────────────
+
+  /portal/api/v1/auth/register:
+    post:
+      tags: [Portal — Auth]
+      summary: Register a new customer account
+      description: Creates a new customer account and automatically issues a 30-day trial license.
+      operationId: portalRegister
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [company_name, email, password]
+              properties:
+                company_name: { type: string, example: "Acme Corporation" }
+                email:        { type: string, format: email }
+                password:     { type: string, minLength: 8 }
+                country:      { type: string }
+      responses:
+        '201':
+          description: Account created + trial license issued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:   { type: string }
+                  token:     { type: string }
+                  customer:  { type: object }
+
+  /portal/api/v1/auth/login:
+    post:
+      tags: [Portal — Auth]
+      summary: Customer login
+      operationId: portalLogin
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:    { type: string, format: email }
+                password: { type: string }
+                mfa_code: { type: string }
+      responses:
+        '200':
+          description: JWT token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:    { type: string }
+                  customer: { type: object }
+
+  # ── PORTAL — LICENSES ────────────────────────────────────────────────────────
+
+  /portal/api/v1/licenses:
+    get:
+      tags: [Portal — Licenses]
+      summary: List my licenses
+      operationId: portalListLicenses
+      security:
+        - BearerToken: []
+        - PortalAPIKey: []
+      responses:
+        '200':
+          description: Customer licenses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:    { type: integer }
+                  licenses: { type: array, items: { type: object } }
+
+    post:
+      tags: [Portal — Licenses]
+      summary: Request a new license
+      operationId: portalRequestLicense
+      security:
+        - BearerToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tier]
+              properties:
+                tier:           { type: string }
+                domain:         { type: string }
+                valid_for_days: { type: integer, default: 365 }
+                notes:          { type: string }
+      responses:
+        '201':
+          description: License issued
+        '403':
+          description: Quota exceeded — upgrade plan
+
+  /portal/api/v1/licenses/{key}/download:
+    get:
+      tags: [Portal — Licenses]
+      summary: Download a license file
+      operationId: portalDownloadLicense
+      security:
+        - BearerToken: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: License file download
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+
+  # ── PORTAL — BILLING ────────────────────────────────────────────────────────
+
+  /portal/api/v1/billing/plans:
+    get:
+      tags: [Portal — Billing]
+      summary: List available plans and pricing
+      operationId: listPlans
+      security: []
+      responses:
+        '200':
+          description: Available plans
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  plans:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:       { type: string }
+                        name:     { type: string }
+                        price_usd: { type: integer }
+                        duration: { type: string }
+                        licenses: { type: integer }
+                        tier:     { type: string }
+
+  # ── ADMIN — TENANTS ──────────────────────────────────────────────────────────
+
+  /admin/api/v1/tenants:
+    get:
+      tags: [Admin — Tenants]
+      summary: List all tenants
+      operationId: listTenants
+      security:
+        - BearerToken: []
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [active, suspended, deleted] }
+        - name: plan
+          in: query
+          schema: { type: string, enum: [trial, pro, enterprise, ultimate] }
+        - name: q
+          in: query
+          description: Search query
+          schema: { type: string }
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+      responses:
+        '200':
+          description: Tenant list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:   { type: integer }
+                  tenants:
+                    type: array
+                    items: { $ref: '#/components/schemas/Tenant' }
+
+    post:
+      tags: [Admin — Tenants]
+      summary: Create a new tenant
+      operationId: createTenant
+      security:
+        - BearerToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, plan, contact_email]
+              properties:
+                name:          { type: string }
+                plan:          { type: string, enum: [trial, pro, enterprise, ultimate] }
+                contact_email: { type: string, format: email }
+                region:        { type: string, default: us-east-1 }
+                country:       { type: string }
+                notes:         { type: string }
+                max_users:     { type: integer }
+                max_sites:     { type: integer }
+      responses:
+        '201':
+          description: Tenant created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Tenant' }
+
+  /admin/api/v1/tenants/{id}/suspend:
+    post:
+      tags: [Admin — Tenants]
+      summary: Suspend a tenant
+      operationId: suspendTenant
+      security:
+        - BearerToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason: { type: string }
+      responses:
+        '200':
+          description: Tenant suspended
+
+  /admin/api/v1/tenants/{id}/impersonate:
+    post:
+      tags: [Admin — Tenants]
+      summary: Impersonate a tenant (super_admin only)
+      description: |
+        Allows super admins to access a tenant's account for support purposes.
+        All actions performed during impersonation are logged in the audit trail.
+      operationId: impersonateTenant
+      security:
+        - BearerToken: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Impersonation token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:     { type: string }
+                  tenant_id: { type: string }
+                  expires:   { type: integer, description: Unix timestamp }
+                  warning:   { type: string }
+
+  # ── ADMIN — AUDIT ────────────────────────────────────────────────────────────
+
+  /admin/api/v1/audit:
+    get:
+      tags: [Admin — Audit]
+      summary: Platform-wide audit log
+      operationId: getGlobalAudit
+      security:
+        - BearerToken: []
+      parameters:
+        - name: action
+          in: query
+          description: Filter by action type
+          schema:
+            type: string
+            example: tenant.create
+        - name: user_id
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count: { type: integer }
+                  logs:
+                    type: array
+                    items: { $ref: '#/components/schemas/AuditLog' }
+
+  /admin/api/v1/audit/export:
+    get:
+      tags: [Admin — Audit]
+      summary: Export audit log as CSV
+      operationId: exportAudit
+      security:
+        - BearerToken: []
+      responses:
+        '200':
+          description: CSV file download
+          content:
+            text/csv:
+              schema: { type: string }
+
+  /admin/api/v1/stats:
+    get:
+      tags: [Admin — Tenants]
+      summary: Platform-wide statistics
+      operationId: getPlatformStats
+      security:
+        - BearerToken: []
+      responses:
+        '200':
+          description: Platform statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tenants:        { type: integer }
+                  active_tenants: { type: integer }
+                  total_users:    { type: integer }
+                  by_plan:
+                    type: object
+                    additionalProperties: { type: integer }
+                  mrr_estimate:   { type: integer, description: "USD/month" }

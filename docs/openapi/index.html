@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>IronWall-WAF — API Documentation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#08090f;--bg2:#0e1118;--panel:#111720;--border:#1a2435;
+  --accent:#00d4ff;--green:#00e676;--txt:#c8d8e8;--txt2:#6a8aaa;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:100vh}
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 32px;display:flex;align-items:center;justify-content:space-between}
+.header-logo{font-family:var(--mono);font-size:18px;font-weight:700;color:#fff;letter-spacing:1px}
+.header-tag{font-size:10px;color:var(--accent);font-family:var(--mono);letter-spacing:2px;margin-top:2px}
+.tabs{display:flex;gap:4px}
+.tab{padding:8px 18px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:var(--mono);border:1px solid var(--border);color:var(--txt2);transition:all .13s;text-transform:uppercase;letter-spacing:1px}
+.tab:hover{color:var(--accent)}
+.tab.active{background:rgba(0,212,255,.12);color:var(--accent);border-color:rgba(0,212,255,.3)}
+.view{display:none}
+.view.active{display:block}
+
+/* ── SIDEBAR + CONTENT LAYOUT ── */
+.docs-shell{display:flex;height:calc(100vh - 64px);overflow:hidden}
+.sidebar{width:260px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0}
+.sidebar-section{font-family:var(--mono);font-size:8px;letter-spacing:2.5px;color:var(--txt2);padding:12px 20px 4px;text-transform:uppercase;opacity:.6}
+.sidebar-item{display:flex;align-items:center;gap:8px;padding:7px 20px;cursor:pointer;font-size:12px;color:var(--txt2);border-left:2px solid transparent;transition:all .1s}
+.sidebar-item:hover,.sidebar-item.active{color:var(--accent);border-left-color:var(--accent);background:rgba(0,212,255,.04)}
+.method{display:inline-block;font-family:var(--mono);font-size:9px;font-weight:700;padding:1px 6px;border-radius:3px;flex-shrink:0;text-transform:uppercase}
+.GET{background:rgba(0,230,118,.1);color:#00e676}
+.POST{background:rgba(0,212,255,.1);color:#00d4ff}
+.PUT{background:rgba(255,145,0,.1);color:#ff9100}
+.DELETE{background:rgba(255,23,68,.1);color:#ff1744}
+
+.main-docs{flex:1;overflow-y:auto;padding:32px}
+
+/* ── ENDPOINT CARD ── */
+.endpoint{background:var(--panel);border:1px solid var(--border);border-radius:10px;margin-bottom:20px;overflow:hidden}
+.endpoint-head{padding:16px 20px;display:flex;align-items:flex-start;gap:12px;cursor:pointer;transition:background .1s}
+.endpoint-head:hover{background:rgba(255,255,255,.02)}
+.endpoint-path{font-family:var(--mono);font-size:13px;color:#fff;font-weight:500}
+.endpoint-summary{font-size:12px;color:var(--txt2);margin-top:3px}
+.endpoint-body{display:none;padding:20px;border-top:1px solid var(--border)}
+.endpoint.open .endpoint-body{display:block}
+
+.section-title{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--txt2);text-transform:uppercase;margin-bottom:10px;margin-top:20px}
+.section-title:first-child{margin-top:0}
+
+.param-row{display:grid;grid-template-columns:140px 80px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid rgba(26,36,53,.6);font-size:12px}
+.param-row:last-child{border:none}
+.param-name{font-family:var(--mono);color:var(--accent)}
+.param-type{font-family:var(--mono);font-size:10px;color:var(--txt2)}
+.param-desc{color:var(--txt2)}
+.required-badge{display:inline-block;background:rgba(255,23,68,.1);color:#ff1744;font-size:8px;font-family:var(--mono);padding:1px 5px;border-radius:3px;margin-left:4px}
+
+.code-block{background:#05080f;border:1px solid var(--border);border-radius:8px;padding:16px;font-family:var(--mono);font-size:11px;line-height:1.7;overflow-x:auto;position:relative}
+.code-lang{position:absolute;top:8px;right:12px;font-size:9px;color:var(--txt2);text-transform:uppercase;letter-spacing:1px}
+.key{color:#ff9100}.str{color:#00e676}.num{color:var(--accent)}.bool{color:#b060ff}
+
+.response-tab{display:flex;gap:4px;margin-bottom:12px}
+.rtab{font-family:var(--mono);font-size:9px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--border);color:var(--txt2)}
+.rtab.on{background:rgba(0,230,118,.08);color:var(--green);border-color:rgba(0,230,118,.2)}
+.rtab.warn{background:rgba(255,23,68,.08);color:#ff1744}
+
+.try-btn{font-family:var(--mono);font-size:9px;font-weight:700;padding:5px 12px;border-radius:5px;border:1px solid rgba(0,212,255,.3);background:rgba(0,212,255,.08);color:var(--accent);cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all .13s}
+.try-btn:hover{background:rgba(0,212,255,.15)}
+
+.badge-secure{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-family:var(--mono);background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.2);color:var(--green);padding:2px 8px;border-radius:10px}
+.badge-pub{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-family:var(--mono);background:rgba(100,116,139,.08);border:1px solid rgba(100,116,139,.2);color:var(--txt2);padding:2px 8px;border-radius:10px}
+
+/* ── OVERVIEW TAB ── */
+.overview-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.ov-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px}
+.ov-card-title{font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--txt2);text-transform:uppercase;margin-bottom:8px}
+.ov-card-value{font-size:28px;font-weight:700;font-family:var(--mono);color:var(--accent)}
+.ov-card-sub{font-size:11px;color:var(--txt2);margin-top:4px}
+
+.server-list{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.server-item{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px}
+.server-env{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;color:var(--txt2);text-transform:uppercase;width:120px}
+.server-url{font-family:var(--mono);font-size:12px;color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-logo">🛡️ IronWall-WAF</div>
+    <div class="header-tag">API DOCUMENTATION · v1.0.0 · OPTIMIUM NEXUS LLC</div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
+    <div class="tab" onclick="switchTab('reference',this)">API Reference</div>
+    <div class="tab" onclick="switchTab('guides',this)">Guides</div>
+    <div class="tab" onclick="window.open('ironwall-api.yaml','_blank')">↓ OpenAPI YAML</div>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<div class="view active" id="tab-overview">
+<div style="max-width:900px;margin:0 auto;padding:32px">
+  <h1 style="font-size:28px;font-weight:700;color:#fff;margin-bottom:8px">IronWall-WAF REST API</h1>
+  <p style="color:var(--txt2);font-size:14px;margin-bottom:28px">Complete API reference for the IronWall platform. All APIs follow REST conventions with JSON request/response bodies.</p>
+
+  <div class="overview-grid">
+    <div class="ov-card"><div class="ov-card-title">Total Endpoints</div><div class="ov-card-value">47</div><div class="ov-card-sub">Across 4 API servers</div></div>
+    <div class="ov-card"><div class="ov-card-title">API Version</div><div class="ov-card-value">v1</div><div class="ov-card-sub">Stable · OpenAPI 3.1.0</div></div>
+    <div class="ov-card"><div class="ov-card-title">Auth Methods</div><div class="ov-card-value">3</div><div class="ov-card-sub">JWT · Admin Key · API Key</div></div>
+  </div>
+
+  <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--txt2);text-transform:uppercase;margin-bottom:12px">API SERVERS</div>
+  <div class="server-list">
+    <div class="server-item"><div class="server-env">Management</div><div class="server-url">https://YOUR_WAF:9443</div><div style="margin-left:auto;font-size:11px;color:var(--txt2)">WAF config, detection, GeoIP, ZeroDay</div></div>
+    <div class="server-item"><div class="server-env">License Server</div><div class="server-url">http://YOUR_WAF:8090</div><div style="margin-left:auto;font-size:11px;color:var(--txt2)">License issuance, validation, stats</div></div>
+    <div class="server-item"><div class="server-env">Customer Portal</div><div class="server-url">http://YOUR_WAF:8080</div><div style="margin-left:auto;font-size:11px;color:var(--txt2)">Self-service, billing, support</div></div>
+    <div class="server-item"><div class="server-env">Admin Center</div><div class="server-url">http://YOUR_WAF:8085</div><div style="margin-left:auto;font-size:11px;color:var(--txt2)">Multi-tenant, audit, platform stats</div></div>
+  </div>
+
+  <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--txt2);text-transform:uppercase;margin-bottom:12px;margin-top:28px">AUTHENTICATION</div>
+  <div class="code-block">
+<span class="key"># Bearer Token (JWT) — portal and admin endpoints</span>
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+<span class="key"># Admin API Key — license server and management API</span>
+X-Admin-Key: your-admin-api-key
+
+<span class="key"># Customer API Key — portal endpoints</span>
+X-API-Key: iwk_a3f2b1c4d5e6f7g8...
+  </div>
+
+  <div style="font-family:var(--mono);font-size:9px;letter-spacing:2px;color:var(--txt2);text-transform:uppercase;margin-bottom:12px;margin-top:28px">QUICK START — VALIDATE A LICENSE</div>
+  <div class="code-block">
+<span class="key">curl</span> -X POST https://waf.example.com:9443/api/v1/licensing/validate \
+  -H <span class="str">"Content-Type: application/json"</span> \
+  -d <span class="str">'{"license_file": "-----BEGIN IRONWALL LICENSE-----\n...\n-----END IRONWALL LICENSE-----"}'</span>
+
+<span class="key"># Response:</span>
+{
+  <span class="key">"valid"</span>: <span class="bool">true</span>,
+  <span class="key">"tier"</span>: <span class="str">"ENTERPRISE"</span>,
+  <span class="key">"licensee"</span>: <span class="str">"Acme Corporation"</span>,
+  <span class="key">"days_remaining"</span>: <span class="num">312</span>,
+  <span class="key">"features"</span>: [<span class="str">"core_waf"</span>, <span class="str">"geoip_blocking"</span>, <span class="str">"siem"</span>, ...]
+}
+  </div>
+</div>
+</div>
+
+<!-- REFERENCE -->
+<div class="view" id="tab-reference">
+<div class="docs-shell">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-section">License API</div>
+    <div class="sidebar-item" onclick="goto('ep-validate')"><span class="method POST">POST</span>/validate</div>
+    <div class="sidebar-item" onclick="goto('ep-list-lic')"><span class="method GET">GET</span>/admin/licenses</div>
+    <div class="sidebar-item" onclick="goto('ep-issue')"><span class="method POST">POST</span>/admin/licenses</div>
+    <div class="sidebar-item" onclick="goto('ep-revoke')"><span class="method DELETE">DELETE</span>/licenses/{id}/revoke</div>
+    <div class="sidebar-item" onclick="goto('ep-bulk')"><span class="method POST">POST</span>/licenses/bulk</div>
+    <div class="sidebar-item" onclick="goto('ep-stats')"><span class="method GET">GET</span>/admin/stats</div>
+
+    <div class="sidebar-section">GeoIP API</div>
+    <div class="sidebar-item" onclick="goto('ep-geo-lookup')"><span class="method GET">GET</span>/geoip/lookup/{ip}</div>
+    <div class="sidebar-item" onclick="goto('ep-geo-eval')"><span class="method POST">POST</span>/geoip/evaluate</div>
+    <div class="sidebar-item" onclick="goto('ep-geo-rules')"><span class="method GET">GET</span>/geoip/rules</div>
+    <div class="sidebar-item" onclick="goto('ep-geo-add')"><span class="method POST">POST</span>/geoip/rules</div>
+
+    <div class="sidebar-section">Zero-Day Shield</div>
+    <div class="sidebar-item" onclick="goto('ep-zd-score')"><span class="method POST">POST</span>/zerodayshield/score</div>
+    <div class="sidebar-item" onclick="goto('ep-zd-stats')"><span class="method GET">GET</span>/zerodayshield/stats</div>
+
+    <div class="sidebar-section">DDoS Mitigation</div>
+    <div class="sidebar-item" onclick="goto('ep-ddos-stats')"><span class="method GET">GET</span>/ddos/stats</div>
+    <div class="sidebar-item" onclick="goto('ep-ddos-bl')"><span class="method POST">POST</span>/ddos/blacklist/{ip}</div>
+
+    <div class="sidebar-section">Forensics</div>
+    <div class="sidebar-item" onclick="goto('ep-for-stats')"><span class="method GET">GET</span>/forensics/stats</div>
+    <div class="sidebar-item" onclick="goto('ep-for-pcap')"><span class="method GET">GET</span>/forensics/sessions/{id}/pcap</div>
+    <div class="sidebar-item" onclick="goto('ep-for-ev')"><span class="method POST">POST</span>/forensics/evidence</div>
+
+    <div class="sidebar-section">Customer Portal</div>
+    <div class="sidebar-item" onclick="goto('ep-reg')"><span class="method POST">POST</span>/auth/register</div>
+    <div class="sidebar-item" onclick="goto('ep-login')"><span class="method POST">POST</span>/auth/login</div>
+    <div class="sidebar-item" onclick="goto('ep-my-lic')"><span class="method GET">GET</span>/licenses</div>
+
+    <div class="sidebar-section">Admin Center</div>
+    <div class="sidebar-item" onclick="goto('ep-ten-list')"><span class="method GET">GET</span>/tenants</div>
+    <div class="sidebar-item" onclick="goto('ep-ten-create')"><span class="method POST">POST</span>/tenants</div>
+    <div class="sidebar-item" onclick="goto('ep-ten-imp')"><span class="method POST">POST</span>/tenants/{id}/impersonate</div>
+    <div class="sidebar-item" onclick="goto('ep-audit')"><span class="method GET">GET</span>/audit</div>
+  </div>
+
+  <!-- Main content -->
+  <div class="main-docs" id="docsMain">
+
+    <!-- VALIDATE -->
+    <div class="endpoint open" id="ep-validate">
+      <div class="endpoint-head" onclick="toggleEndpoint(this)">
+        <span class="method POST">POST</span>
+        <div>
+          <div class="endpoint-path">/api/v1/licensing/validate</div>
+          <div class="endpoint-summary">Validate a license file or key · <span class="badge-pub">🌐 Public</span></div>
+        </div>
+        <button class="try-btn" style="margin-left:auto" onclick="event.stopPropagation();tryIt('validate')">Try It</button>
+      </div>
+      <div class="endpoint-body">
+        <p style="color:var(--txt2);font-size:12px;margin-bottom:16px">Validates a license PEM file or license key. Returns tier, features, limits, and optional feature-availability check. No authentication required.</p>
+        <div class="section-title">Request Body</div>
+        <div class="code-block"><span class="key">"license_file"</span>: <span class="str">"-----BEGIN IRONWALL LICENSE-----\n...base64...\n-----END IRONWALL LICENSE-----"</span>,
+<span class="key">"feature"</span>: <span class="str">"geoip_blocking"</span>  <span class="key">// optional</span>
+<div class="code-lang">JSON</div></div>
+        <div class="section-title">Response 200</div>
+        <div class="code-block">{
+  <span class="key">"valid"</span>: <span class="bool">true</span>,
+  <span class="key">"tier"</span>: <span class="str">"ENTERPRISE"</span>,
+  <span class="key">"licensee"</span>: <span class="str">"Acme Corp"</span>,
+  <span class="key">"days_remaining"</span>: <span class="num">312</span>,
+  <span class="key">"feature_available"</span>: <span class="bool">true</span>,
+  <span class="key">"features"</span>: [<span class="str">"core_waf"</span>, <span class="str">"geoip_blocking"</span>, <span class="str">"siem"</span>],
+  <span class="key">"errors"</span>: [],
+  <span class="key">"warnings"</span>: []
+}<div class="code-lang">JSON</div></div>
+        <div class="section-title">Response 403 — Invalid License</div>
+        <div class="code-block">{
+  <span class="key">"valid"</span>: <span class="bool">false</span>,
+  <span class="key">"errors"</span>: [<span class="str">"INVALID SIGNATURE — license has been tampered with"</span>]
+}<div class="code-lang">JSON</div></div>
+      </div>
+    </div>
+
+    <!-- ISSUE -->
+    <div class="endpoint" id="ep-issue">
+      <div class="endpoint-head" onclick="toggleEndpoint(this)">
+        <span class="method POST">POST</span>
+        <div>
+          <div class="endpoint-path">/api/v1/licensing/admin/licenses</div>
+          <div class="endpoint-summary">Issue a new license · <span class="badge-secure">🔒 X-Admin-Key</span></div>
+        </div>
+      </div>
+      <div class="endpoint-body">
+        <div class="section-title">Parameters</div>
+        <div class="param-row"><div class="param-name">tier <span class="required-badge">required</span></div><div class="param-type">string</div><div class="param-desc">COMMUNITY|PROFESSIONAL|ENTERPRISE|ULTIMATE|TRIAL|DEVELOPER</div></div>
+        <div class="param-row"><div class="param-name">licensee <span class="required-badge">required</span></div><div class="param-type">string</div><div class="param-desc">Company or person name</div></div>
+        <div class="param-row"><div class="param-name">email <span class="required-badge">required</span></div><div class="param-type">string</div><div class="param-desc">Contact email</div></div>
+        <div class="param-row"><div class="param-name">valid_for_days</div><div class="param-type">integer</div><div class="param-desc">Days of validity. 0 = lifetime license.</div></div>
+        <div class="param-row"><div class="param-name">domain</div><div class="param-type">string</div><div class="param-desc">Optional domain binding</div></div>
+        <div class="param-row"><div class="param-name">extra_features</div><div class="param-type">array</div><div class="param-desc">Features to add beyond tier defaults</div></div>
+        <div class="section-title">Example Request</div>
+        <div class="code-block">{
+  <span class="key">"tier"</span>: <span class="str">"ENTERPRISE"</span>,
+  <span class="key">"licensee"</span>: <span class="str">"Acme Corporation"</span>,
+  <span class="key">"email"</span>: <span class="str">"admin@acme.com"</span>,
+  <span class="key">"valid_for_days"</span>: <span class="num">365</span>,
+  <span class="key">"domain"</span>: <span class="str">"acme.com"</span>
+}<div class="code-lang">JSON</div></div>
+        <div class="section-title">Response 201</div>
+        <div class="code-block">{
+  <span class="key">"key"</span>: <span class="str">"IW-ENT-A3F2-B9K1-M7X4-Z2P8"</span>,
+  <span class="key">"tier"</span>: <span class="str">"ENTERPRISE"</span>,
+  <span class="key">"expires_at"</span>: <span class="str">"2026-01-15T00:00:00Z"</span>,
+  <span class="key">"license_file"</span>: <span class="str">"-----BEGIN IRONWALL LICENSE-----\n..."</span>
+}<div class="code-lang">JSON</div></div>
+      </div>
+    </div>
+
+    <!-- GEO EVALUATE -->
+    <div class="endpoint" id="ep-geo-eval">
+      <div class="endpoint-head" onclick="toggleEndpoint(this)">
+        <span class="method POST">POST</span>
+        <div>
+          <div class="endpoint-path">/api/open/geoip/evaluate</div>
+          <div class="endpoint-summary">Evaluate GeoIP action for an IP · <span class="badge-secure">🔒 X-Admin-Key</span></div>
+        </div>
+      </div>
+      <div class="endpoint-body">
+        <div class="code-block">{
+  <span class="key">"ip"</span>: <span class="str">"45.32.11.99"</span>
+}<div class="code-lang">Request</div></div>
+        <div class="code-block">{
+  <span class="key">"action"</span>: <span class="str">"block"</span>,
+  <span class="key">"reason"</span>: <span class="str">"matched rule test-block-KP: country KP block"</span>,
+  <span class="key">"lookup"</span>: {
+    <span class="key">"ip"</span>: <span class="str">"45.32.11.99"</span>,
+    <span class="key">"country_code"</span>: <span class="str">"KP"</span>,
+    <span class="key">"risk_score"</span>: <span class="num">95</span>,
+    <span class="key">"is_vpn"</span>: <span class="bool">false</span>
+  },
+  <span class="key">"latency_us"</span>: <span class="num">234</span>
+}<div class="code-lang">Response 200</div></div>
+      </div>
+    </div>
+
+    <!-- ZERO-DAY SCORE -->
+    <div class="endpoint" id="ep-zd-score">
+      <div class="endpoint-head" onclick="toggleEndpoint(this)">
+        <span class="method POST">POST</span>
+        <div>
+          <div class="endpoint-path">/api/open/zerodayshield/score</div>
+          <div class="endpoint-summary">ML anomaly score for a request · <span class="badge-secure">🔒 X-Admin-Key</span></div>
+        </div>
+      </div>
+      <div class="endpoint-body">
+        <div class="code-block">{
+  <span class="key">"ip"</span>: <span class="str">"1.2.3.4"</span>,
+  <span class="key">"method"</span>: <span class="str">"POST"</span>,
+  <span class="key">"path"</span>: <span class="str">"/api/users"</span>,
+  <span class="key">"query"</span>: <span class="str">"id=1 UNION SELECT * FROM users--"</span>,
+  <span class="key">"body"</span>: <span class="str">""</span>,
+  <span class="key">"user_agent"</span>: <span class="str">"sqlmap/1.7"</span>
+}<div class="code-lang">Request</div></div>
+        <div class="code-block">{
+  <span class="key">"score"</span>: <span class="num">0.921</span>,
+  <span class="key">"level"</span>: <span class="str">"zero_day"</span>,
+  <span class="key">"is_zero_day"</span>: <span class="bool">true</span>,
+  <span class="key">"confidence"</span>: <span class="num">0.94</span>,
+  <span class="key">"explanation"</span>: <span class="str">"Anomaly driven by: special_char_ratio (4.2σ), nested_brackets (3.1σ)"</span>,
+  <span class="key">"top_features"</span>: [
+    {<span class="key">"feature"</span>: <span class="str">"special_char_ratio"</span>, <span class="key">"deviation"</span>: <span class="num">4.2</span>}
+  ]
+}<div class="code-lang">Response 200</div></div>
+      </div>
+    </div>
+
+    <!-- TENANT CREATE -->
+    <div class="endpoint" id="ep-ten-create">
+      <div class="endpoint-head" onclick="toggleEndpoint(this)">
+        <span class="method POST">POST</span>
+        <div>
+          <div class="endpoint-path">/admin/api/v1/tenants</div>
+          <div class="endpoint-summary">Create a new tenant · <span class="badge-secure">🔒 Bearer (super_admin)</span></div>
+        </div>
+      </div>
+      <div class="endpoint-body">
+        <div class="code-block">{
+  <span class="key">"name"</span>: <span class="str">"Acme Corporation"</span>,
+  <span class="key">"plan"</span>: <span class="str">"enterprise"</span>,
+  <span class="key">"contact_email"</span>: <span class="str">"admin@acme.com"</span>,
+  <span class="key">"region"</span>: <span class="str">"us-east-1"</span>,
+  <span class="key">"max_users"</span>: <span class="num">50</span>
+}<div class="code-lang">Request</div></div>
+        <div class="code-block">{
+  <span class="key">"id"</span>: <span class="str">"a1b2c3d4-..."</span>,
+  <span class="key">"name"</span>: <span class="str">"Acme Corporation"</span>,
+  <span class="key">"slug"</span>: <span class="str">"acme-corporation"</span>,
+  <span class="key">"plan"</span>: <span class="str">"enterprise"</span>,
+  <span class="key">"status"</span>: <span class="str">"active"</span>,
+  <span class="key">"created_at"</span>: <span class="str">"2024-04-13T12:00:00Z"</span>
+}<div class="code-lang">Response 201</div></div>
+      </div>
+    </div>
+
+    <!-- More endpoints would follow the same pattern -->
+    <div id="ep-list-lic"></div><div id="ep-revoke"></div><div id="ep-bulk"></div>
+    <div id="ep-stats"></div><div id="ep-geo-lookup"></div><div id="ep-geo-rules"></div>
+    <div id="ep-geo-add"></div><div id="ep-zd-stats"></div><div id="ep-ddos-stats"></div>
+    <div id="ep-ddos-bl"></div><div id="ep-for-stats"></div><div id="ep-for-pcap"></div>
+    <div id="ep-for-ev"></div><div id="ep-reg"></div><div id="ep-login"></div>
+    <div id="ep-my-lic"></div><div id="ep-ten-list"></div><div id="ep-ten-imp"></div>
+    <div id="ep-audit"></div>
+
+    <div style="text-align:center;padding:40px;color:var(--txt2);font-size:12px">
+      <p>Full OpenAPI specification: <a href="ironwall-api.yaml" style="color:var(--accent)">ironwall-api.yaml</a></p>
+      <p style="margin-top:8px">Need help? <a href="mailto:contact@optimiumnexus.com" style="color:var(--accent)">contact@optimiumnexus.com</a></p>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- GUIDES -->
+<div class="view" id="tab-guides">
+<div style="max-width:800px;margin:0 auto;padding:32px">
+  <h2 style="font-size:20px;font-weight:700;color:#fff;margin-bottom:24px">Integration Guides</h2>
+  <div style="display:grid;gap:16px">
+
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px">
+      <h3 style="color:var(--accent);font-family:var(--mono);font-size:13px;margin-bottom:8px">🐍 Python SDK</h3>
+      <div class="code-block">pip install ironwall-sdk
+
+from ironwall import IronWallClient, Feature
+
+client = IronWallClient(license_file=<span class="str">'/etc/ironwall/ironwall.lic'</span>)
+if client.has_feature(Feature.GEO_IP_BLOCKING):
+    enable_geoip()
+
+<span class="key">@</span>client.require_feature(Feature.FORENSICS)
+def start_capture(): ...<div class="code-lang">Python</div></div>
+    </div>
+
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px">
+      <h3 style="color:var(--accent);font-family:var(--mono);font-size:13px;margin-bottom:8px">🟨 Node.js / TypeScript SDK</h3>
+      <div class="code-block">npm install ironwall-sdk
+
+import { IronWallClient, Feature } from <span class="str">'ironwall-sdk'</span>
+const client = await createIronWallClient({ licenseFile: <span class="str">'ironwall.lic'</span> })
+
+app.get(<span class="str">'/forensics'</span>, client.requireFeature(Feature.Forensics), handler)<div class="code-lang">TypeScript</div></div>
+    </div>
+
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px">
+      <h3 style="color:var(--accent);font-family:var(--mono);font-size:13px;margin-bottom:8px">🔗 Kong Gateway</h3>
+      <div class="code-block">curl -X POST http://kong-admin:8001/services/my-api/plugins \
+  -d name=ironwall-waf \
+  -d config.ironwall_host=ironwall-mgt \
+  -d config.admin_key=YOUR_KEY \
+  -d config.dpi_enabled=true<div class="code-lang">Shell</div></div>
+    </div>
+
+    <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px">
+      <h3 style="color:var(--accent);font-family:var(--mono);font-size:13px;margin-bottom:8px">☸️ Kubernetes / Helm</h3>
+      <div class="code-block">helm install ironwall ./helm/ironwall \
+  --namespace ironwall --create-namespace \
+  --set forensics.enabled=true \
+  --set networkPolicies.enabled=true \
+  --set autoscaling.enabled=true<div class="code-lang">Shell</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function switchTab(name, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  el.classList.add('active');
+}
+function toggleEndpoint(head) {
+  head.closest('.endpoint').classList.toggle('open');
+}
+function goto(id) {
+  const el = document.getElementById(id);
+  if (el) { el.scrollIntoView({behavior:'smooth'}); el.classList.add('open'); }
+}
+function tryIt(ep) {
+  alert('Interactive "Try It" panel — connect to your IronWall instance.\nSee the OpenAPI spec for full details: ironwall-api.yaml');
+}
+</script>
+</body>
+</html>
