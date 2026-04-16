@@ -287,7 +287,7 @@ id "$AXELUS_USER" &>/dev/null || useradd -r -s /sbin/nologin -d "$DATA_DIR" "$AX
 usermod -aG docker "$AXELUS_USER" 2>/dev/null || true
 
 dirs=(
-  "$DATA_DIR/resources/"{postgres,mgt,detector,nginx,sock}
+  "$DATA_DIR/resources/"{postgres,mgt,detector,nginx,sock,chaos}
   "$DATA_DIR/logs/"{nginx,mgt,audit}
   "$DATA_DIR/backups"
   "$DATA_DIR/certs"

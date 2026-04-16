@@ -240,17 +240,18 @@ services:
     image: optimiumnexusllc/axelus-chaos:latest
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/challenge/v2/api/auth/keys >/dev/null 2>&1 && exit 0 || curl -sf http://localhost:8080/ >/dev/null 2>&1 && exit 0 || exit 0"]
-      interval: 5s
-      timeout: 5s
-      retries: 30
-      start_period: 5s
+      test: ["CMD-SHELL", "test -d /app/chaos && exit 0 || exit 1"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+      start_period: 3s
     logging:
       driver: "json-file"
       options:
         max-size: "100m"
         max-file: "5"
     volumes:
+      - ${SAFELINE_DIR:-/data/axelus-waf}/resources/chaos:/app/chaos
       - /etc/localtime:/etc/localtime:ro
     extra_hosts:
       - "safeline-postgres:172.22.222.2"

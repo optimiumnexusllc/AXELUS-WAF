@@ -131,7 +131,7 @@ ok "Compose file: $COMPOSE_FILE"
 # ── Step 3: Create data directories ───────────────────────────────────────────
 step
 dirs=(
-  "$SAFELINE_DIR/resources/"{postgres,mgt,detector,nginx,sock}
+  "$SAFELINE_DIR/resources/"{postgres,mgt,detector,nginx,sock,chaos}
   "$SAFELINE_DIR/logs/nginx"
   "$REPO_DIR/monitoring/"{prometheus,alertmanager,grafana/provisioning/{datasources,dashboards}}
 )
