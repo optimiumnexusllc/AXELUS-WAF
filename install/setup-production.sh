@@ -298,6 +298,7 @@ for d in "${dirs[@]}"; do mkdir -p "$d"; done
 
 chown -R "$AXELUS_USER":"$AXELUS_USER" "$DATA_DIR" "$INSTALL_DIR"
 chmod 750 "$DATA_DIR" "$INSTALL_DIR"
+chmod 777 "$DATA_DIR/resources/sock" "$DATA_DIR/logs/nginx" "$DATA_DIR/resources/chaos"
 ok "Utilisateur '${AXELUS_USER}' et répertoires créés"
 
 # ═══════════════════════════════════════════════════════════════════════════════
