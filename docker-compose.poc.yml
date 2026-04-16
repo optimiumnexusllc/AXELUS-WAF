@@ -225,12 +225,12 @@ services:
     healthcheck:
       test:
       - CMD-SHELL
-      - pgrep -f chaos >/dev/null 2>&1 && sleep 2 && (echo > /dev/tcp/127.0.0.1/8088)
+      - (echo > /dev/tcp/127.0.0.1/9000) 2>/dev/null && (echo > /dev/tcp/127.0.0.1/8080)
         2>/dev/null && exit 0 || exit 1
       interval: 5s
       timeout: 5s
-      retries: 60
-      start_period: 20s
+      retries: 30
+      start_period: 15s
     logging:
       driver: json-file
       options:
