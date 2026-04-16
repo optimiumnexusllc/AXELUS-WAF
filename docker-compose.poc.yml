@@ -31,6 +31,7 @@ services:
   # AXELUS-WAF mirrored image — optimiumnexusllc/axelus-postgres
   postgres:
     container_name: axelus-pg
+    hostname: safeline-postgres
     image: optimiumnexusllc/axelus-postgres:15.2
     restart: unless-stopped
     environment:
@@ -79,6 +80,7 @@ services:
   # The WAF engine — Tengine (fork of Nginx) with AXELUS modules
   waf:
     container_name: axelus-waf
+    hostname: safeline-tengine
     image: optimiumnexusllc/axelus-tengine:latest
     restart: unless-stopped
     ports:
@@ -102,6 +104,7 @@ services:
   # Core management API — WAF config, license, dashboards, REST API
   mgt:
     container_name: axelus-mgt
+    hostname: safeline-mgt
     image: optimiumnexusllc/axelus-mgt:latest
     restart: unless-stopped
     ports:
@@ -134,6 +137,7 @@ services:
   # ML-based attack detection — Zero-Day Shield + behavioral analysis
   detector:
     container_name: axelus-detector
+    hostname: safeline-detector
     image: optimiumnexusllc/axelus-detector:latest
     restart: unless-stopped
     volumes:
@@ -153,6 +157,7 @@ services:
   # FastVM — handles real-time request processing
   fvm:
     container_name: axelus-fvm
+    hostname: safeline-fvm
     image: optimiumnexusllc/axelus-fvm:latest
     restart: unless-stopped
     volumes:
@@ -165,6 +170,7 @@ services:
   # Rules/config sync service
   luigi:
     container_name: axelus-luigi
+    hostname: safeline-luigi
     image: optimiumnexusllc/axelus-luigi:latest
     restart: unless-stopped
     environment:
@@ -182,6 +188,7 @@ services:
   # Anti-bot challenge service
   chaos:
     container_name: axelus-chaos
+    hostname: safeline-chaos
     image: optimiumnexusllc/axelus-chaos:latest
     restart: unless-stopped
     logging:
