@@ -232,7 +232,26 @@ ok "Docker: $(docker --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
 step
 
 export DEBIAN_FRONTEND=noninteractive
-apt-get update -qq
+
+# Basculer sur archive.ubuntu.com si le miroir ci. est inaccessible
+if grep -q "ci.archive.ubuntu.com" /etc/apt/sources.list 2>/dev/null; then
+  log "Remplacement du miroir ci.archive.ubuntu.com → archive.ubuntu.com..."
+  sed -i 's|ci.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list
+fi
+
+# apt-get update avec retry automatique (3 tentatives)
+APT_UPDATE_OK=false
+for attempt in 1 2 3; do
+  log "apt-get update (tentative ${attempt}/3)..."
+  if apt-get update -qq --fix-missing 2>/dev/null; then
+    APT_UPDATE_OK=true
+    break
+  fi
+  warn "Tentative ${attempt} échouée — nouvelle tentative dans 5s..."
+  sleep 5
+done
+$APT_UPDATE_OK || warn "apt-get update partiel — poursuite avec les paquets disponibles"
+
 apt-get install -y -qq \
   nginx \
   certbot python3-certbot-nginx \
