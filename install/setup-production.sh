@@ -874,6 +874,16 @@ step
 
 cd "$REPO_DIR"
 
+# Arrêter Nginx host — axelus-waf prend les ports 80/443 directement
+systemctl stop nginx 2>/dev/null || true
+# Reconfigurer Nginx sur port 8880 (admin uniquement, pas de conflit avec axelus-waf)
+if [[ -f /etc/nginx/sites-available/axelus-waf ]]; then
+  sed -i 's/listen 80;/listen 8880;/g' /etc/nginx/sites-available/axelus-waf
+  sed -i 's/listen 443 ssl/listen 8443 ssl/g' /etc/nginx/sites-available/axelus-waf
+  nginx -t 2>/dev/null && systemctl start nginx 2>/dev/null || true
+  ok "Nginx admin reconfiguré sur :8880 (HTTP) et :8443 (HTTPS admin)"
+fi
+
 log "Pull des images optimiumnexusllc/axelus-*..."
 docker compose -f docker-compose.poc.yml --env-file "$ENV_FILE" pull --quiet 2>/dev/null || true
 
@@ -1133,7 +1143,8 @@ echo -e "${CYAN}║  AXELUS-WAF Production — Déploiement Terminé            
 echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════════╝${RESET}"
 echo ""
 echo -e "${BOLD}URLs${RESET}"
-echo -e "  WAF Dashboard   : ${YELLOW}https://${DOMAIN}/waf/${RESET}     (restreint IP admin)"
+echo -e "  WAF Dashboard   : ${YELLOW}http://${LOCAL_IP}:9443${RESET}            (admin — restreint IP admin)"
+echo -e "  Via Nginx admin : ${YELLOW}https://${DOMAIN}:8443/waf/${RESET}   (Nginx proxy TLS)"
 echo -e "  Grafana         : ${YELLOW}https://${DOMAIN}/grafana/${RESET}  (restreint IP admin)"
 echo -e "  Health check    : ${YELLOW}https://${DOMAIN}/health${RESET}    (public)"
 echo -e "  API REST        : ${YELLOW}https://${DOMAIN}/api/${RESET}      (restreint IP admin)"
