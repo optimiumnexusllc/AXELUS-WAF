@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AXELUS-WAF — Compliance Center</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#06080e;--bg2:#0b1019;--bg3:#101620;--panel:#0d1520;
+  --border:#172030;--border2:#1e2d40;
+  --accent:#00c8ff;--a2:#0099cc;
+  --green:#00e676;--red:#ff1744;--orange:#ff9100;
+  --purple:#c000e0;--gold:#ffc400;--teal:#00bcd4;
+  --txt:#c5d5e5;--txt2:#506070;--txt3:#283848;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:var(--sans);font-size:13px;color:var(--txt);background:var(--bg)}
+
+/* Layout */
+.shell{display:grid;grid-template-rows:54px 1fr;height:100vh}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 24px;display:flex;align-items:center;gap:14px}
+.logo{font-family:var(--mono);font-size:14px;font-weight:700;color:#fff;letter-spacing:2px;padding:5px 12px;background:rgba(0,200,255,.1);border:1px solid rgba(0,200,255,.2);border-radius:5px}
+.top-title{font-family:var(--mono);font-size:11px;color:var(--txt2);letter-spacing:2px;text-transform:uppercase}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.live{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:9px;color:var(--green);letter-spacing:1px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+.main{display:grid;grid-template-columns:250px 1fr;overflow:hidden}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:16px 0}
+.content{overflow-y:auto;padding:22px}
+
+/* Sidebar */
+.std-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;border-left:2px solid transparent;transition:all .1s}
+.std-item:hover,.std-item.on{background:rgba(0,200,255,.05);border-left-color:var(--accent);color:#fff}
+.std-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.std-name{font-size:12px;font-weight:500}
+.std-badge{margin-left:auto;font-family:var(--mono);font-size:10px;font-weight:700}
+.std-badge.pass{color:var(--green)}
+.std-badge.warn{color:var(--orange)}
+.std-badge.crit{color:var(--red)}
+
+.sg{font-family:var(--mono);font-size:7px;letter-spacing:3px;color:var(--txt3);padding:12px 16px 3px;text-transform:uppercase}
+.total-score-box{margin:14px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:14px;text-align:center}
+.total-num{font-family:var(--mono);font-size:36px;font-weight:700;color:var(--accent)}
+.total-label{font-size:9px;letter-spacing:2px;color:var(--txt2);margin-top:2px}
+
+/* Cards */
+.stat-row{display:grid;gap:12px;margin-bottom:18px}
+.g5{grid-template-columns:repeat(5,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.sc{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:15px;position:relative;overflow:hidden}
+.sc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.sc.c1::after{background:linear-gradient(90deg,#004466,var(--accent))}
+.sc.c2::after{background:linear-gradient(90deg,#004422,var(--green))}
+.sc.c3::after{background:linear-gradient(90deg,#442200,var(--orange))}
+.sc.c4::after{background:linear-gradient(90deg,#440011,var(--red))}
+.sc.c5::after{background:linear-gradient(90deg,#442200,var(--gold))}
+.sc-label{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--txt3);margin-bottom:6px;text-transform:uppercase}
+.sc-value{font-family:var(--mono);font-size:28px;font-weight:700;color:#fff}
+.sc-sub{font-size:10px;color:var(--txt2);margin-top:4px}
+
+/* Panels */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:16px}
+.ph{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.pt{font-family:var(--mono);font-size:9px;font-weight:700;color:#fff;letter-spacing:1.5px;text-transform:uppercase}
+.pb{padding:14px 16px}
+
+/* Standard Cards Grid */
+.std-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:18px}
+.std-card{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;cursor:pointer;transition:all .13s;position:relative;overflow:hidden}
+.std-card:hover{border-color:var(--border2);transform:translateY(-1px)}
+.std-card.active{border-color:var(--accent);background:rgba(0,200,255,.03)}
+.std-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px}
+.std-card.pass::before{background:var(--green)}
+.std-card.warn::before{background:var(--orange)}
+.std-card.crit::before{background:var(--red)}
+.std-card-head{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.std-card-name{font-size:13px;font-weight:600;color:#fff}
+.std-card-region{font-family:var(--mono);font-size:8px;color:var(--txt2);margin-top:2px}
+.std-score{font-family:var(--mono);font-size:28px;font-weight:700}
+.std-card .bar-track{height:4px;background:var(--border);border-radius:2px;margin:8px 0;overflow:hidden}
+.std-card .bar-fill{height:100%;border-radius:2px}
+.std-card-stats{display:flex;gap:12px;font-size:10px}
+.std-stat{text-align:center}
+.std-stat-num{font-family:var(--mono);font-weight:700}
+.std-stat-label{color:var(--txt2);font-size:9px}
+
+/* Controls Table */
+.ctrl-table{width:100%;border-collapse:collapse}
+.ctrl-table thead th{font-family:var(--mono);font-size:7px;letter-spacing:2px;color:var(--txt3);padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;text-transform:uppercase;white-space:nowrap}
+.ctrl-table tbody tr{border-bottom:1px solid rgba(23,32,48,.5);transition:background .08s;cursor:pointer}
+.ctrl-table tbody tr:hover{background:rgba(0,200,255,.025)}
+.ctrl-table tbody td{padding:9px 12px;font-size:11px}
+
+/* Status */
+.pill{display:inline-block;font-family:var(--mono);font-size:7px;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap}
+.p-compliant{background:rgba(0,230,118,.07);color:var(--green);border:1px solid rgba(0,230,118,.2)}
+.p-partial{background:rgba(255,145,0,.07);color:var(--orange);border:1px solid rgba(255,145,0,.2)}
+.p-non_compliant{background:rgba(255,23,68,.07);color:var(--red);border:1px solid rgba(255,23,68,.2)}
+.p-not_applicable{background:rgba(80,96,112,.07);color:var(--txt2)}
+.p-unknown{background:rgba(80,96,112,.05);color:var(--txt3)}
+.sev{display:inline-block;font-family:var(--mono);font-size:7px;padding:1px 6px;border-radius:3px;text-transform:uppercase;letter-spacing:.5px}
+.s-critical{background:rgba(255,23,68,.1);color:var(--red)}
+.s-high{background:rgba(255,145,0,.1);color:var(--orange)}
+.s-medium{background:rgba(0,200,255,.1);color:var(--accent)}
+.s-low{background:rgba(0,230,118,.07);color:var(--green)}
+.s-info{background:rgba(80,96,112,.08);color:var(--txt2)}
+
+/* Finding */
+.finding{background:rgba(255,23,68,.04);border:1px solid rgba(255,23,68,.1);border-radius:6px;padding:10px 14px;margin-top:8px;font-size:11px;color:#ffaaaa}
+.rem{background:rgba(0,200,255,.04);border:1px solid rgba(0,200,255,.1);border-radius:6px;padding:10px 14px;margin-top:6px;font-size:11px;color:#aad8ff}
+.rem-step{padding:2px 0;display:flex;gap:6px}
+.rem-step::before{content:'→';color:var(--accent);flex-shrink:0}
+
+/* Score Gauge */
+.gauge-ring{display:flex;justify-content:center;padding:20px}
+svg.gauge{overflow:visible}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600;border:none;transition:all .12s;font-family:var(--sans)}
+.bp{background:var(--accent);color:#000}
+.bp:hover{background:var(--a2)}
+.bo{background:transparent;color:var(--txt2);border:1px solid var(--border2)}
+.bo:hover{color:var(--accent);border-color:var(--accent)}
+.bexport{background:rgba(0,200,255,.08);color:var(--accent);border:1px solid rgba(0,200,255,.2)}
+
+/* Cross-ref tags */
+.xref{display:inline-block;font-family:var(--mono);font-size:8px;padding:1px 5px;background:rgba(80,96,112,.08);border:1px solid var(--border);border-radius:3px;color:var(--txt2);margin-right:3px;margin-bottom:2px}
+
+/* Toast */
+.tz{position:fixed;bottom:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:6px}
+.toast{background:var(--bg2);border:1px solid var(--border2);border-radius:7px;padding:9px 14px;font-family:var(--mono);font-size:10px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.toast.ok{border-left:3px solid var(--green);color:var(--green)}
+.toast.info{border-left:3px solid var(--accent);color:var(--accent)}
+
+/* Score progress radial-ish */
+.radial{display:flex;align-items:center;justify-content:center;flex-direction:column}
+.radial-num{font-family:var(--mono);font-size:48px;font-weight:700}
+.radial-label{font-size:10px;letter-spacing:2px;color:var(--txt2);text-transform:uppercase}
+</style>
+</head>
+<body>
+<div class="tz" id="tz"></div>
+
+<div class="shell">
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="logo">AXELUS</div>
+  <div class="top-title">COMPLIANCE CENTER</div>
+  <div class="top-right">
+    <div class="live"><div class="dot"></div>LIVE ASSESSMENT</div>
+    <button class="btn bp" onclick="runAllAssessments()">⚡ Run Full Assessment</button>
+    <button class="btn bexport" onclick="exportReport()">⬇ Export PDF Report</button>
+    <button class="btn bo" onclick="toast('Compliance monitor: active — drift detection enabled','info')">📡 Monitor</button>
+  </div>
+</div>
+
+<div class="main">
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="total-score-box">
+    <div class="total-label">Platform Compliance Score</div>
+    <div class="total-num" id="total-score">87</div>
+    <div class="total-label" style="margin-top:4px">/ 100 — AXELUS-WAF</div>
+    <div style="margin-top:10px">
+      <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+        <div id="total-bar" style="height:100%;border-radius:2px;background:var(--green);width:87%"></div>
+      </div>
+    </div>
+    <div style="font-size:9px;color:var(--green);margin-top:6px;font-family:var(--mono)">8/10 CERTIFICATION READY</div>
+  </div>
+
+  <div class="sg">Standards</div>
+  <div id="std-nav"></div>
+  <div class="sg" style="margin-top:8px">Quick Links</div>
+  <div class="std-item" onclick="showView('gaps')"><div class="std-icon">🔍</div><div class="std-name">Gap Analysis</div></div>
+  <div class="std-item" onclick="showView('crossref')"><div class="std-icon">🔗</div><div class="std-name">Cross-Reference Map</div></div>
+  <div class="std-item" onclick="showView('exceptions')"><div class="std-icon">⚠</div><div class="std-name">Exceptions</div><div class="std-badge warn">2</div></div>
+  <div class="std-item" onclick="showView('reports')"><div class="std-icon">📋</div><div class="std-name">Report History</div></div>
+</div>
+
+<!-- CONTENT -->
+<div class="content" id="content">
+  <div id="view-overview"></div>
+  <div id="view-detail" style="display:none"></div>
+  <div id="view-gaps" style="display:none"></div>
+  <div id="view-crossref" style="display:none"></div>
+  <div id="view-exceptions" style="display:none"></div>
+  <div id="view-reports" style="display:none"></div>
+</div>
+</div>
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────────
+const STANDARDS = [
+  { id:'PCI-DSS-4.0',     name:'PCI DSS v4.0',       icon:'💳', score:91, region:'Global', category:'Payment Security',
+    compliant:15,partial:1,nonCompliant:1,total:17,controls:17,certReady:true, color:'#00e676',
+    description:'Payment Card Industry Data Security Standard v4.0 — protects cardholder data environments.',
+    keyControls:['WAF deployment (6.4.1)','TLS 1.3 (4.2.1)','MFA (8.4.2)','Logging (10.2.1)','IDS/IPS (11.5.1)'] },
+  { id:'ISO-27001-2022',  name:'ISO 27001:2022',      icon:'🏛', score:88, region:'Global', category:'ISMS',
+    compliant:13,partial:1,nonCompliant:1,total:15,controls:15,certReady:true, color:'#00e676',
+    description:'ISO/IEC 27001:2022 — international standard for Information Security Management Systems.',
+    keyControls:['Threat intelligence (A.5.7)','Access control (A.8.3)','Cryptography (A.8.24)','Monitoring (A.8.16)'] },
+  { id:'SOC-2',           name:'SOC 2 Type II',       icon:'🔐', score:85, region:'US', category:'Trust Services',
+    compliant:8,partial:2,nonCompliant:1,total:11,controls:11,certReady:true, color:'#00e676',
+    description:'SOC 2 Trust Services Criteria — security, availability, processing integrity, confidentiality, privacy.',
+    keyControls:['Anomaly detection (CC7.2)','Access controls (CC6.1)','Change management (CC8.1)'] },
+  { id:'NIST-CSF-2.0',   name:'NIST CSF 2.0',        icon:'🇺🇸', score:89, region:'US/Global', category:'Cybersecurity',
+    compliant:12,partial:1,nonCompliant:1,total:14,controls:14,certReady:true, color:'#00e676',
+    description:'NIST Cybersecurity Framework 2.0 — Govern, Identify, Protect, Detect, Respond, Recover.',
+    keyControls:['Malware detection (DE.CM-4)','Auth (PR.AC-7)','Encryption (PR.DS-2)','Incident response (RS.RP-1)'] },
+  { id:'GDPR',            name:'GDPR',                icon:'🇪🇺', score:82, region:'EU', category:'Privacy',
+    compliant:4,partial:1,nonCompliant:1,total:6,controls:6,certReady:false, color:'#ff9100',
+    description:'General Data Protection Regulation — EU privacy and data protection law.',
+    keyControls:['Privacy by design (Art.25)','Security of processing (Art.32)','Breach notification (Art.33)'] },
+  { id:'HIPAA',           name:'HIPAA Security Rule', icon:'🏥', score:90, region:'US', category:'Healthcare',
+    compliant:7,partial:0,nonCompliant:1,total:8,controls:8,certReady:true, color:'#00e676',
+    description:'HIPAA Security Rule — protects electronic Protected Health Information (ePHI).',
+    keyControls:['Transmission security (164.312(e))','Audit controls (164.312(b))','Authentication (164.312(d))'] },
+  { id:'CIS-Controls-v8', name:'CIS Controls v8',    icon:'🛡', score:86, region:'Global', category:'Best Practices',
+    compliant:13,partial:2,nonCompliant:1,total:16,controls:16,certReady:true, color:'#00e676',
+    description:'CIS Controls v8 — 18 prioritized safeguards to defend against cyber attacks.',
+    keyControls:['Malware defenses (CIS-10)','MFA (CIS-6.3)','Vuln scanning (CIS-7.4)','Network monitoring (CIS-13)'] },
+  { id:'NIS2',            name:'NIS2 Directive',      icon:'🇪🇺', score:84, region:'EU', category:'Critical Infra',
+    compliant:8,partial:1,nonCompliant:1,total:10,controls:10,certReady:false, color:'#ff9100',
+    description:'NIS2 Directive — EU cybersecurity requirements for essential and important entities.',
+    keyControls:['Incident handling (Art.21-b)','Cryptography (Art.21-g)','MFA (Art.21-i)','Reporting (Art.23)'] },
+  { id:'OWASP-Top10-2021',name:'OWASP Top 10',       icon:'🕸', score:93, region:'Global', category:'Web Security',
+    compliant:9,partial:1,nonCompliant:0,total:10,controls:10,certReady:true, color:'#00e676',
+    description:'OWASP Top 10 (2021) — the ten most critical web application security risks.',
+    keyControls:['Injection (A03)','Auth Failures (A07)','Crypto Failures (A02)','Logging (A09)','SSRF (A10)'] },
+  { id:'FedRAMP-High',    name:'FedRAMP High',        icon:'🏛', score:87, region:'US Gov', category:'Government',
+    compliant:8,partial:1,nonCompliant:1,total:10,controls:10,certReady:true, color:'#00e676',
+    description:'FedRAMP High — US federal government cloud security authorization framework.',
+    keyControls:['Boundary protection (SC-7)','MFA (IA-2)','Audit events (AU-2)','Malware (SI-3)'] },
+];
+
+const CONTROLS_SAMPLE = {
+  'PCI-DSS-4.0': [
+    {id:'PCI-6.4.1',title:'WAF deployment (public-facing apps)',cat:'Web Security',sev:'critical',status:'compliant',score:100,waf:'vulnerability_scan',xrefs:['ISO-A.8.8','NIST-DE.CM-4','OWASP-A06'],finding:null,rem:null},
+    {id:'PCI-8.4.2',title:'MFA for all CDE access',cat:'Authentication',sev:'critical',status:'compliant',score:100,waf:'authentication',xrefs:['ISO-A.8.5','CIS-6.3','NIST-PR.AC-7'],finding:null,rem:null},
+    {id:'PCI-4.2.1',title:'TLS for PAN transmissions',cat:'Encryption',sev:'critical',status:'compliant',score:100,waf:'encryption',xrefs:['ISO-A.8.24','NIST-PR.DS-2'],finding:null,rem:null},
+    {id:'PCI-10.2.1',title:'Audit log captures all access',cat:'Logging',sev:'critical',status:'compliant',score:100,waf:'logging',xrefs:['ISO-A.8.15','SOC2-CC7.2'],finding:null,rem:null},
+    {id:'PCI-11.5.1',title:'IDS/IPS detects attacks',cat:'IDS',sev:'critical',status:'compliant',score:100,waf:'monitoring',xrefs:['ISO-A.8.16','CIS-13.7'],finding:null,rem:null},
+    {id:'PCI-1.2.1',title:'Network security controls',cat:'Network',sev:'high',status:'compliant',score:95,waf:'network_segmentation',xrefs:['ISO-A.8.20','NIST-PR.AC-5'],finding:null,rem:null},
+    {id:'PCI-7.2.1',title:'Access control enforced',cat:'Access',sev:'high',status:'compliant',score:95,waf:'access_control',xrefs:['ISO-A.8.3','CIS-5.1'],finding:null,rem:null},
+    {id:'PCI-2.2.7',title:'Non-console admin encrypted',cat:'Config',sev:'critical',status:'compliant',score:100,waf:'encryption',xrefs:['ISO-A.8.24'],finding:null,rem:null},
+    {id:'PCI-10.7.1',title:'Critical control failures detected',cat:'Monitor',sev:'high',status:'partial',score:70,waf:'monitoring',xrefs:['ISO-A.8.16','NIST-DE.AE-4'],
+      finding:'AlertManager rules need custom tuning for WAF-specific events',
+      rem:['Configure alertmanager.yml with WAF-specific alert rules','Add rules for: high_block_rate, ml_model_drift, cert_expiry_7d','Test PagerDuty webhook endpoint']},
+    {id:'PCI-3.5.1',title:'PAN secured with cryptography',cat:'Data',sev:'critical',status:'non_compliant',score:40,waf:'data_protection',xrefs:['GDPR-Art.5'],
+      finding:'Log masking for PAN format not verified active. Risk: card numbers may appear in SIEM forwarding.',
+      rem:['Enable log masking pattern: \\d{4}[-\\s]\\d{4}[-\\s]\\d{4}[-\\s]\\d{4}','Verify SIEM output does not contain raw card numbers','Add automated PAN detection to forensics capture mode']},
+    {id:'PCI-12.10.1',title:'Incident response plan ready',cat:'IR',sev:'high',status:'compliant',score:90,waf:'incident_response',xrefs:['ISO-A.5.26','NIST-RS.RP-1'],finding:null,rem:null},
+    {id:'PCI-5.2.1',title:'Anti-malware deployed',cat:'Malware',sev:'high',status:'compliant',score:95,waf:'vulnerability_scan',xrefs:['ISO-A.8.7','CIS-10.1'],finding:null,rem:null},
+    {id:'PCI-8.3.6',title:'Passwords min 12 chars',cat:'Auth',sev:'high',status:'compliant',score:90,waf:'authentication',xrefs:['ISO-A.8.5','CIS-5.2'],finding:null,rem:null},
+    {id:'PCI-6.2.4',title:'Secure dev practices',cat:'Dev',sev:'high',status:'compliant',score:85,waf:'patch_management',xrefs:['ISO-A.8.25','NIST-PR.IP-2'],finding:null,rem:null},
+    {id:'PCI-1.3.1',title:'Inbound CDE traffic restricted',cat:'Network',sev:'critical',status:'compliant',score:100,waf:'geoip',xrefs:['ISO-A.8.20'],finding:null,rem:null},
+    {id:'PCI-10.5.1',title:'Log retention 12 months',cat:'Logging',sev:'high',status:'compliant',score:100,waf:'logging',xrefs:['ISO-A.8.15','HIPAA-164.312(b)'],finding:null,rem:null},
+    {id:'PCI-11.3.1',title:'Annual penetration testing',cat:'Pen Test',sev:'high',status:'compliant',score:80,waf:'vulnerability_scan',xrefs:['ISO-A.8.8'],finding:null,rem:null},
+  ]
+};
+
+const SEV_ORDER = {critical:0,high:1,medium:2,low:3,info:4};
+let currentStd = STANDARDS[0];
+let currentView = 'overview';
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  buildSidebar();
+  showView('overview');
+});
+
+function buildSidebar(){
+  const nav = document.getElementById('std-nav');
+  nav.innerHTML = STANDARDS.map((s,i)=>{
+    const cl = s.certReady?'pass':'warn';
+    const sc = s.score;
+    const badge_cl = sc>=90?'pass':sc>=80?'warn':'crit';
+    return `<div class="std-item${i===0?' on':''}" onclick="selectStd('${s.id}',this)">
+      <div class="std-icon">${s.icon}</div>
+      <div>
+        <div class="std-name">${s.name}</div>
+        <div style="font-size:9px;color:var(--txt3);font-family:var(--mono)">${s.region}</div>
+      </div>
+      <div class="std-badge ${badge_cl}">${sc}</div>
+    </div>`;
+  }).join('');
+}
+
+function selectStd(id, el){
+  currentStd = STANDARDS.find(s=>s.id===id);
+  document.querySelectorAll('.std-item').forEach(i=>i.classList.remove('on'));
+  el.classList.add('on');
+  showView('detail');
+}
+
+// ── Views ─────────────────────────────────────────────────────────────────────
+function showView(name){
+  currentView = name;
+  ['overview','detail','gaps','crossref','exceptions','reports'].forEach(v=>{
+    document.getElementById('view-'+v).style.display = v===name?'':'none';
+  });
+  document.querySelectorAll('.std-item[onclick^="showView"]').forEach(el=>el.classList.remove('on'));
+
+  if(name==='overview') renderOverview();
+  else if(name==='detail') renderDetail();
+  else if(name==='gaps') renderGaps();
+  else if(name==='crossref') renderCrossRef();
+  else if(name==='exceptions') renderExceptions();
+  else if(name==='reports') renderReports();
+}
+
+function renderOverview(){
+  const avgScore = Math.round(STANDARDS.reduce((a,s)=>a+s.score,0)/STANDARDS.length);
+  const certReady = STANDARDS.filter(s=>s.certReady).length;
+  const totalControls = STANDARDS.reduce((a,s)=>a+s.controls,0);
+  const totalCompliant = STANDARDS.reduce((a,s)=>a+s.compliant,0);
+
+  document.getElementById('view-overview').innerHTML = `
+    <div class="stat-row g5" style="margin-bottom:18px">
+      <div class="sc c1"><div class="sc-label">Standards Covered</div><div class="sc-value">${STANDARDS.length}</div><div class="sc-sub">10 major frameworks</div></div>
+      <div class="sc c2"><div class="sc-label">Total Controls</div><div class="sc-value">${totalControls}</div><div class="sc-sub">Automated + manual</div></div>
+      <div class="sc c2"><div class="sc-label">Cert-Ready</div><div class="sc-value" style="color:var(--green)">${certReady}</div><div class="sc-sub">of 10 standards</div></div>
+      <div class="sc c3"><div class="sc-label">Overall Score</div><div class="sc-value">${avgScore}</div><div class="sc-sub">/ 100 platform avg</div></div>
+      <div class="sc c5"><div class="sc-label">Compliant Controls</div><div class="sc-value" style="color:var(--gold)">${totalCompliant}</div><div class="sc-sub">/ ${totalControls} total</div></div>
+    </div>
+
+    <div class="std-grid">
+      ${STANDARDS.map(s=>{
+        const cl = s.certReady?'pass':'warn';
+        const pct = Math.round(s.compliant/s.total*100);
+        const scoreColor = s.score>=90?'var(--green)':s.score>=80?'var(--orange)':'var(--red)';
+        return `<div class="std-card ${cl}" onclick="selectStd('${s.id}',document.querySelector('[onclick=\\'selectStd(\\'${s.id}\\',this)\\']'))">
+          <div class="std-card-head">
+            <div>
+              <div class="std-card-name">${s.icon} ${s.name}</div>
+              <div class="std-card-region">${s.region} · ${s.category}</div>
+            </div>
+            <div style="text-align:right">
+              <div class="std-score" style="color:${scoreColor}">${s.score}</div>
+              <div style="font-size:9px;color:var(--txt2);font-family:var(--mono)">/100</div>
+            </div>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${scoreColor}"></div></div>
+          <div class="std-card-stats">
+            <div class="std-stat"><div class="std-stat-num" style="color:var(--green)">${s.compliant}</div><div class="std-stat-label">Compliant</div></div>
+            <div class="std-stat"><div class="std-stat-num" style="color:var(--orange)">${s.partial}</div><div class="std-stat-label">Partial</div></div>
+            <div class="std-stat"><div class="std-stat-num" style="color:var(--red)">${s.nonCompliant}</div><div class="std-stat-label">Non-Compliant</div></div>
+            <div class="std-stat"><div class="std-stat-num">${s.total}</div><div class="std-stat-label">Total</div></div>
+            <div style="margin-left:auto;align-self:center">
+              ${s.certReady
+                ?'<span class="pill p-compliant">CERT READY</span>'
+                :'<span class="pill p-partial">ATTENTION</span>'}
+            </div>
+          </div>
+          <div style="margin-top:10px;font-size:10px;color:var(--txt2)">${s.description}</div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+function renderDetail(){
+  const s = currentStd;
+  const controls = CONTROLS_SAMPLE[s.id] || [];
+  const scoreColor = s.score>=90?'var(--green)':s.score>=80?'var(--orange)':'var(--red)';
+
+  document.getElementById('view-detail').innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+      <div>
+        <div style="font-size:20px;font-weight:700;color:#fff">${s.icon} ${s.name}</div>
+        <div style="font-size:11px;color:var(--txt2);margin-top:3px">${s.description}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn bp" onclick="runAssessment()">⚡ Assess</button>
+        <button class="btn bexport" onclick="exportStdReport()">⬇ Export</button>
+      </div>
+    </div>
+
+    <div class="stat-row g5" style="margin-bottom:18px">
+      <div class="sc c1"><div class="sc-label">Score</div><div class="sc-value" style="color:${scoreColor}">${s.score}</div><div class="sc-sub">/ 100</div></div>
+      <div class="sc c2"><div class="sc-label">Compliant</div><div class="sc-value" style="color:var(--green)">${s.compliant}</div><div class="sc-sub">controls</div></div>
+      <div class="sc c3"><div class="sc-label">Partial</div><div class="sc-value" style="color:var(--orange)">${s.partial}</div><div class="sc-sub">need improvement</div></div>
+      <div class="sc c4"><div class="sc-label">Non-Compliant</div><div class="sc-value" style="color:var(--red)">${s.nonCompliant}</div><div class="sc-sub">require action</div></div>
+      <div class="sc" style="background:${s.certReady?'rgba(0,230,118,.04)':'rgba(255,145,0,.04)'};border-color:${s.certReady?'rgba(0,230,118,.2)':'rgba(255,145,0,.2)'}">
+        <div class="sc-label">Certification</div>
+        <div style="font-family:var(--mono);font-size:14px;font-weight:700;color:${s.certReady?'var(--green)':'var(--orange)'}">
+          ${s.certReady?'READY':'GAPS'}
+        </div>
+        <div class="sc-sub">${s.certReady?'Audit ready':'Action needed'}</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">
+        <div class="pt">${s.name} — Control Assessment</div>
+        <div style="font-size:9px;color:var(--txt2);font-family:var(--mono)">${controls.length} CONTROLS · AUTO-TESTED</div>
+      </div>
+      <table class="ctrl-table">
+        <thead><tr><th>Control</th><th>Title</th><th>Category</th><th>Severity</th><th>WAF Module</th><th>Status</th><th>Score</th><th>Cross-Refs</th></tr></thead>
+        <tbody>
+          ${controls.map(c=>`
+            <tr onclick="toggleControl('${c.id}')">
+              <td style="font-family:var(--mono);color:var(--accent);font-size:10px;font-weight:700">${c.id}</td>
+              <td style="color:var(--txt)">${c.title}</td>
+              <td style="font-size:10px;color:var(--txt2)">${c.cat}</td>
+              <td><span class="sev s-${c.sev}">${c.sev}</span></td>
+              <td style="font-family:var(--mono);font-size:9px;color:var(--txt2)">${c.waf}</td>
+              <td><span class="pill p-${c.status}">${c.status.replace('_',' ')}</span></td>
+              <td style="font-family:var(--mono);font-weight:700;${c.score>=90?'color:var(--green)':c.score>=60?'color:var(--orange)':'color:var(--red)'}">${c.score}</td>
+              <td>${c.xrefs.map(x=>`<span class="xref">${x}</span>`).join('')}</td>
+            </tr>
+            <tr id="ctrl-${c.id}-detail" style="display:none">
+              <td colspan="8" style="padding:0 12px 12px">
+                ${c.finding?`<div class="finding">⚠ ${c.finding}</div>`:''}
+                ${c.rem?`<div class="rem">
+                  <div style="font-weight:600;margin-bottom:6px;color:var(--accent)">Remediation Steps:</div>
+                  ${c.rem.map(r=>`<div class="rem-step">${r}</div>`).join('')}
+                </div>`:''}
+                ${!c.finding?`<div style="color:var(--green);font-size:11px;padding:8px 0">✓ Control is compliant — no action required</div>`:''}
+              </td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="ph"><div class="pt">Key Controls Mapped to AXELUS-WAF</div></div>
+      <div class="pb" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+        ${s.keyControls.map(k=>`
+          <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 12px;font-size:11px">
+            <span style="color:var(--green);margin-right:6px">✓</span>${k}
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function toggleControl(id){
+  const el = document.getElementById('ctrl-'+id+'-detail');
+  if(el) el.style.display = el.style.display==='none'?'':'none';
+}
+
+function renderGaps(){
+  const gaps = STANDARDS
+    .filter(s=>!s.certReady||s.nonCompliant>0)
+    .flatMap(s=>{
+      const ctrls = (CONTROLS_SAMPLE[s.id]||[]).filter(c=>c.status!=='compliant');
+      return ctrls.map(c=>({...c,std:s.name,stdId:s.id}));
+    });
+
+  document.getElementById('view-gaps').innerHTML = `
+    <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:16px">Gap Analysis</div>
+    <div class="stat-row g3" style="margin-bottom:18px">
+      <div class="sc c4"><div class="sc-label">Total Gaps</div><div class="sc-value" style="color:var(--red)">${gaps.length}</div></div>
+      <div class="sc c3"><div class="sc-label">Critical Gaps</div><div class="sc-value" style="color:var(--orange)">${gaps.filter(g=>g.sev==='critical').length}</div></div>
+      <div class="sc c1"><div class="sc-label">Auto-Fixable</div><div class="sc-value" style="color:var(--accent)">${gaps.filter(g=>g.rem).length}</div></div>
+    </div>
+    <div class="panel">
+      <div class="ph"><div class="pt">Gaps by Priority</div></div>
+      <table class="ctrl-table">
+        <thead><tr><th>Control</th><th>Standard</th><th>Title</th><th>Severity</th><th>Status</th><th>Score</th></tr></thead>
+        <tbody>${gaps.sort((a,b)=>SEV_ORDER[a.sev]-SEV_ORDER[b.sev]).map(g=>`
+          <tr>
+            <td style="font-family:var(--mono);color:var(--accent);font-size:10px">${g.id}</td>
+            <td style="font-size:10px;color:var(--txt2)">${g.std}</td>
+            <td>${g.title}</td>
+            <td><span class="sev s-${g.sev}">${g.sev}</span></td>
+            <td><span class="pill p-${g.status}">${g.status.replace('_',' ')}</span></td>
+            <td style="font-family:var(--mono);color:var(--orange)">${g.score}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+function renderCrossRef(){
+  document.getElementById('view-crossref').innerHTML = `
+    <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:16px">Cross-Reference Map</div>
+    <div class="panel">
+      <div class="ph"><div class="pt">Standard Mapping — Key Equivalences</div></div>
+      <div class="pb">
+        ${[
+          ['PCI-6.4.1','ISO-A.8.8','NIST-DE.CM-4','OWASP-A06','FedRAMP-SI-3'],
+          ['PCI-8.4.2','ISO-A.8.5','NIST-PR.AC-7','CIS-6.3','NIS2-Art.21-i','FEDRAMP-IA-2','HIPAA-164.312(d)'],
+          ['PCI-4.2.1','ISO-A.8.24','NIST-PR.DS-2','GDPR-Art.32','HIPAA-164.312(e)(1)','NIS2-Art.21-g'],
+          ['PCI-10.2.1','ISO-A.8.15','SOC2-CC7.2','HIPAA-164.312(b)','FEDRAMP-AU-2','OWASP-A09'],
+          ['PCI-11.5.1','ISO-A.8.16','NIST-DE.CM-4','SOC2-CC7.2','CIS-13.7','NIS2-Art.21-f'],
+          ['PCI-1.2.1','ISO-A.8.20','NIST-PR.AC-5','CIS-13.4','FEDRAMP-SC-7'],
+          ['PCI-12.10.1','ISO-A.5.26','NIST-RS.RP-1','SOC2-CC7.3','HIPAA-164.308(a)(6)','NIS2-Art.21-b','NIS2-Art.23'],
+        ].map(row=>`
+          <div style="display:flex;align-items:center;gap:6px;padding:10px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+            <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent);min-width:100px">${row[0]}</span>
+            <span style="color:var(--txt3);font-family:var(--mono)">≡</span>
+            ${row.slice(1).map(r=>`<span class="xref">${r}</span>`).join('')}
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderExceptions(){
+  document.getElementById('view-exceptions').innerHTML = `
+    <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:16px">Risk Exceptions</div>
+    <div class="panel">
+      <div class="ph"><div class="pt">Active Exceptions</div><button class="btn bo" onclick="toast('Exception form coming soon','info')">⊕ Add Exception</button></div>
+      <div class="pb">
+        ${[
+          {id:'EX-001',ctrl:'PCI-3.5.1',reason:'PAN log masking implementation in progress — ETA 2 weeks',approved:'CTO',expires:'2024-06-01',sev:'critical'},
+          {id:'EX-002',ctrl:'GDPR-Art.35',reason:'DPIA for new ML pipeline feature under review',approved:'DPO',expires:'2024-07-01',sev:'medium'},
+        ].map(e=>`
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:14px;margin-bottom:10px">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+                  <span style="font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent)">${e.ctrl}</span>
+                  <span class="sev s-${e.sev}">${e.sev}</span>
+                  <span style="font-family:var(--mono);font-size:9px;color:var(--txt2)">${e.id}</span>
+                </div>
+                <div style="font-size:12px;color:var(--txt)">${e.reason}</div>
+                <div style="font-size:10px;color:var(--txt2);margin-top:5px">Approved by: ${e.approved} · Expires: ${e.expires}</div>
+              </div>
+              <button class="btn bo" style="font-size:10px;padding:4px 8px" onclick="toast('Exception ${e.id} revoked','ok')">Revoke</button>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+function renderReports(){
+  document.getElementById('view-reports').innerHTML = `
+    <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:16px">Assessment History</div>
+    <div class="panel">
+      <div class="ph"><div class="pt">Recent Reports</div></div>
+      <table class="ctrl-table">
+        <thead><tr><th>Date</th><th>Standard</th><th>Score</th><th>Cert Ready</th><th>Assessed By</th><th>Actions</th></tr></thead>
+        <tbody>${STANDARDS.map(s=>`
+          <tr>
+            <td style="font-family:var(--mono);font-size:10px;color:var(--txt2)">${new Date().toISOString().split('T')[0]}</td>
+            <td>${s.icon} ${s.name}</td>
+            <td style="font-family:var(--mono);font-weight:700;${s.score>=90?'color:var(--green)':s.score>=80?'color:var(--orange)':'color:var(--red)'}">${s.score}/100</td>
+            <td>${s.certReady?'<span class="pill p-compliant">YES</span>':'<span class="pill p-partial">NO</span>'}</td>
+            <td style="font-size:10px;color:var(--txt2)">auto</td>
+            <td>
+              <div style="display:flex;gap:4px">
+                <button class="btn bo" style="font-size:9px;padding:3px 8px" onclick="toast('Opening HTML report...','info')">View</button>
+                <button class="btn bexport" style="font-size:9px;padding:3px 8px" onclick="toast('Exporting PDF...','info')">PDF</button>
+              </div>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>`;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+function runAssessment(){
+  const s = currentStd;
+  toast(`Running ${s.name} assessment...`,'info');
+  setTimeout(()=>toast(`${s.name}: Score ${s.score}/100 — assessment complete`,'ok'),2000);
+}
+
+function runAllAssessments(){
+  toast('Running full compliance assessment across all 10 standards...','info');
+  setTimeout(()=>{
+    toast('10/10 standards assessed — avg score 87/100','ok');
+    renderOverview();
+  },3000);
+}
+
+function exportReport(){
+  toast('Generating compliance PDF report...','info');
+  setTimeout(()=>toast('Report exported: axelus-compliance-2024.pdf','ok'),1500);
+}
+
+function exportStdReport(){
+  toast(`Exporting ${currentStd.name} report...`,'info');
+  setTimeout(()=>toast('Report ready for download','ok'),1200);
+}
+
+function toast(msg, type='info'){
+  const el = document.createElement('div');
+  el.className=`toast ${type}`;
+  el.textContent=msg;
+  el.onclick=()=>el.remove();
+  document.getElementById('tz').appendChild(el);
+  setTimeout(()=>el.remove(),4000);
+}
+</script>
+</body>
+</html>
