@@ -512,9 +512,18 @@ failregex = ^<HOST> .* "(GET|POST|PUT|DELETE|PATCH) /api/.*" (401|403|429) .*$
 ignoreregex =
 FILTEREOF
 
-systemctl enable fail2ban --now
-systemctl restart fail2ban
-ok "fail2ban configuré (SSH: ban 24h après 3 échecs, Admin: ban 1h après 10 erreurs 4xx)"
+# Installer fail2ban si le service n'existe pas encore
+if ! systemctl list-unit-files fail2ban.service &>/dev/null; then
+  apt-get install -y -qq fail2ban 2>/dev/null || true
+fi
+
+if systemctl list-unit-files fail2ban.service &>/dev/null 2>&1 | grep -q fail2ban; then
+  systemctl enable fail2ban --now 2>/dev/null || true
+  systemctl restart fail2ban 2>/dev/null || true
+  ok "fail2ban configuré (SSH: ban 24h après 3 échecs, Admin: ban 1h après 10 erreurs 4xx)"
+else
+  warn "fail2ban non disponible — protection brute-force désactivée (installer manuellement: apt install fail2ban)"
+fi
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 8 — TLS et Nginx reverse proxy
