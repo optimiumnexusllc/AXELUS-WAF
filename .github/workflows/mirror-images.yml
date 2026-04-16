@@ -2,19 +2,18 @@ name: Mirror Docker Images — chaitin/safeline-* → optimiumnexusllc/axelus-*
 
 # Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 #
-# SETUP REQUIRED before running:
-#   GitHub → Settings → Secrets → Actions → New repository secret
-#   1. DOCKER_USERNAME = optimiumnexusllc
-#   2. DOCKER_TOKEN    = Docker Hub Access Token (Read & Write)
-#      Create at: https://hub.docker.com/settings/security
+# REQUIRED SECRETS (Settings → Secrets → Actions):
+#   DOCKER_USERNAME = optimiumnexusllc
+#   DOCKER_TOKEN    = Docker Hub Access Token (Read & Write)
+#   Create token at: https://hub.docker.com/settings/security
 
 on:
   schedule:
-    - cron: '0 3 1 * *'    # Monthly on the 1st at 03:00 UTC
-  workflow_dispatch:         # Manual trigger from GitHub UI
+    - cron: '0 3 1 * *'
+  workflow_dispatch:
     inputs:
       dry_run:
-        description: 'Dry run — pull and tag but do NOT push to Docker Hub'
+        description: 'Dry run — tag but do NOT push'
         required: false
         default: 'false'
         type: choice
@@ -26,84 +25,53 @@ env:
 
 jobs:
 
-  # ── Pre-flight check ────────────────────────────────────────────────────────
   check-secrets:
-    name: Check secrets are configured
+    name: Check secrets
     runs-on: ubuntu-latest
     outputs:
-      secrets_ok: ${{ steps.check.outputs.ok }}
+      ok: ${{ steps.check.outputs.ok }}
     steps:
-      - name: Verify Docker Hub secrets
+      - name: Verify Docker Hub secrets exist
         id: check
         run: |
-          if [[ -z "${{ secrets.DOCKER_USERNAME }}" ]]; then
-            echo "::error::Secret DOCKER_USERNAME is not set!"
-            echo "::error::Go to: Settings → Secrets → Actions → New repository secret"
-            echo "::error::Add: DOCKER_USERNAME = optimiumnexusllc"
-            echo "ok=false" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-          if [[ -z "${{ secrets.DOCKER_TOKEN }}" ]]; then
-            echo "::error::Secret DOCKER_TOKEN is not set!"
-            echo "::error::Create a Docker Hub token at: https://hub.docker.com/settings/security"
-            echo "::error::Add it as GitHub secret: DOCKER_TOKEN"
+          MISSING=""
+          [[ -z "${{ secrets.DOCKER_USERNAME }}" ]] && MISSING="DOCKER_USERNAME "
+          [[ -z "${{ secrets.DOCKER_TOKEN }}"   ]] && MISSING="${MISSING}DOCKER_TOKEN"
+          if [[ -n "$MISSING" ]]; then
+            echo "::error::Missing secrets: ${MISSING}"
+            echo "::error::Add them at: Settings -> Secrets and variables -> Actions"
             echo "ok=false" >> $GITHUB_OUTPUT
             exit 1
           fi
           echo "ok=true" >> $GITHUB_OUTPUT
-          echo "Secrets configured — username: ${{ secrets.DOCKER_USERNAME }}"
+          echo "Secrets OK"
 
-  # ── Mirror images (parallel matrix) ─────────────────────────────────────────
   mirror:
-    name: Mirror ${{ matrix.dst_image }}:${{ matrix.dst_tag }}
+    name: Mirror ${{ matrix.dst }}
     runs-on: ubuntu-latest
     needs: check-secrets
-    if: needs.check-secrets.outputs.secrets_ok == 'true'
-
+    if: needs.check-secrets.outputs.ok == 'true'
     strategy:
       fail-fast: false
       max-parallel: 3
       matrix:
         include:
-          - src_image: safeline-postgres
-            src_tag: "15.2"
-            dst_image: axelus-postgres
-            dst_tag: "15.2"
-
-          - src_image: safeline-postgres
-            src_tag: "15.2"
-            dst_image: axelus-postgres
-            dst_tag: latest
-
-          - src_image: safeline-mgt
-            src_tag: latest
-            dst_image: axelus-mgt
-            dst_tag: latest
-
-          - src_image: safeline-tengine
-            src_tag: latest
-            dst_image: axelus-tengine
-            dst_tag: latest
-
-          - src_image: safeline-detector
-            src_tag: latest
-            dst_image: axelus-detector
-            dst_tag: latest
-
-          - src_image: safeline-fvm
-            src_tag: latest
-            dst_image: axelus-fvm
-            dst_tag: latest
-
-          - src_image: safeline-luigi
-            src_tag: latest
-            dst_image: axelus-luigi
-            dst_tag: latest
-
-          - src_image: safeline-chaos
-            src_tag: latest
-            dst_image: axelus-chaos
-            dst_tag: latest
+          - src: chaitin/safeline-postgres:15.2
+            dst: optimiumnexusllc/axelus-postgres:15.2
+          - src: chaitin/safeline-postgres:15.2
+            dst: optimiumnexusllc/axelus-postgres:latest
+          - src: chaitin/safeline-mgt:latest
+            dst: optimiumnexusllc/axelus-mgt:latest
+          - src: chaitin/safeline-tengine:latest
+            dst: optimiumnexusllc/axelus-tengine:latest
+          - src: chaitin/safeline-detector:latest
+            dst: optimiumnexusllc/axelus-detector:latest
+          - src: chaitin/safeline-fvm:latest
+            dst: optimiumnexusllc/axelus-fvm:latest
+          - src: chaitin/safeline-luigi:latest
+            dst: optimiumnexusllc/axelus-luigi:latest
+          - src: chaitin/safeline-chaos:latest
+            dst: optimiumnexusllc/axelus-chaos:latest
 
     steps:
       - name: Login to Docker Hub
@@ -112,139 +80,63 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Pull ${{ env.SRC_ORG }}/${{ matrix.src_image }}:${{ matrix.src_tag }}
+      - name: Pull ${{ matrix.src }}
         run: |
-          SRC="${SRC_ORG}/${{ matrix.src_image }}:${{ matrix.src_tag }}"
-          echo "Pulling: ${SRC}"
-          docker pull "${SRC}"
-          SIZE=$(docker inspect --format='{{.Size}}' "${SRC}" | numfmt --to=iec 2>/dev/null || echo "?")
-          echo "Image size: ${SIZE}"
-          DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "${SRC}" 2>/dev/null || echo "")
-          echo "Source digest: ${DIGEST}"
-          echo "src_digest=${DIGEST}" >> $GITHUB_ENV
+          docker pull "${{ matrix.src }}"
+          docker inspect --format='Digest: {{index .RepoDigests 0}}' "${{ matrix.src }}" || true
 
-      - name: Tag as ${{ env.DST_ORG }}/${{ matrix.dst_image }}:${{ matrix.dst_tag }}
-        run: |
-          SRC="${SRC_ORG}/${{ matrix.src_image }}:${{ matrix.src_tag }}"
-          DST="${DST_ORG}/${{ matrix.dst_image }}:${{ matrix.dst_tag }}"
-          MIRROR_DATE=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+      - name: Tag as ${{ matrix.dst }}
+        run: docker tag "${{ matrix.src }}" "${{ matrix.dst }}"
 
-          # Dockerfile that adds AXELUS OCI labels
-          cat > /tmp/Dockerfile.mirror << DOCKERFILE
-FROM ${SRC}
-LABEL org.opencontainers.image.title="${{ matrix.dst_image }}"
-LABEL org.opencontainers.image.description="AXELUS-WAF — ${{ matrix.dst_image }}"
-LABEL org.opencontainers.image.vendor="OPTIMIUM NEXUS LLC"
-LABEL org.opencontainers.image.url="https://www.optimiumnexus.com"
-LABEL org.opencontainers.image.source="https://github.com/optimiumnexusllc/AXELUS-WAF"
-LABEL org.opencontainers.image.version="${{ matrix.dst_tag }}"
-LABEL org.opencontainers.image.created="${MIRROR_DATE}"
-LABEL com.axelus.base-image="${SRC}"
-LABEL com.axelus.mirrored-at="${MIRROR_DATE}"
-DOCKERFILE
-
-          docker build --quiet -f /tmp/Dockerfile.mirror -t "${DST}" /tmp
-          echo "Tagged: ${DST}"
-
-      - name: Push ${{ env.DST_ORG }}/${{ matrix.dst_image }}:${{ matrix.dst_tag }}
+      - name: Push ${{ matrix.dst }}
         if: ${{ github.event.inputs.dry_run != 'true' }}
-        run: |
-          DST="${DST_ORG}/${{ matrix.dst_image }}:${{ matrix.dst_tag }}"
-          docker push "${DST}"
-          echo "Pushed: ${DST}"
+        run: docker push "${{ matrix.dst }}"
 
       - name: Dry run notice
         if: ${{ github.event.inputs.dry_run == 'true' }}
-        run: echo "::notice::DRY RUN — ${DST_ORG}/${{ matrix.dst_image }}:${{ matrix.dst_tag }} tagged but NOT pushed"
+        run: echo "::notice::DRY RUN — ${{ matrix.dst }} NOT pushed"
 
-      - name: Write step summary
-        run: |
-          {
-            echo "### ${{ matrix.dst_image }}:${{ matrix.dst_tag }}"
-            echo "| | |"
-            echo "|---|---|"
-            echo "| Source | \`${SRC_ORG}/${{ matrix.src_image }}:${{ matrix.src_tag }}\` |"
-            echo "| Destination | \`${DST_ORG}/${{ matrix.dst_image }}:${{ matrix.dst_tag }}\` |"
-            echo "| Pushed | ${{ github.event.inputs.dry_run != 'true' }} |"
-          } >> $GITHUB_STEP_SUMMARY
-
-  # ── Update compose files after successful mirror ─────────────────────────────
   update-compose:
-    name: Update compose files to use optimiumnexusllc images
+    name: Update compose files
     runs-on: ubuntu-latest
     needs: mirror
     if: ${{ needs.mirror.result == 'success' && github.event.inputs.dry_run != 'true' }}
-
     permissions:
       contents: write
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Update docker-compose.poc.yml
+      - name: Replace image prefix
         run: |
-          sed -i \
-            -e 's|image: chaitin/safeline-|image: optimiumnexusllc/axelus-|g' \
-            docker-compose.poc.yml
-          echo "Updated docker-compose.poc.yml"
+          sed -i 's|image: chaitin/safeline-|image: optimiumnexusllc/axelus-|g' docker-compose.poc.yml
+          sed -i 's/^IMAGE_PREFIX=chaitin/IMAGE_PREFIX=optimiumnexusllc/' .env.example
           grep "image:" docker-compose.poc.yml | head -10
 
-      - name: Update .env.example
-        run: |
-          sed -i 's/^IMAGE_PREFIX=chaitin/IMAGE_PREFIX=optimiumnexusllc/' .env.example
-          grep "IMAGE_PREFIX" .env.example
-
-      - name: Commit changes
+      - name: Commit
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git config user.name "github-actions[bot]"
+          git config user.name  "github-actions[bot]"
           git add docker-compose.poc.yml .env.example
-          if git diff --staged --quiet; then
-            echo "No compose changes needed"
-          else
-            git commit -m "chore(images): use optimiumnexusllc/axelus-* images [$(date -u +%Y-%m-%d)]
+          git diff --staged --quiet && echo "Nothing to commit" && exit 0
+          git commit -m "chore: use optimiumnexusllc/axelus-* images [$(date -u +%Y-%m-%d)] [skip ci]"
+          git push
 
-  Mirror complete — all chaitin/safeline-* images now available as:
-  optimiumnexusllc/axelus-{postgres,mgt,tengine,detector,fvm,luigi,chaos}
-
-  [skip ci]"
-            git push
-            echo "Compose files updated and pushed"
-          fi
-
-  # ── Final summary ────────────────────────────────────────────────────────────
   summary:
     name: Summary
     runs-on: ubuntu-latest
     needs: [check-secrets, mirror, update-compose]
     if: always()
-
     steps:
-      - name: Final report
+      - name: Write summary
         run: |
           {
-            echo "## AXELUS-WAF Image Mirror — $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo "## AXELUS-WAF Mirror — $(date -u '+%Y-%m-%d %H:%M UTC')"
             echo ""
-            echo "| Job | Status |"
+            echo "| Job | Result |"
             echo "|-----|--------|"
-            echo "| Secrets check | ${{ needs.check-secrets.result }} |"
-            echo "| Image mirror | ${{ needs.mirror.result }} |"
-            echo "| Compose update | ${{ needs.update-compose.result }} |"
-            echo ""
-            if [[ "${{ needs.mirror.result }}" == "success" ]]; then
-              echo "### Images available on Docker Hub"
-              echo "\`\`\`"
-              for img in axelus-postgres:15.2 axelus-mgt:latest axelus-tengine:latest axelus-detector:latest axelus-fvm:latest axelus-luigi:latest axelus-chaos:latest; do
-                echo "docker pull optimiumnexusllc/${img}"
-              done
-              echo "\`\`\`"
-              echo ""
-              echo "### Update your .env"
-              echo "\`\`\`"
-              echo "IMAGE_PREFIX=optimiumnexusllc"
-              echo "\`\`\`"
-            fi
+            echo "| Secrets | ${{ needs.check-secrets.result }} |"
+            echo "| Mirror  | ${{ needs.mirror.result }} |"
+            echo "| Compose | ${{ needs.update-compose.result }} |"
           } >> $GITHUB_STEP_SUMMARY
