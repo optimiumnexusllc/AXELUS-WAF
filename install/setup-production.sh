@@ -530,6 +530,18 @@ fi
 # ═══════════════════════════════════════════════════════════════════════════════
 step
 
+# Vérifier que nginx est installé (apt partiel peut avoir raté des paquets)
+if ! command -v nginx &>/dev/null; then
+  log "nginx manquant — installation..."
+  apt-get install -y -qq nginx 2>/dev/null || err "Impossible d'installer nginx. Lancer: sudo apt-get install -y nginx"
+fi
+
+# Même vérification pour certbot
+if [[ "$USE_LETSENCRYPT" == "true" ]] && ! command -v certbot &>/dev/null; then
+  log "certbot manquant — installation..."
+  apt-get install -y -qq certbot python3-certbot-nginx 2>/dev/null || true
+fi
+
 # Arrêter Nginx temporairement pour Let's Encrypt
 systemctl stop nginx 2>/dev/null || true
 
