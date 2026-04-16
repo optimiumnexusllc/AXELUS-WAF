@@ -30,7 +30,7 @@ services:
   # ── PostgreSQL ──────────────────────────────────────────────────────────────
   # AXELUS-WAF mirrored image — optimiumnexusllc/axelus-postgres
   postgres:
-    container_name: safeline-postgres
+    container_name: axelus-pg
     image: optimiumnexusllc/axelus-postgres:15.2
     restart: unless-stopped
     environment:
@@ -53,7 +53,7 @@ services:
 
   # ── Redis ───────────────────────────────────────────────────────────────────
   redis:
-    container_name: safeline-redis
+    container_name: axelus-redis
     image: redis:7.2-alpine
     restart: unless-stopped
     command: >
@@ -78,7 +78,7 @@ services:
   # ── AXELUS WAF Engine (Tengine) ─────────────────────────────────────────────
   # The WAF engine — Tengine (fork of Nginx) with AXELUS modules
   waf:
-    container_name: safeline-tengine
+    container_name: axelus-waf
     image: optimiumnexusllc/axelus-tengine:latest
     restart: unless-stopped
     ports:
@@ -91,6 +91,15 @@ services:
       - /etc/localtime:/etc/localtime:ro
     environment:
       - MGT_IP=${SUBNET_PREFIX:-172.22.222}.5
+    extra_hosts:
+      - "safeline-postgres:172.22.222.2"
+      - "safeline-redis:172.22.222.3"
+      - "safeline-tengine:172.22.222.4"
+      - "safeline-mgt:172.22.222.5"
+      - "safeline-detector:172.22.222.6"
+      - "safeline-fvm:172.22.222.7"
+      - "safeline-luigi:172.22.222.8"
+      - "safeline-chaos:172.22.222.9"
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.4
@@ -101,7 +110,7 @@ services:
   # ── Management API ──────────────────────────────────────────────────────────
   # Core management API — WAF config, license, dashboards, REST API
   mgt:
-    container_name: safeline-mgt
+    container_name: axelus-mgt
     image: optimiumnexusllc/axelus-mgt:latest
     restart: unless-stopped
     ports:
@@ -115,6 +124,15 @@ services:
     environment:
       - MGT_PG=postgres://axelus:${POSTGRES_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.2/axelus?sslmode=disable
       - MGT_REDIS=redis://:${REDIS_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.3:6379/0
+    extra_hosts:
+      - "safeline-postgres:172.22.222.2"
+      - "safeline-redis:172.22.222.3"
+      - "safeline-tengine:172.22.222.4"
+      - "safeline-mgt:172.22.222.5"
+      - "safeline-detector:172.22.222.6"
+      - "safeline-fvm:172.22.222.7"
+      - "safeline-luigi:172.22.222.8"
+      - "safeline-chaos:172.22.222.9"
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.5
@@ -137,13 +155,22 @@ services:
   # ── Detector (AI/ML engine) ─────────────────────────────────────────────────
   # ML-based attack detection — Zero-Day Shield + behavioral analysis
   detector:
-    container_name: safeline-detector
+    container_name: axelus-detector
     image: optimiumnexusllc/axelus-detector:latest
     restart: unless-stopped
     volumes:
       - ${SAFELINE_DIR:-/data/axelus-waf}/resources/detector:/resources/detector
       - ${SAFELINE_DIR:-/data/axelus-waf}/resources/sock:/app/sock
       - /etc/localtime:/etc/localtime:ro
+    extra_hosts:
+      - "safeline-postgres:172.22.222.2"
+      - "safeline-redis:172.22.222.3"
+      - "safeline-tengine:172.22.222.4"
+      - "safeline-mgt:172.22.222.5"
+      - "safeline-detector:172.22.222.6"
+      - "safeline-fvm:172.22.222.7"
+      - "safeline-luigi:172.22.222.8"
+      - "safeline-chaos:172.22.222.9"
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.6
@@ -156,11 +183,20 @@ services:
   # ── Tengine FVM ─────────────────────────────────────────────────────────────
   # FastVM — handles real-time request processing
   fvm:
-    container_name: safeline-fvm
+    container_name: axelus-fvm
     image: optimiumnexusllc/axelus-fvm:latest
     restart: unless-stopped
     volumes:
       - /etc/localtime:/etc/localtime:ro
+    extra_hosts:
+      - "safeline-postgres:172.22.222.2"
+      - "safeline-redis:172.22.222.3"
+      - "safeline-tengine:172.22.222.4"
+      - "safeline-mgt:172.22.222.5"
+      - "safeline-detector:172.22.222.6"
+      - "safeline-fvm:172.22.222.7"
+      - "safeline-luigi:172.22.222.8"
+      - "safeline-chaos:172.22.222.9"
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.7
@@ -168,13 +204,22 @@ services:
   # ── Luigi ───────────────────────────────────────────────────────────────────
   # Rules/config sync service
   luigi:
-    container_name: safeline-luigi
+    container_name: axelus-luigi
     image: optimiumnexusllc/axelus-luigi:latest
     restart: unless-stopped
     environment:
       - MGT_IP=${SUBNET_PREFIX:-172.22.222}.5
     volumes:
       - /etc/localtime:/etc/localtime:ro
+    extra_hosts:
+      - "safeline-postgres:172.22.222.2"
+      - "safeline-redis:172.22.222.3"
+      - "safeline-tengine:172.22.222.4"
+      - "safeline-mgt:172.22.222.5"
+      - "safeline-detector:172.22.222.6"
+      - "safeline-fvm:172.22.222.7"
+      - "safeline-luigi:172.22.222.8"
+      - "safeline-chaos:172.22.222.9"
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.8
@@ -185,7 +230,7 @@ services:
   # ── Chaos ───────────────────────────────────────────────────────────────────
   # Anti-bot challenge service
   chaos:
-    container_name: safeline-chaos
+    container_name: axelus-chaos
     image: optimiumnexusllc/axelus-chaos:latest
     restart: unless-stopped
     logging:
@@ -195,6 +240,15 @@ services:
         max-file: "5"
     volumes:
       - /etc/localtime:/etc/localtime:ro
+    extra_hosts:
+      - "safeline-postgres:172.22.222.2"
+      - "safeline-redis:172.22.222.3"
+      - "safeline-tengine:172.22.222.4"
+      - "safeline-mgt:172.22.222.5"
+      - "safeline-detector:172.22.222.6"
+      - "safeline-fvm:172.22.222.7"
+      - "safeline-luigi:172.22.222.8"
+      - "safeline-chaos:172.22.222.9"
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.9
@@ -266,7 +320,7 @@ services:
 
   # ── Postgres Exporter ────────────────────────────────────────────────────────
   postgres-exporter:
-    container_name: safeline-postgres-exporter
+    container_name: axelus-pg-exporter
     image: prometheuscommunity/postgres-exporter:v0.15.0
     restart: unless-stopped
     environment:
