@@ -343,7 +343,7 @@ cat > /etc/ssh/axelus-banner << 'BANEOF'
 ╚════════════════════════════════════════════════════════════╝
 BANEOF
 
-systemctl restart sshd
+systemctl restart ssh 2>/dev/null || systemctl restart sshd 2>/dev/null || true
 ok "SSH durci (no root, max 3 tentatives, bannière)"
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -829,7 +829,7 @@ cat > /etc/audit/rules.d/axelus.rules << 'AUDITEOF'
 -w /usr/local/bin/axelus-backup -p rwxa -k axelus-backup
 -w /etc/cron.d/axelus-backup -p rwxa -k axelus-cron
 AUDITEOF
-augenrules --load 2>/dev/null || systemctl restart auditd
+augenrules --load 2>/dev/null || systemctl restart auditd 2>/dev/null || true
 ok "auditd configuré (surveillance des fichiers sensibles)"
 
 # Mises à jour sécurité automatiques
