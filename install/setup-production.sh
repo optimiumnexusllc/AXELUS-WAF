@@ -238,17 +238,18 @@ export DEBIAN_FRONTEND=noninteractive
 # Forcer IPv4 (VM sans connectivité IPv6)
 echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4
 
-# Remplacer sources.list par archive.ubuntu.com (stable, pas de sync partielle)
-UBUNTU_CODENAME=$(lsb_release -cs 2>/dev/null || echo "noble")
-cat > /etc/apt/sources.list << SRCEOF
-deb http://archive.ubuntu.com/ubuntu ${UBUNTU_CODENAME} main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu ${UBUNTU_CODENAME}-updates main restricted universe multiverse
-deb http://archive.ubuntu.com/ubuntu ${UBUNTU_CODENAME}-backports main restricted universe multiverse
-deb http://security.ubuntu.com/ubuntu ${UBUNTU_CODENAME}-security main restricted universe multiverse
-SRCEOF
+# Ubuntu 24.04 utilise sources.list.d/ubuntu.sources (format DEB822)
+# Vider sources.list pour éviter les doublons
+truncate -s 0 /etc/apt/sources.list
 
-# Nettoyer aussi les sources.list.d (au cas où)
-find /etc/apt/sources.list.d/ -name "*.list" -exec   sed -i 's|ci.archive.ubuntu.com|archive.ubuntu.com|g' {} \; 2>/dev/null || true
+# Corriger ubuntu.sources (format DEB822, Ubuntu 22.04+)
+if [[ -f /etc/apt/sources.list.d/ubuntu.sources ]]; then
+  sed -i 's|http://ci.archive.ubuntu.com|http://archive.ubuntu.com|g'     /etc/apt/sources.list.d/ubuntu.sources
+  log "ubuntu.sources: ci. → archive.ubuntu.com"
+fi
+
+# Corriger aussi les .list classiques (Ubuntu 20.04)
+find /etc/apt/sources.list.d/ -name "*.list"   -exec sed -i 's|ci.archive.ubuntu.com|archive.ubuntu.com|g' {} \; 2>/dev/null || true
 
 apt-get clean -qq
 
