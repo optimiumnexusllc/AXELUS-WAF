@@ -225,12 +225,11 @@ services:
     healthcheck:
       test:
       - CMD-SHELL
-      - (echo > /dev/tcp/127.0.0.1/9000) 2>/dev/null && (echo > /dev/tcp/127.0.0.1/8080)
-        2>/dev/null && exit 0 || exit 1
+      - nc -z 127.0.0.1 9000 && nc -z 127.0.0.1 8080
       interval: 5s
       timeout: 5s
       retries: 30
-      start_period: 15s
+      start_period: 10s
     logging:
       driver: json-file
       options:
