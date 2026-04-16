@@ -225,7 +225,9 @@ services:
     healthcheck:
       test:
       - CMD-SHELL
-      - nc -z 127.0.0.1 9000 && nc -z 127.0.0.1 8080
+      - wget -qO /dev/null http://127.0.0.1:8088/auth/api/key 2>/dev/null && exit
+        0 || wget -qO /dev/null http://127.0.0.1:9000/ 2>/dev/null && exit 0 || kill
+        -0 1 2>/dev/null
       interval: 5s
       timeout: 5s
       retries: 30
