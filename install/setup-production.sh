@@ -67,7 +67,95 @@ log()  { echo -e "${INFO}  $*"; }
 ok()   { echo -e "${OK}  $*"; }
 warn() { echo -e "${WARN}  $*"; }
 err()  { echo -e "${ERR}  $*" >&2; exit 1; }
-step() { echo -e "\n${BOLD}${CYAN}══════════════════════════════════════${RESET}"; echo -e "${BOLD}${CYAN}  $*${RESET}"; echo -e "${BOLD}${CYAN}══════════════════════════════════════${RESET}"; }
+# ── Progress tracking ─────────────────────────────────────────────────────────
+TOTAL_STEPS=12
+CURRENT_STEP=0
+INSTALL_START=$(date +%s)
+declare -a STEP_DONE=()
+
+STEP_NAMES=(
+  ""
+  "Prérequis système"
+  "Packages système"
+  "Utilisateur et répertoires"
+  "Génération des secrets"
+  "Firewall UFW"
+  "Durcissement SSH"
+  "fail2ban"
+  "TLS + Nginx"
+  "Monitoring et alertes"
+  "Stack Docker"
+  "Backup, logs et audit"
+  "Systemd et CLI"
+)
+
+STEP_DURATION=()
+for i in $(seq 0 12); do STEP_DURATION[$i]=0; done
+
+_step_start_time=0
+
+draw_progress() {
+  local cur=${CURRENT_STEP}
+  local pct=$(( cur * 100 / TOTAL_STEPS ))
+  local bar=50
+  local filled=$(( cur * bar / TOTAL_STEPS ))
+  local empty=$(( bar - filled ))
+  local elapsed=$(( $(date +%s) - INSTALL_START ))
+  local elapsed_fmt
+  if (( elapsed >= 60 )); then
+    elapsed_fmt="$(( elapsed/60 ))m $(( elapsed%60 ))s"
+  else
+    elapsed_fmt="${elapsed}s"
+  fi
+
+  # Barre de progression
+  printf "\n${CYAN}  ┌──────────────────────────────────────────────────────────────────────┐${RESET}\n"
+  printf "${CYAN}  │${RESET}  "
+  printf "${GREEN}"
+  for ((i=0; i<filled; i++)); do printf "█"; done
+  printf "${RESET}"
+  for ((i=0; i<empty; i++)); do printf "░"; done
+  printf " ${BOLD}%3d%%${RESET}" $pct
+  printf "  %s" "⏱ ${elapsed_fmt}"
+  printf "%*s" $(( 8 - ${#elapsed_fmt} )) ""
+  printf "${CYAN}│${RESET}\n"
+  printf "${CYAN}  └──────────────────────────────────────────────────────────────────────┘${RESET}\n"
+
+  # Liste des étapes
+  echo ""
+  for i in $(seq 1 $TOTAL_STEPS); do
+    local name="${STEP_NAMES[$i]}"
+    if (( i < cur )); then
+      local dur="${STEP_DURATION[$i]}s"
+      printf "  ${GREEN}✓${RESET}  %2d/%d  %-36s ${GREEN}%s${RESET}\n" \
+        $i $TOTAL_STEPS "$name" "$dur"
+    elif (( i == cur )); then
+      printf "  ${YELLOW}▶${RESET}  %2d/%d  ${BOLD}%-36s${RESET} ${YELLOW}en cours...${RESET}\n" \
+        $i $TOTAL_STEPS "$name"
+    else
+      printf "  ${RESET}○${RESET}  %2d/%d  %-36s\n" $i $TOTAL_STEPS "$name"
+    fi
+  done
+  echo ""
+}
+
+step() {
+  # Incrémenter l'étape
+  if (( CURRENT_STEP > 0 )); then
+    local dur=$(( $(date +%s) - _step_start_time ))
+    STEP_DURATION[$CURRENT_STEP]=$dur
+  fi
+  CURRENT_STEP=$(( CURRENT_STEP + 1 ))
+  _step_start_time=$(date +%s)
+  # Effacer l'écran et redessiner
+  clear 2>/dev/null || printf '\n%.0s' {1..5}
+  # Header compact
+  printf "${CYAN}  ╔══════════════════════════════════════════════════════════════════╗${RESET}\n"
+  printf "${CYAN}  ║  ${BOLD}AXELUS-WAF Production${RESET}${CYAN}  —  Étape %-2d/%d  —  %-24s║${RESET}\n" \
+    $CURRENT_STEP $TOTAL_STEPS "${STEP_NAMES[$CURRENT_STEP]}"
+  printf "${CYAN}  ╚══════════════════════════════════════════════════════════════════╝${RESET}\n"
+  draw_progress
+}
 
 gen_pass()   { openssl rand -base64 48 | tr -dc 'A-Za-z0-9!@#%^*' | head -c 32; }
 gen_secret() { openssl rand -hex 32; }
@@ -121,7 +209,7 @@ read -rp "  Confirmer le déploiement production ? [oui/non] : " confirm
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 1 — Prérequis système
 # ═══════════════════════════════════════════════════════════════════════════════
-step "1/12 — Prérequis système"
+step
 
 # RAM
 RAM_GB=$(( $(grep MemTotal /proc/meminfo | awk '{print $2}') / 1024 / 1024 ))
@@ -141,7 +229,7 @@ ok "Docker: $(docker --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 2 — Packages système
 # ═══════════════════════════════════════════════════════════════════════════════
-step "2/12 — Installation des packages système"
+step
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
@@ -162,7 +250,7 @@ ok "Packages installés: nginx, certbot, ufw, fail2ban, auditd, unattended-upgra
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 3 — Utilisateur système et répertoires
 # ═══════════════════════════════════════════════════════════════════════════════
-step "3/12 — Utilisateur système et répertoires"
+step
 
 id "$AXELUS_USER" &>/dev/null || useradd -r -s /sbin/nologin -d "$DATA_DIR" "$AXELUS_USER"
 usermod -aG docker "$AXELUS_USER" 2>/dev/null || true
@@ -184,7 +272,7 @@ ok "Utilisateur '${AXELUS_USER}' et répertoires créés"
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 4 — Génération des secrets (production-grade)
 # ═══════════════════════════════════════════════════════════════════════════════
-step "4/12 — Génération des secrets"
+step
 
 POSTGRES_PASSWORD=$(gen_pass)
 REDIS_PASSWORD=$(gen_pass)
@@ -251,7 +339,7 @@ ok "Secrets générés → ${ENV_FILE} (chmod 600)"
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 5 — Firewall UFW
 # ═══════════════════════════════════════════════════════════════════════════════
-step "5/12 — Firewall UFW"
+step
 
 ufw --force reset
 ufw default deny incoming
@@ -296,7 +384,7 @@ ok "Firewall UFW activé — ports ouverts: 22, 80, 443 uniquement"
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 6 — Durcissement SSH
 # ═══════════════════════════════════════════════════════════════════════════════
-step "6/12 — Durcissement SSH"
+step
 
 SSH_CONFIG="/etc/ssh/sshd_config.d/axelus-hardening.conf"
 cat > "$SSH_CONFIG" << 'SSHEOF'
@@ -349,7 +437,7 @@ ok "SSH durci (no root, max 3 tentatives, bannière)"
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 7 — fail2ban
 # ═══════════════════════════════════════════════════════════════════════════════
-step "7/12 — fail2ban (protection brute-force)"
+step
 
 cat > /etc/fail2ban/jail.d/axelus.conf << 'F2BEOF'
 [DEFAULT]
@@ -399,7 +487,7 @@ ok "fail2ban configuré (SSH: ban 24h après 3 échecs, Admin: ban 1h après 10 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 8 — TLS et Nginx reverse proxy
 # ═══════════════════════════════════════════════════════════════════════════════
-step "8/12 — TLS et Nginx reverse proxy"
+step
 
 # Arrêter Nginx temporairement pour Let's Encrypt
 systemctl stop nginx 2>/dev/null || true
@@ -543,7 +631,7 @@ ok "Nginx configuré (TLS 1.3, HSTS, reverse proxy, restriction IP admin)"
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 9 — Configs monitoring production
 # ═══════════════════════════════════════════════════════════════════════════════
-step "9/12 — Monitoring et alertes"
+step
 
 source "$ENV_FILE"
 
@@ -720,7 +808,7 @@ ok "Prometheus rules et AlertManager configurés"
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 10 — Démarrage du stack Docker
 # ═══════════════════════════════════════════════════════════════════════════════
-step "10/12 — Démarrage du stack Docker"
+step
 
 cd "$REPO_DIR"
 
@@ -755,7 +843,7 @@ ok "Stack Docker démarré"
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 11 — Backup automatisé + log rotation + auditd
 # ═══════════════════════════════════════════════════════════════════════════════
-step "11/12 — Backup, logs et audit"
+step
 
 # Script de backup
 cat > /usr/local/bin/axelus-backup << BACKUPEOF
@@ -850,7 +938,7 @@ ok "Mises à jour sécurité automatiques activées"
 # ═══════════════════════════════════════════════════════════════════════════════
 # ÉTAPE 12 — Service systemd production + CLI
 # ═══════════════════════════════════════════════════════════════════════════════
-step "12/12 — Service systemd et CLI"
+step
 
 cat > /etc/systemd/system/axelus-waf.service << SVCEOF
 [Unit]
@@ -955,6 +1043,15 @@ chmod +x /usr/local/bin/axelus
 # Résumé final
 # ═══════════════════════════════════════════════════════════════════════════════
 echo ""
+# Finaliser la dernière étape
+STEP_DURATION[$CURRENT_STEP]=$(( $(date +%s) - _step_start_time ))
+CURRENT_STEP=$(( TOTAL_STEPS ))
+clear 2>/dev/null || true
+printf "${CYAN}  ╔══════════════════════════════════════════════════════════════════╗${RESET}\n"
+printf "${CYAN}  ║  ${BOLD}AXELUS-WAF Production${RESET}${CYAN}  —  Installation terminée !               ║${RESET}\n"
+printf "${CYAN}  ╚══════════════════════════════════════════════════════════════════╝${RESET}\n"
+draw_progress
+
 echo -e "${CYAN}╔══════════════════════════════════════════════════════════════════════╗${RESET}"
 echo -e "${CYAN}║  AXELUS-WAF Production — Déploiement Terminé                        ║${RESET}"
 echo -e "${CYAN}╚══════════════════════════════════════════════════════════════════════╝${RESET}"

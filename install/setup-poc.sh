@@ -24,7 +24,83 @@ COMPOSE_FILE="$REPO_DIR/docker-compose.poc.yml"
 log() { echo -e "${INFO}  $*"; }
 ok()  { echo -e "${OK}  $*"; }
 err() { echo -e "${ERR}  $*" >&2; exit 1; }
-step(){ echo -e "\n${BOLD}${CYAN}▶ $*${RESET}"; }
+# ── Progress tracking ─────────────────────────────────────────────────────────
+TOTAL_STEPS=9
+CURRENT_STEP=0
+INSTALL_START=$(date +%s)
+
+get_step_name() {
+  case $1 in
+    1) echo "Verification Docker" ;;
+    2) echo "Verification compose" ;;
+    3) echo "Creation repertoires" ;;
+    4) echo "Generation secrets" ;;
+    5) echo "Config monitoring" ;;
+    6) echo "Pull images Docker" ;;
+    7) echo "Demarrage stack" ;;
+    8) echo "Smoke tests" ;;
+    9) echo "Installation CLI" ;;
+    *) echo "" ;;
+  esac
+}
+
+_step_start_time=0
+_dur_1=0; _dur_2=0; _dur_3=0; _dur_4=0; _dur_5=0
+_dur_6=0; _dur_7=0; _dur_8=0; _dur_9=0
+
+draw_progress() {
+  local cur=${CURRENT_STEP}
+  local pct=$(( cur * 100 / TOTAL_STEPS ))
+  local bar=50
+  local filled=$(( cur * bar / TOTAL_STEPS ))
+  local empty=$(( bar - filled ))
+  local elapsed=$(( $(date +%s) - INSTALL_START ))
+  local elapsed_fmt
+  if (( elapsed >= 60 )); then
+    elapsed_fmt="$(( elapsed/60 ))m $(( elapsed%60 ))s"
+  else
+    elapsed_fmt="${elapsed}s"
+  fi
+
+  printf "\n${CYAN}  ┌──────────────────────────────────────────────────────────────┐${RESET}\n"
+  printf "${CYAN}  │${RESET}  "
+  printf "${GREEN}"
+  printf "%${filled}s" | tr " " "█"
+  printf "${RESET}"
+  printf "%${empty}s" | tr " " "░"
+  printf " ${BOLD}%3d%%${RESET}  ⏱ %s" $pct "$elapsed_fmt"
+  printf "%*s" $(( 10 - ${#elapsed_fmt} )) ""
+  printf "${CYAN}│${RESET}\n"
+  printf "${CYAN}  └──────────────────────────────────────────────────────────────┘${RESET}\n\n"
+
+  for i in $(seq 1 $TOTAL_STEPS); do
+    local name; name=$(get_step_name $i)
+    if (( i < cur )); then
+      printf "  ${GREEN}✓${RESET}  %d/%d  %-34s ${GREEN}%ss${RESET}\n" \
+        $i $TOTAL_STEPS "$name" "$(eval echo \$_dur_$i)"
+    elif (( i == cur )); then
+      printf "  ${YELLOW}▶${RESET}  %d/%d  ${BOLD}%-34s${RESET} ${YELLOW}en cours...${RESET}\n" \
+        $i $TOTAL_STEPS "$name"
+    else
+      printf "  ○  %d/%d  %-34s\n" $i $TOTAL_STEPS "$name"
+    fi
+  done
+  echo ""
+}
+
+step() {
+  if (( CURRENT_STEP > 0 )); then
+    eval "_dur_${CURRENT_STEP}=$(( $(date +%s) - _step_start_time ))"
+  fi
+  CURRENT_STEP=$(( CURRENT_STEP + 1 ))
+  _step_start_time=$(date +%s)
+  clear 2>/dev/null || printf '\n%.0s' {1..3}
+  printf "${CYAN}  ╔══════════════════════════════════════════════════════════════╗${RESET}\n"
+  printf "${CYAN}  ║  ${BOLD}AXELUS-WAF POC Setup${RESET}${CYAN}  —  Étape %d/%d  —  %-20s║${RESET}\n" \
+    $CURRENT_STEP $TOTAL_STEPS "$(get_step_name $CURRENT_STEP)"
+  printf "${CYAN}  ╚══════════════════════════════════════════════════════════════╝${RESET}\n"
+  draw_progress
+}
 
 gen_pass()   { openssl rand -base64 32 | tr -dc 'A-Za-z0-9' | head -c 28; }
 gen_secret() { openssl rand -hex 32; }
@@ -40,7 +116,7 @@ echo -e "${CYAN}╚════════════════════�
 echo ""
 
 # ── Step 1: Docker check ──────────────────────────────────────────────────────
-step "Checking Docker"
+step
 command -v docker &>/dev/null || err "Docker not found. Install it first: curl -fsSL https://get.docker.com | bash"
 docker compose version &>/dev/null || err "Docker Compose plugin not found. Install docker-compose-plugin."
 ok "Docker $(docker --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')"
@@ -48,12 +124,12 @@ ok "Docker Compose $(docker compose version --short)"
 docker info &>/dev/null || { systemctl start docker; sleep 2; }
 
 # ── Step 2: Check compose file ────────────────────────────────────────────────
-step "Checking compose file"
+step
 [[ -f "$COMPOSE_FILE" ]] || err "docker-compose.poc.yml not found at: $COMPOSE_FILE"
 ok "Compose file: $COMPOSE_FILE"
 
 # ── Step 3: Create data directories ───────────────────────────────────────────
-step "Creating data directories"
+step
 dirs=(
   "$SAFELINE_DIR/resources/"{postgres,mgt,detector,nginx,sock}
   "$SAFELINE_DIR/logs/nginx"
@@ -66,7 +142,7 @@ ok "Data directory: $SAFELINE_DIR"
 ok "Config directory: $REPO_DIR/monitoring"
 
 # ── Step 4: Generate .env ─────────────────────────────────────────────────────
-step "Generating secure credentials"
+step
 
 POSTGRES_PASS=$(gen_pass)
 REDIS_PASS=$(gen_pass)
@@ -111,7 +187,7 @@ chmod 640 "$ENV_FILE"
 ok "Credentials generated → $ENV_FILE"
 
 # ── Step 5: Write Prometheus config ───────────────────────────────────────────
-step "Writing monitoring config"
+step
 
 cat > "$REPO_DIR/monitoring/prometheus/prometheus.yaml" << 'PROMEOF'
 global:
@@ -176,7 +252,7 @@ ok "Grafana provisioning written"
 ok "AlertManager config written"
 
 # ── Step 6: Pull images ───────────────────────────────────────────────────────
-step "Pulling Docker images (this may take a few minutes...)"
+step
 echo ""
 
 images=(
@@ -205,7 +281,7 @@ for img in "${images[@]}"; do
 done
 
 # ── Step 7: Start the stack ───────────────────────────────────────────────────
-step "Starting AXELUS-WAF stack"
+step
 cd "$REPO_DIR"
 
 docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" \
@@ -237,15 +313,17 @@ for i in $(seq 1 20); do
 done
 
 # ── Step 8: Smoke test ────────────────────────────────────────────────────────
-step "Smoke tests"
-PASS=0; WARN=0
+step
+PASS_COUNT=0; WARN_COUNT=0
 
 check() {
   local name="$1"; shift
   if eval "$@" &>/dev/null; then
-    echo -e "  ${OK} $name"; ((PASS++))
+    echo -e "  ${OK} $name"
+    PASS_COUNT=$((PASS_COUNT+1))
   else
-    echo -e "  ${YELLOW}⚠${RESET} $name (may still be starting)"; ((WARN++))
+    echo -e "  ${WARN} $name (may still be starting)"
+    WARN_COUNT=$((WARN_COUNT+1))
   fi
 }
 
@@ -261,7 +339,7 @@ check "Prometheus healthy"     "curl -sf http://127.0.0.1:9090/-/healthy"
 check "Grafana healthy"        "curl -sf http://127.0.0.1:3000/api/health | grep -q ok"
 
 # ── Install axelus CLI ────────────────────────────────────────────────────────
-step "Installing axelus CLI"
+step
 REPO_DIR_ESC="${REPO_DIR//\//\\/}"
 ENV_FILE_ESC="${ENV_FILE//\//\\/}"
 COMPOSE_FILE_ESC="${COMPOSE_FILE//\//\\/}"
@@ -356,4 +434,13 @@ echo ""
 echo -e "  ${YELLOW}axelus status${RESET}"
 docker compose -f "$COMPOSE_FILE" --env-file "$ENV_FILE" ps --format "table {{.Name}}\t{{.Status}}\t{{.Ports}}" 2>/dev/null | head -20
 echo ""
+# Final step complete
+eval "_dur_${CURRENT_STEP}=$(( $(date +%s) - _step_start_time ))"
+CURRENT_STEP=$TOTAL_STEPS
+clear 2>/dev/null || true
+printf "${CYAN}  ╔══════════════════════════════════════════════════════════════╗${RESET}\n"
+printf "${CYAN}  ║  ${BOLD}AXELUS-WAF POC${RESET}${CYAN}  —  Installation terminée !                  ║${RESET}\n"
+printf "${CYAN}  ╚══════════════════════════════════════════════════════════════╝${RESET}\n"
+draw_progress
+
 echo -e "${GREEN}AXELUS-WAF — OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com${RESET}"
