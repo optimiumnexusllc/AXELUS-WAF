@@ -1,14 +1,3 @@
-# AXELUS-WAF — POC Docker Compose (fully self-contained)
-# Uses real published images from Docker Hub.
-# Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
-#
-# Usage:
-#   cd /opt/axelus-waf/AXELUS-WAF
-#   cp .env.example .env && nano .env   # set passwords
-#   bash install/setup-poc.sh           # auto-generates .env and starts stack
-#   # OR manually:
-#   docker compose -f docker-compose.poc.yml up -d
-
 networks:
   axelus:
     name: axelus-net
@@ -16,19 +5,14 @@ networks:
     ipam:
       driver: default
       config:
-        - gateway: ${SUBNET_PREFIX:-172.22.222}.1
-          subnet: ${SUBNET_PREFIX:-172.22.222}.0/24
-
+      - gateway: ${SUBNET_PREFIX:-172.22.222}.1
+        subnet: ${SUBNET_PREFIX:-172.22.222}.0/24
 volumes:
-  postgres_data:
-  redis_data:
-  grafana_data:
-  prometheus_data:
-
+  postgres_data: null
+  redis_data: null
+  grafana_data: null
+  prometheus_data: null
 services:
-
-  # ── PostgreSQL ──────────────────────────────────────────────────────────────
-  # AXELUS-WAF mirrored image — optimiumnexusllc/axelus-postgres
   postgres:
     container_name: axelus-pg
     image: optimiumnexusllc/axelus-postgres:15.2
@@ -38,101 +22,106 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
       POSTGRES_DB: axelus
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - /etc/localtime:/etc/localtime:ro
+    - postgres_data:/var/lib/postgresql/data
+    - /etc/localtime:/etc/localtime:ro
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.2
-    command: ["postgres", "-c", "max_connections=200", "-c", "shared_buffers=256MB"]
+    command:
+    - postgres
+    - -c
+    - max_connections=200
+    - -c
+    - shared_buffers=256MB
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U axelus -d axelus"]
+      test:
+      - CMD-SHELL
+      - pg_isready -U axelus -d axelus
       interval: 10s
       timeout: 5s
       retries: 15
       start_period: 30s
-
-  # ── Redis ───────────────────────────────────────────────────────────────────
   redis:
     container_name: axelus-redis
     image: redis:7.2-alpine
     restart: unless-stopped
-    command: >
-      redis-server
-      --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
-      --maxmemory 256mb
-      --maxmemory-policy allkeys-lru
-      --save 60 1000
-      --loglevel warning
+    command: 'redis-server --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD in .env}
+      --maxmemory 256mb --maxmemory-policy allkeys-lru --save 60 1000 --loglevel warning
+
+      '
     volumes:
-      - redis_data:/data
-      - /etc/localtime:/etc/localtime:ro
+    - redis_data:/data
+    - /etc/localtime:/etc/localtime:ro
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.3
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      test:
+      - CMD
+      - redis-cli
+      - -a
+      - ${REDIS_PASSWORD}
+      - ping
       interval: 10s
       timeout: 5s
       retries: 10
-
-  # ── AXELUS WAF Engine (Tengine) ─────────────────────────────────────────────
-  # The WAF engine — Tengine (fork of Nginx) with AXELUS modules
   waf:
     container_name: axelus-waf
     image: optimiumnexusllc/axelus-tengine:latest
     restart: unless-stopped
     ports:
-      - "0.0.0.0:80:80"
-      - "0.0.0.0:443:443"
+    - 0.0.0.0:80:80
+    - 0.0.0.0:443:443
     volumes:
-      - ${SAFELINE_DIR:-/data/axelus-waf}/resources/nginx:/etc/nginx
-      - ${SAFELINE_DIR:-/data/axelus-waf}/resources/sock:/app/sock
-      - ${SAFELINE_DIR:-/data/axelus-waf}/logs/nginx:/app/log/nginx
-      - /etc/localtime:/etc/localtime:ro
+    - ${SAFELINE_DIR:-/data/axelus-waf}/resources/nginx:/etc/nginx
+    - ${SAFELINE_DIR:-/data/axelus-waf}/resources/sock:/app/sock
+    - ${SAFELINE_DIR:-/data/axelus-waf}/logs/nginx:/app/log/nginx
+    - /etc/localtime:/etc/localtime:ro
     environment:
-      - MGT_IP=${SUBNET_PREFIX:-172.22.222}.5
+    - MGT_IP=${SUBNET_PREFIX:-172.22.222}.5
+    - TCD_MGT_API=http://${SUBNET_PREFIX:-172.22.222}.5:9443/api/open/publish/server
+    - TCD_SNSERVER=${SUBNET_PREFIX:-172.22.222}.6:8000
+    - SNSERVER_ADDR=${SUBNET_PREFIX:-172.22.222}.6:8000
+    - CHAOS_ADDR=${SUBNET_PREFIX:-172.22.222}.9
     extra_hosts:
-      - "safeline-postgres:172.22.222.2"
-      - "safeline-redis:172.22.222.3"
-      - "safeline-tengine:172.22.222.4"
-      - "safeline-mgt:172.22.222.5"
-      - "safeline-detector:172.22.222.6"
-      - "safeline-fvm:172.22.222.7"
-      - "safeline-luigi:172.22.222.8"
-      - "safeline-chaos:172.22.222.9"
+    - safeline-postgres:172.22.222.2
+    - safeline-redis:172.22.222.3
+    - safeline-tengine:172.22.222.4
+    - safeline-mgt:172.22.222.5
+    - safeline-detector:172.22.222.6
+    - safeline-fvm:172.22.222.7
+    - safeline-luigi:172.22.222.8
+    - safeline-chaos:172.22.222.9
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.4
     depends_on:
       mgt:
         condition: service_healthy
-
-  # ── Management API ──────────────────────────────────────────────────────────
-  # Core management API — WAF config, license, dashboards, REST API
   mgt:
     container_name: axelus-mgt
     image: optimiumnexusllc/axelus-mgt:latest
     restart: unless-stopped
     ports:
-      - "0.0.0.0:9443:9443"
+    - 0.0.0.0:9443:9443
     volumes:
-      - ${SAFELINE_DIR:-/data/axelus-waf}/resources/mgt:/app/data
-      - ${SAFELINE_DIR:-/data/axelus-waf}/resources/sock:/app/sock
-      - ${SAFELINE_DIR:-/data/axelus-waf}/logs/nginx:/app/log/nginx:z
-      - /var/run:/app/run
-      - /etc/localtime:/etc/localtime:ro
+    - ${SAFELINE_DIR:-/data/axelus-waf}/resources/mgt:/app/data
+    - ${SAFELINE_DIR:-/data/axelus-waf}/resources/sock:/app/sock
+    - ${SAFELINE_DIR:-/data/axelus-waf}/logs/nginx:/app/log/nginx:z
+    - /var/run:/app/run
+    - /etc/localtime:/etc/localtime:ro
     environment:
-      - MGT_PG=postgres://axelus:${POSTGRES_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.2/axelus?sslmode=disable
-      - MGT_REDIS=redis://:${REDIS_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.3:6379/0
+    - MGT_PG=postgres://axelus:${POSTGRES_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.2/axelus?sslmode=disable
+    - MGT_REDIS=redis://:${REDIS_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.3:6379/0
     extra_hosts:
-      - "safeline-postgres:172.22.222.2"
-      - "safeline-redis:172.22.222.3"
-      - "safeline-tengine:172.22.222.4"
-      - "safeline-mgt:172.22.222.5"
-      - "safeline-detector:172.22.222.6"
-      - "safeline-fvm:172.22.222.7"
-      - "safeline-luigi:172.22.222.8"
-      - "safeline-chaos:172.22.222.9"
+    - safeline-postgres:172.22.222.2
+    - safeline-redis:172.22.222.3
+    - safeline-tengine:172.22.222.4
+    - safeline-mgt:172.22.222.5
+    - safeline-detector:172.22.222.6
+    - safeline-fvm:172.22.222.7
+    - safeline-luigi:172.22.222.8
+    - safeline-chaos:172.22.222.9
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.5
@@ -146,214 +135,207 @@ services:
       chaos:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9443/api/open/health || curl -sf http://localhost:9443/api/open/health || exit 1"]
+      test:
+      - CMD-SHELL
+      - wget -qO- http://localhost:9443/api/open/health || curl -sf http://localhost:9443/api/open/health
+        || exit 1
       interval: 15s
       timeout: 10s
       retries: 20
       start_period: 120s
-
-  # ── Detector (AI/ML engine) ─────────────────────────────────────────────────
-  # ML-based attack detection — Zero-Day Shield + behavioral analysis
   detector:
     container_name: axelus-detector
     image: optimiumnexusllc/axelus-detector:latest
     restart: unless-stopped
     volumes:
-      - ${SAFELINE_DIR:-/data/axelus-waf}/resources/detector:/resources/detector
-      - ${SAFELINE_DIR:-/data/axelus-waf}/resources/sock:/app/sock
-      - /etc/localtime:/etc/localtime:ro
+    - ${SAFELINE_DIR:-/data/axelus-waf}/resources/detector:/resources/detector
+    - ${SAFELINE_DIR:-/data/axelus-waf}/resources/sock:/app/sock
+    - /etc/localtime:/etc/localtime:ro
     extra_hosts:
-      - "safeline-postgres:172.22.222.2"
-      - "safeline-redis:172.22.222.3"
-      - "safeline-tengine:172.22.222.4"
-      - "safeline-mgt:172.22.222.5"
-      - "safeline-detector:172.22.222.6"
-      - "safeline-fvm:172.22.222.7"
-      - "safeline-luigi:172.22.222.8"
-      - "safeline-chaos:172.22.222.9"
+    - safeline-postgres:172.22.222.2
+    - safeline-redis:172.22.222.3
+    - safeline-tengine:172.22.222.4
+    - safeline-mgt:172.22.222.5
+    - safeline-detector:172.22.222.6
+    - safeline-fvm:172.22.222.7
+    - safeline-luigi:172.22.222.8
+    - safeline-chaos:172.22.222.9
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.6
     environment:
-      - LOG_DIR=/logs/detector
+    - LOG_DIR=/logs/detector
     depends_on:
       mgt:
         condition: service_healthy
-
-  # ── Tengine FVM ─────────────────────────────────────────────────────────────
-  # FastVM — handles real-time request processing
   fvm:
     container_name: axelus-fvm
     image: optimiumnexusllc/axelus-fvm:latest
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost/skynetinfo >/dev/null 2>&1 && exit 0 || curl -sf http://localhost/skynetinfo >/dev/null 2>&1 && exit 0 || exit 0"]
+      test:
+      - CMD-SHELL
+      - wget -qO- http://localhost/skynetinfo >/dev/null 2>&1 && exit 0 || curl -sf
+        http://localhost/skynetinfo >/dev/null 2>&1 && exit 0 || exit 0
       interval: 5s
       timeout: 5s
       retries: 30
       start_period: 5s
     volumes:
-      - /etc/localtime:/etc/localtime:ro
+    - /etc/localtime:/etc/localtime:ro
     extra_hosts:
-      - "safeline-postgres:172.22.222.2"
-      - "safeline-redis:172.22.222.3"
-      - "safeline-tengine:172.22.222.4"
-      - "safeline-mgt:172.22.222.5"
-      - "safeline-detector:172.22.222.6"
-      - "safeline-fvm:172.22.222.7"
-      - "safeline-luigi:172.22.222.8"
-      - "safeline-chaos:172.22.222.9"
+    - safeline-postgres:172.22.222.2
+    - safeline-redis:172.22.222.3
+    - safeline-tengine:172.22.222.4
+    - safeline-mgt:172.22.222.5
+    - safeline-detector:172.22.222.6
+    - safeline-fvm:172.22.222.7
+    - safeline-luigi:172.22.222.8
+    - safeline-chaos:172.22.222.9
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.7
-
-  # ── Luigi ───────────────────────────────────────────────────────────────────
-  # Rules/config sync service
   luigi:
     container_name: axelus-luigi
     image: optimiumnexusllc/axelus-luigi:latest
     restart: unless-stopped
     environment:
-      - MGT_IP=${SUBNET_PREFIX:-172.22.222}.5
+    - MGT_IP=${SUBNET_PREFIX:-172.22.222}.5
     volumes:
-      - /etc/localtime:/etc/localtime:ro
+    - /etc/localtime:/etc/localtime:ro
     extra_hosts:
-      - "safeline-postgres:172.22.222.2"
-      - "safeline-redis:172.22.222.3"
-      - "safeline-tengine:172.22.222.4"
-      - "safeline-mgt:172.22.222.5"
-      - "safeline-detector:172.22.222.6"
-      - "safeline-fvm:172.22.222.7"
-      - "safeline-luigi:172.22.222.8"
-      - "safeline-chaos:172.22.222.9"
+    - safeline-postgres:172.22.222.2
+    - safeline-redis:172.22.222.3
+    - safeline-tengine:172.22.222.4
+    - safeline-mgt:172.22.222.5
+    - safeline-detector:172.22.222.6
+    - safeline-fvm:172.22.222.7
+    - safeline-luigi:172.22.222.8
+    - safeline-chaos:172.22.222.9
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.8
     depends_on:
       mgt:
         condition: service_healthy
-
-  # ── Chaos ───────────────────────────────────────────────────────────────────
-  # Anti-bot challenge service
   chaos:
     container_name: axelus-chaos
     image: optimiumnexusllc/axelus-chaos:latest
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "(echo > /dev/tcp/127.0.0.1/8088) 2>/dev/null && exit 0 || nc -z 127.0.0.1 8088 2>/dev/null && exit 0 || exit 1"]
+      test:
+      - CMD-SHELL
+      - pgrep -f chaos >/dev/null 2>&1 && sleep 2 && (echo > /dev/tcp/127.0.0.1/8088)
+        2>/dev/null && exit 0 || exit 1
       interval: 5s
       timeout: 5s
-      retries: 40
-      start_period: 10s
+      retries: 60
+      start_period: 20s
     logging:
-      driver: "json-file"
+      driver: json-file
       options:
-        max-size: "100m"
-        max-file: "5"
+        max-size: 100m
+        max-file: '5'
     volumes:
-      - ${SAFELINE_DIR:-/data/axelus-waf}/resources/chaos:/app/chaos
-      - /etc/localtime:/etc/localtime:ro
+    - ${SAFELINE_DIR:-/data/axelus-waf}/resources/chaos:/app/chaos
+    - /etc/localtime:/etc/localtime:ro
     extra_hosts:
-      - "safeline-postgres:172.22.222.2"
-      - "safeline-redis:172.22.222.3"
-      - "safeline-tengine:172.22.222.4"
-      - "safeline-mgt:172.22.222.5"
-      - "safeline-detector:172.22.222.6"
-      - "safeline-fvm:172.22.222.7"
-      - "safeline-luigi:172.22.222.8"
-      - "safeline-chaos:172.22.222.9"
+    - safeline-postgres:172.22.222.2
+    - safeline-redis:172.22.222.3
+    - safeline-tengine:172.22.222.4
+    - safeline-mgt:172.22.222.5
+    - safeline-detector:172.22.222.6
+    - safeline-fvm:172.22.222.7
+    - safeline-luigi:172.22.222.8
+    - safeline-chaos:172.22.222.9
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.9
-
-  # ── Prometheus ──────────────────────────────────────────────────────────────
+    environment:
+    - DB_ADDR=postgres://axelus:${POSTGRES_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.2/axelus?sslmode=disable
   prometheus:
     container_name: axelus-prometheus
     image: prom/prometheus:v2.50.1
     restart: unless-stopped
     ports:
-      - "127.0.0.1:9090:9090"
+    - 127.0.0.1:9090:9090
     volumes:
-      - prometheus_data:/prometheus
-      - ./monitoring/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
-      - /etc/localtime:/etc/localtime:ro
+    - prometheus_data:/prometheus
+    - ./monitoring/prometheus/prometheus.yaml:/etc/prometheus/prometheus.yml:ro
+    - /etc/localtime:/etc/localtime:ro
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.10
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-      - '--storage.tsdb.retention.time=30d'
-      - '--web.enable-lifecycle'
+    - --config.file=/etc/prometheus/prometheus.yml
+    - --storage.tsdb.path=/prometheus
+    - --storage.tsdb.retention.time=30d
+    - --web.enable-lifecycle
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:9090/-/healthy"]
+      test:
+      - CMD
+      - wget
+      - -qO-
+      - http://localhost:9090/-/healthy
       interval: 30s
       timeout: 10s
       retries: 5
-
-  # ── Grafana ─────────────────────────────────────────────────────────────────
   grafana:
     container_name: axelus-grafana
     image: grafana/grafana:10.4.0
     restart: unless-stopped
     ports:
-      - "0.0.0.0:3000:3000"
+    - 0.0.0.0:3000:3000
     volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
-      - /etc/localtime:/etc/localtime:ro
+    - grafana_data:/var/lib/grafana
+    - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    - /etc/localtime:/etc/localtime:ro
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.11
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=${POSTGRES_PASSWORD}
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_AUTH_ANONYMOUS_ENABLED=false
-      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/axelus-waf.json
+    - GF_SECURITY_ADMIN_USER=admin
+    - GF_SECURITY_ADMIN_PASSWORD=${POSTGRES_PASSWORD}
+    - GF_USERS_ALLOW_SIGN_UP=false
+    - GF_AUTH_ANONYMOUS_ENABLED=false
+    - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/axelus-waf.json
     depends_on:
-      - prometheus
-
-  # ── AlertManager ────────────────────────────────────────────────────────────
+    - prometheus
   alertmanager:
     container_name: axelus-alertmanager
     image: prom/alertmanager:v0.27.0
     restart: unless-stopped
     ports:
-      - "127.0.0.1:9093:9093"
+    - 127.0.0.1:9093:9093
     volumes:
-      - ./monitoring/alertmanager:/etc/alertmanager:ro
-      - /etc/localtime:/etc/localtime:ro
+    - ./monitoring/alertmanager:/etc/alertmanager:ro
+    - /etc/localtime:/etc/localtime:ro
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.12
     command:
-      - '--config.file=/etc/alertmanager/alertmanager.yaml'
-      - '--storage.path=/alertmanager'
-
-  # ── Postgres Exporter ────────────────────────────────────────────────────────
+    - --config.file=/etc/alertmanager/alertmanager.yaml
+    - --storage.path=/alertmanager
   postgres-exporter:
     container_name: axelus-pg-exporter
     image: prometheuscommunity/postgres-exporter:v0.15.0
     restart: unless-stopped
     environment:
-      - DATA_SOURCE_NAME=postgresql://axelus:${POSTGRES_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.2:5432/axelus?sslmode=disable
+    - DATA_SOURCE_NAME=postgresql://axelus:${POSTGRES_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.2:5432/axelus?sslmode=disable
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.13
     depends_on:
       postgres:
         condition: service_healthy
-
-  # ── Nginx Exporter ───────────────────────────────────────────────────────────
   nginx-exporter:
     container_name: axelus-nginx-exporter
     image: nginx/nginx-prometheus-exporter:1.1.0
     restart: unless-stopped
     command:
-      - '-nginx.scrape-uri=http://${SUBNET_PREFIX:-172.22.222}.4/nginx_status'
+    - -nginx.scrape-uri=http://${SUBNET_PREFIX:-172.22.222}.4/nginx_status
     networks:
       axelus:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.14
     depends_on:
-      - waf
+    - waf
