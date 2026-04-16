@@ -1,4 +1,4 @@
-// Package license defines IronWall-WAF license tiers, feature flags,
+// Package license defines AXELUS-WAF license tiers, feature flags,
 // and the core data structures for the licensing system.
 package license
 
@@ -14,7 +14,7 @@ const (
 	TierEnterprise Tier = "ENTERPRISE"  // Multi-site, HA, full features
 	TierUltimate   Tier = "ULTIMATE"    // Palantir-grade, unlimited everything
 	TierTrial      Tier = "TRIAL"       // 30-day full feature trial
-	TierDeveloper  Tier = "DEVELOPER"   // For ISVs building on IronWall
+	TierDeveloper  Tier = "DEVELOPER"   // For ISVs building on AXELUS
 )
 
 // ── Feature Flags ─────────────────────────────────────────────────────────────

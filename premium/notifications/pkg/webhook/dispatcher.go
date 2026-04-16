@@ -1,4 +1,4 @@
-// IronWall-WAF — Notification Preferences & Multi-Channel Dispatcher
+// AXELUS-WAF — Notification Preferences & Multi-Channel Dispatcher
 // Handles per-tenant notification settings, channel routing,
 // Slack/Teams/PagerDuty/webhook delivery with retry and dedup.
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
@@ -157,7 +157,7 @@ func (d *Dispatcher) sendSlack(req DispatchRequest, ch ChannelConfig) DispatchRe
 					{
 						"type": "context",
 						"elements": []map[string]string{
-							{"type": "mrkdwn", "text": fmt.Sprintf("*IronWall-WAF* · Tenant: `%s` · %s · Severity: *%s*",
+							{"type": "mrkdwn", "text": fmt.Sprintf("*AXELUS-WAF* · Tenant: `%s` · %s · Severity: *%s*",
 								req.TenantID, req.Timestamp.Format("2006-01-02 15:04 UTC"), strings.ToUpper(req.Severity))},
 						},
 					},
@@ -207,7 +207,7 @@ func (d *Dispatcher) sendTeams(req DispatchRequest, ch ChannelConfig) DispatchRe
 							"type":   "TextBlock",
 							"size":   "medium",
 							"weight": "bolder",
-							"text":   "🛡️ IronWall-WAF Alert",
+							"text":   "🛡️ AXELUS-WAF Alert",
 							"color":  teamsColor(req.Severity),
 						},
 						{
@@ -264,11 +264,11 @@ func (d *Dispatcher) sendPagerDuty(req DispatchRequest, ch ChannelConfig) Dispat
 	payload := map[string]interface{}{
 		"routing_key":  ch.PagerDutyKey,
 		"event_action": "trigger",
-		"dedup_key":    fmt.Sprintf("ironwall-%s-%s-%d", req.TenantID, req.EventType, req.Timestamp.Unix()/300), // 5-min dedup
+		"dedup_key":    fmt.Sprintf("axelus-%s-%s-%d", req.TenantID, req.EventType, req.Timestamp.Unix()/300), // 5-min dedup
 		"payload": map[string]interface{}{
 			"summary":   req.Title,
 			"severity":  severity,
-			"source":    fmt.Sprintf("IronWall-WAF / tenant:%s", req.TenantID),
+			"source":    fmt.Sprintf("AXELUS-WAF / tenant:%s", req.TenantID),
 			"timestamp": req.Timestamp.Format(time.RFC3339),
 			"custom_details": map[string]interface{}{
 				"tenant_id":   req.TenantID,
@@ -281,7 +281,7 @@ func (d *Dispatcher) sendPagerDuty(req DispatchRequest, ch ChannelConfig) Dispat
 			},
 		},
 		"links": []map[string]string{
-			{"href": "https://www.optimiumnexus.com/portal", "text": "IronWall Dashboard"},
+			{"href": "https://www.optimiumnexus.com/portal", "text": "AXELUS Dashboard"},
 		},
 	}
 
@@ -320,8 +320,8 @@ func (d *Dispatcher) sendWebhook(req DispatchRequest, ch ChannelConfig) Dispatch
 		mac := hmac.New(sha256.New, []byte(ch.WebhookSecret))
 		mac.Write(body)
 		sig := hex.EncodeToString(mac.Sum(nil))
-		headers["X-IronWall-Signature"] = "sha256=" + sig
-		headers["X-IronWall-Timestamp"] = req.Timestamp.Format(time.RFC3339)
+		headers["X-AXELUS-Signature"] = "sha256=" + sig
+		headers["X-AXELUS-Timestamp"] = req.Timestamp.Format(time.RFC3339)
 	}
 
 	if err := d.postJSON(ch.WebhookURL, payload, headers); err != nil {
@@ -371,7 +371,7 @@ func (d *Dispatcher) postJSON(url string, payload interface{}, headers map[strin
 	if err != nil { return fmt.Errorf("request: %w", err) }
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("User-Agent", "IronWall-WAF/1.0 (OPTIMIUM NEXUS LLC)")
+	req.Header.Set("User-Agent", "AXELUS-WAF/1.0 (OPTIMIUM NEXUS LLC)")
 	for k, v := range headers { req.Header.Set(k, v) }
 
 	resp, err := d.client.Do(req)

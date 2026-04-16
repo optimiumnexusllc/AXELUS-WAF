@@ -1,4 +1,4 @@
-module github.com/optimiumnexusllc/ironwall/premium/billing
+module github.com/optimiumnexusllc/axelus/premium/billing
 
 go 1.21
 

@@ -9,8 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"optimiumnexus.com/dev/go/log"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/config"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/utils"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/config"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/utils"
 )
 
 func GetLogger(name string) *log.Logger {

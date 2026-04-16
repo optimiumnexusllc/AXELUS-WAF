@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/optimiumnexus/IronWall/mcp_server/pkg/logger"
+	"github.com/optimiumnexus/AXELUS/mcp_server/pkg/logger"
 )
 
 var (

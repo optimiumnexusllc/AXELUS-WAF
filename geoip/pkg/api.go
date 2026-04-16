@@ -1,4 +1,4 @@
-// IronWall GeoIP API — Gin middleware and REST management endpoints
+// AXELUS GeoIP API — Gin middleware and REST management endpoints
 package geoip
 
 import (
@@ -12,7 +12,7 @@ import (
 // ── Middleware ────────────────────────────────────────────────────────────────
 
 // Middleware returns a Gin middleware that enforces GeoIP rules on every request.
-// Adds X-IronWall-Country, X-IronWall-Risk headers to proxied requests.
+// Adds X-AXELUS-Country, X-AXELUS-Risk headers to proxied requests.
 func (e *Engine) Middleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		ip := realIP(c)
@@ -25,9 +25,9 @@ func (e *Engine) Middleware() gin.HandlerFunc {
 
 		// Set headers for upstream and logging
 		if decision.Lookup != nil {
-			c.Request.Header.Set("X-IronWall-Country", decision.Lookup.CountryCode)
-			c.Request.Header.Set("X-IronWall-Risk", fmt.Sprintf("%d", decision.Lookup.RiskScore))
-			c.Request.Header.Set("X-IronWall-ASN", decision.Lookup.ASNOrg)
+			c.Request.Header.Set("X-AXELUS-Country", decision.Lookup.CountryCode)
+			c.Request.Header.Set("X-AXELUS-Risk", fmt.Sprintf("%d", decision.Lookup.RiskScore))
+			c.Request.Header.Set("X-AXELUS-ASN", decision.Lookup.ASNOrg)
 		}
 
 		switch decision.Action {
@@ -41,7 +41,7 @@ func (e *Engine) Middleware() gin.HandlerFunc {
 			return
 		case ActionChallenge:
 			// In production: redirect to CAPTCHA challenge page
-			c.Header("X-IronWall-Challenge", "1")
+			c.Header("X-AXELUS-Challenge", "1")
 			// Challenge handled by Tengine lua module — pass through with header
 		}
 

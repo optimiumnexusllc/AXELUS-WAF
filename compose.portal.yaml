@@ -1,4 +1,4 @@
-# IronWall-WAF — Customer Portal
+# AXELUS-WAF — Customer Portal
 # Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 # Usage: docker compose -f compose.yaml -f compose.portal.yaml up -d
 
@@ -8,13 +8,13 @@ networks:
 
 services:
   portal:
-    container_name: ironwall-portal
+    container_name: axelus-portal
     build:
       context: ./portal
       dockerfile: Dockerfile
     restart: always
     environment:
-      - PORTAL_DB_DSN=postgres://safeline-ce:${POSTGRES_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.2:5432/ironwall_portal?sslmode=disable
+      - PORTAL_DB_DSN=postgres://safeline-ce:${POSTGRES_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.2:5432/axelus_portal?sslmode=disable
       - PORTAL_JWT_SECRET=${PORTAL_JWT_SECRET:?set PORTAL_JWT_SECRET}
       - PORTAL_LICENSE_API=https://${SUBNET_PREFIX:-172.22.222}.40:8090
       - PORTAL_LICENSE_ADMIN_KEY=${LICENSE_ADMIN_KEY}

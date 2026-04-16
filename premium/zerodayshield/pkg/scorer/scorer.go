@@ -1,4 +1,4 @@
-// IronWall-WAF — Zero-Day Shield: ML-Based Anomaly Scoring Engine
+// AXELUS-WAF — Zero-Day Shield: ML-Based Anomaly Scoring Engine
 // Detects novel, previously-unseen attack patterns by scoring requests
 // against behavioral baselines rather than known signatures.
 // Uses: Isolation Forest + statistical z-scoring + entropy analysis.

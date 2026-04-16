@@ -1,4 +1,4 @@
-// IronWall-WAF — Stripe Billing Module
+// AXELUS-WAF — Stripe Billing Module
 // Handles subscriptions, webhooks, automatic invoice generation,
 // plan upgrades/downgrades, and metered usage billing.
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
@@ -50,7 +50,7 @@ type PlanConfig struct {
 	Name        string
 	PriceUSD    int    // cents/year
 	MaxLicenses int    // -1 = unlimited
-	Tier        string // IronWall license tier
+	Tier        string // AXELUS license tier
 	StripePrice string
 }
 
@@ -158,7 +158,7 @@ func (s *Service) CreateCheckoutSession(customerID, planID, email string) (strin
 			Metadata: map[string]string{
 				"customer_id": customerID,
 				"plan":        planID,
-				"product":     "IronWall-WAF",
+				"product":     "AXELUS-WAF",
 				"publisher":   "OPTIMIUM NEXUS LLC",
 			},
 			TrialPeriodDays: func() *int64 {
@@ -585,7 +585,7 @@ func (s *Service) getOrCreateStripeCustomer(customerID, email string) (string, e
 	params := &stripe.CustomerParams{
 		Email: stripe.String(email),
 		Metadata: map[string]string{
-			"ironwall_customer_id": customerID,
+			"axelus_customer_id": customerID,
 			"publisher":            "OPTIMIUM NEXUS LLC",
 		},
 	}

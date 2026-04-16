@@ -1,16 +1,16 @@
-# IronWall-WAF — Kong Declarative Config (deck)
+# AXELUS-WAF — Kong Declarative Config (deck)
 # Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
-# Usage: deck sync -s kong-ironwall.yaml
+# Usage: deck sync -s kong-axelus.yaml
 
 _format_version: "3.0"
 _transform: true
 
 # ── Global Plugins ─────────────────────────────────────────────────────────────
 plugins:
-  - name: ironwall-waf
+  - name: axelus-waf
     config:
-      ironwall_host: ironwall-mgt
-      ironwall_port: 9443
+      axelus_host: axelus-mgt
+      axelus_port: 9443
       admin_key: "{{ env \"IRONWALL_ADMIN_KEY\" }}"
       timeout_ms: 50
       geoip_enabled: true
@@ -39,7 +39,7 @@ plugins:
     config:
       add:
         headers:
-          - "X-WAF-Provider: IronWall-WAF"
+          - "X-WAF-Provider: AXELUS-WAF"
           - "X-Publisher: OPTIMIUM NEXUS LLC"
           - "X-Frame-Options: DENY"
           - "X-Content-Type-Options: nosniff"
@@ -73,9 +73,9 @@ services:
         strip_path: false
         methods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
         headers:
-          X-IronWall-Inspected: ["1"]
+          X-AXELUS-Inspected: ["1"]
     plugins:
-      - name: ironwall-waf
+      - name: axelus-waf
         config:
           dpi_enabled: true
           rate_limit_enabled: true
@@ -88,7 +88,7 @@ services:
         paths: ["/auth"]
         methods: [POST]
     plugins:
-      - name: ironwall-waf
+      - name: axelus-waf
         config:
           rate_limit_enabled: true
           dpi_enabled: true
@@ -102,7 +102,7 @@ services:
         paths: ["/"]
         methods: [GET, HEAD, OPTIONS]
     plugins:
-      - name: ironwall-waf
+      - name: axelus-waf
         config:
           dpi_enabled: false   # Read-only, lower inspection overhead
           rate_limit_enabled: true
@@ -113,9 +113,9 @@ consumers:
   - username: enterprise-client
     custom_id: enterprise-001
     plugins:
-      - name: ironwall-waf
+      - name: axelus-waf
         config:
-          license_check_header: X-IronWall-License
+          license_check_header: X-AXELUS-License
           license_required_feature: api_full_access
 
 # ── Upstreams (load balancing) ────────────────────────────────────────────────

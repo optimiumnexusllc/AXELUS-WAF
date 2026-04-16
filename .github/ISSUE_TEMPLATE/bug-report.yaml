@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Please search the [open issues](https://github.com/optimiumnexus/IronWall/issues) and [discussion](https://github.com/optimiumnexus/IronWall/discussions) for duplicate issue first. 
+        Please search the [open issues](https://github.com/optimiumnexus/AXELUS/issues) and [discussion](https://github.com/optimiumnexus/AXELUS/discussions) for duplicate issue first. 
         The more information you share, the faster we can identify and fix the bug.
       # Please check for duplicate issue first.
   - type: textarea

@@ -1,6 +1,6 @@
 networks:
-  ironwall:
-    name: ironwall
+  axelus:
+    name: axelus
     driver: bridge
     ipam:
       driver: default
@@ -8,29 +8,29 @@ networks:
         - gateway: ${SUBNET_PREFIX:?SUBNET_PREFIX required}.1
           subnet: ${SUBNET_PREFIX}.0/24
     driver_opts:
-      com.docker.network.bridge.name: ironwall
+      com.docker.network.bridge.name: axelus
 
 services:
   postgres:
-    container_name: ironwall-pg
+    container_name: axelus-pg
     restart: always
-    image: ${IMAGE_PREFIX}/ironwall-postgres${ARCH_SUFFIX}:15.2
+    image: ${IMAGE_PREFIX}/axelus-postgres${ARCH_SUFFIX}:15.2
     volumes:
       - ${SAFELINE_DIR}/resources/postgres/data:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
     environment:
-      - POSTGRES_USER=ironwall
+      - POSTGRES_USER=axelus
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?postgres password required}
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.2
     command: [postgres, -c, max_connections=600]
     healthcheck:
-      test: pg_isready -U ironwall -d ironwall
+      test: pg_isready -U axelus -d axelus
   mgt:
-    container_name: ironwall-mgt
+    container_name: axelus-mgt
     restart: always
-    image: ${IMAGE_PREFIX}/ironwall-mgt${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG:?image tag required}
+    image: ${IMAGE_PREFIX}/axelus-mgt${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG:?image tag required}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${SAFELINE_DIR}/resources/mgt:/app/data
@@ -42,7 +42,7 @@ services:
     healthcheck:
       test: curl -k -f https://localhost:1443/api/open/health
     environment:
-      - MGT_PG=postgres://ironwall:${POSTGRES_PASSWORD}@ironwall-pg/ironwall?sslmode=disable
+      - MGT_PG=postgres://axelus:${POSTGRES_PASSWORD}@axelus-pg/axelus?sslmode=disable
     depends_on:
       - postgres
       - fvm
@@ -52,12 +52,12 @@ services:
         max-size: "100m"
         max-file: "5"
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.4
   detect:
-    container_name: ironwall-detector
+    container_name: axelus-detector
     restart: always
-    image: ${IMAGE_PREFIX}/ironwall-detector${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG}
+    image: ${IMAGE_PREFIX}/axelus-detector${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG}
     volumes:
       - ${SAFELINE_DIR}/resources/detector:/resources/detector
       - ${SAFELINE_DIR}/logs/detector:/logs/detector
@@ -65,12 +65,12 @@ services:
     environment:
       - LOG_DIR=/logs/detector
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.5
   tengine:
-    container_name: ironwall-tengine
+    container_name: axelus-tengine
     restart: always
-    image: ${IMAGE_PREFIX}/ironwall-tengine${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG}
+    image: ${IMAGE_PREFIX}/axelus-tengine${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG}
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/resolv.conf:/etc/resolv.conf:ro
@@ -90,12 +90,12 @@ services:
       nofile: 131072
     network_mode: host
   luigi:
-    container_name: ironwall-luigi
+    container_name: axelus-luigi
     restart: always
-    image: ${IMAGE_PREFIX}/ironwall-luigi${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG}
+    image: ${IMAGE_PREFIX}/axelus-luigi${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG}
     environment:
       - MGT_IP=${SUBNET_PREFIX}.4
-      - LUIGI_PG=postgres://ironwall:${POSTGRES_PASSWORD}@ironwall-pg/ironwall?sslmode=disable
+      - LUIGI_PG=postgres://axelus:${POSTGRES_PASSWORD}@axelus-pg/axelus?sslmode=disable
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${SAFELINE_DIR}/resources/luigi:/app/data
@@ -108,12 +108,12 @@ services:
       - detect
       - mgt
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.7
   fvm:
-    container_name: ironwall-fvm
+    container_name: axelus-fvm
     restart: always
-    image: ${IMAGE_PREFIX}/ironwall-fvm${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG}
+    image: ${IMAGE_PREFIX}/axelus-fvm${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG}
     volumes:
       - /etc/localtime:/etc/localtime:ro
     logging:
@@ -122,22 +122,22 @@ services:
         max-size: "100m"
         max-file: "5"
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.8
   chaos:
-    container_name: ironwall-chaos
+    container_name: axelus-chaos
     restart: always
-    image: ${IMAGE_PREFIX}/ironwall-chaos${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG}
+    image: ${IMAGE_PREFIX}/axelus-chaos${REGION}${ARCH_SUFFIX}${RELEASE}:${IMAGE_TAG}
     logging:
       driver: "json-file"
       options:
         max-size: "100m"
         max-file: "10"
     environment:
-      - DB_ADDR=postgres://ironwall:${POSTGRES_PASSWORD}@ironwall-pg/ironwall?sslmode=disable
+      - DB_ADDR=postgres://axelus:${POSTGRES_PASSWORD}@axelus-pg/axelus?sslmode=disable
     volumes:
       - ${SAFELINE_DIR}/resources/sock:/app/sock
       - ${SAFELINE_DIR}/resources/chaos:/app/chaos
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.10

@@ -1,5 +1,5 @@
 /**
- * IronWall Node.js SDK — Jest Test Suite
+ * AXELUS Node.js SDK — Jest Test Suite
  * Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
  */
 
@@ -7,9 +7,9 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {
-  IronWallClient, Feature, TIER_FEATURES,
-  IronWallError, LicenseNotFoundError,
-  FeatureNotAvailableError, createIronWallClient,
+  AXELUSClient, Feature, TIER_FEATURES,
+  AXELUSError, LicenseNotFoundError,
+  FeatureNotAvailableError, createAXELUSClient,
 } from '../src/index';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -40,7 +40,7 @@ function makeLicensePEM(
 }
 
 function writeTempLicense(content: string): string {
-  const tmpFile = path.join(os.tmpdir(), `ironwall-test-${Date.now()}.lic`);
+  const tmpFile = path.join(os.tmpdir(), `axelus-test-${Date.now()}.lic`);
   fs.writeFileSync(tmpFile, content, 'utf-8');
   return tmpFile;
 }
@@ -51,10 +51,10 @@ function makeClient(
   isLifetime = false,
   extraFeatures: string[] = [],
   disabledFeatures: string[] = [],
-): IronWallClient {
+): AXELUSClient {
   const pem  = makeLicensePEM(tier, daysFromNow, isLifetime, extraFeatures, disabledFeatures);
   const file = writeTempLicense(pem);
-  return new IronWallClient({ licenseFile: file, autoRefresh: false });
+  return new AXELUSClient({ licenseFile: file, autoRefresh: false });
 }
 
 // ── TIER FEATURES ─────────────────────────────────────────────────────────────
@@ -118,14 +118,14 @@ describe('TIER_FEATURES', () => {
 
 // ── CLIENT INIT ───────────────────────────────────────────────────────────────
 
-describe('IronWallClient — init', () => {
-  test('throws IronWallError without license', () => {
-    expect(() => new IronWallClient({ autoRefresh: false }))
-      .toThrow(IronWallError);
+describe('AXELUSClient — init', () => {
+  test('throws AXELUSError without license', () => {
+    expect(() => new AXELUSClient({ autoRefresh: false }))
+      .toThrow(AXELUSError);
   });
 
   test('throws LicenseNotFoundError for missing file', async () => {
-    const client = new IronWallClient({
+    const client = new AXELUSClient({
       licenseFile: '/nonexistent/test.lic', autoRefresh: false,
     });
     await expect(client.validate()).rejects.toThrow();
@@ -138,17 +138,17 @@ describe('IronWallClient — init', () => {
     expect(result.tier).toBe('ENTERPRISE');
   });
 
-  test('createIronWallClient factory works', async () => {
+  test('createAXELUSClient factory works', async () => {
     const pem  = makeLicensePEM('ULTIMATE');
     const file = writeTempLicense(pem);
-    const client = await createIronWallClient({ licenseFile: file, autoRefresh: false });
+    const client = await createAXELUSClient({ licenseFile: file, autoRefresh: false });
     expect(client.tier).toBe('ULTIMATE');
   });
 });
 
 // ── VALIDATION ────────────────────────────────────────────────────────────────
 
-describe('IronWallClient — validate()', () => {
+describe('AXELUSClient — validate()', () => {
   test('ENTERPRISE license validates correctly', async () => {
     const client = makeClient('ENTERPRISE');
     const r = await client.validate();
@@ -194,7 +194,7 @@ describe('IronWallClient — validate()', () => {
 
 // ── FEATURE GATING ────────────────────────────────────────────────────────────
 
-describe('IronWallClient — hasFeature()', () => {
+describe('AXELUSClient — hasFeature()', () => {
   const cases: [string, Feature, boolean][] = [
     ['COMMUNITY',    Feature.CoreWAF,          true],
     ['COMMUNITY',    Feature.GeoIPBlocking,    false],
@@ -233,14 +233,14 @@ describe('IronWallClient — hasFeature()', () => {
 
   test('hasFeature returns false on invalid license', async () => {
     const file = writeTempLicense('INVALID CONTENT NOT BASE64');
-    const client = new IronWallClient({ licenseFile: file, autoRefresh: false });
+    const client = new AXELUSClient({ licenseFile: file, autoRefresh: false });
     expect(await client.hasFeature(Feature.CoreWAF)).toBe(false);
   });
 });
 
 // ── ASSERT FEATURE ────────────────────────────────────────────────────────────
 
-describe('IronWallClient — assertFeature()', () => {
+describe('AXELUSClient — assertFeature()', () => {
   test('assertFeature passes for available feature', async () => {
     const client = makeClient('ENTERPRISE');
     await client.init();
@@ -271,7 +271,7 @@ describe('IronWallClient — assertFeature()', () => {
 
 // ── EXPRESS MIDDLEWARE ────────────────────────────────────────────────────────
 
-describe('IronWallClient — requireFeature() Express middleware', () => {
+describe('AXELUSClient — requireFeature() Express middleware', () => {
   test('calls next() when feature is available', async () => {
     const client = makeClient('ULTIMATE');
     await client.init();
@@ -310,7 +310,7 @@ describe('IronWallClient — requireFeature() Express middleware', () => {
 
 // ── LIMITS ────────────────────────────────────────────────────────────────────
 
-describe('IronWallClient — limits', () => {
+describe('AXELUSClient — limits', () => {
   test('COMMUNITY has maxSites=1', async () => {
     const r = await makeClient('COMMUNITY').validate();
     expect(r.limits?.maxSites).toBe(1);
@@ -337,7 +337,7 @@ describe('IronWallClient — limits', () => {
 
 // ── STATUS & INFO ─────────────────────────────────────────────────────────────
 
-describe('IronWallClient — status() & info()', () => {
+describe('AXELUSClient — status() & info()', () => {
   test('status includes tier for valid license', async () => {
     const client = makeClient('ENTERPRISE', 100);
     await client.init();
@@ -375,7 +375,7 @@ describe('IronWallClient — status() & info()', () => {
 
 // ── PROPERTIES ────────────────────────────────────────────────────────────────
 
-describe('IronWallClient — properties', () => {
+describe('AXELUSClient — properties', () => {
   test('tier property after init', async () => {
     const client = makeClient('PROFESSIONAL');
     await client.init();

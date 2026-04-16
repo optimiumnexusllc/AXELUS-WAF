@@ -10,10 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rogpeppe/go-internal/semver"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/api/response"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/config"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/constants"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/utils"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/api/response"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/config"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/constants"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/utils"
 )
 
 const VersionInfoEntrypoint = "/release/latest/version.json"

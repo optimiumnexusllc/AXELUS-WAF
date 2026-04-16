@@ -5,9 +5,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/optimiumnexus/IronWall/mcp_server/internal/config"
-	"github.com/optimiumnexus/IronWall/mcp_server/pkg/errors"
-	"github.com/optimiumnexus/IronWall/mcp_server/pkg/logger"
+	"github.com/optimiumnexus/AXELUS/mcp_server/internal/config"
+	"github.com/optimiumnexus/AXELUS/mcp_server/pkg/errors"
+	"github.com/optimiumnexus/AXELUS/mcp_server/pkg/logger"
 )
 
 // APIClient API client implementation
@@ -62,7 +62,7 @@ func newAPIClient(config *config.APIConfig) (*APIClient, error) {
 	opts := []ClientOption{
 		WithBaseURL(config.BaseURL),
 		WithTimeout(time.Duration(timeout) * time.Second),
-		WithHeader("User-Agent", "IronWall-MCP/1.0"),
+		WithHeader("User-Agent", "AXELUS-MCP/1.0"),
 		WithInsecureSkipVerify(config.InsecureSkipVerify),
 	}
 

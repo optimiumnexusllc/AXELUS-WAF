@@ -1,4 +1,4 @@
-// IronWall — Deception Layer / Honeypot Engine
+// AXELUS — Deception Layer / Honeypot Engine
 // Traps attackers by injecting hidden decoy endpoints and fake credentials.
 // Automatically blacklists IPs that interact with honeypot traps.
 package honeypot
@@ -161,14 +161,14 @@ func (e *Engine) InjectDecoys(c *gin.Context, responseBody string) string {
 
 func (e *Engine) registerHoneytoken(token, ip string) {
 	if e.rdb != nil {
-		e.rdb.Set(e.ctx, "ironwall:honeytoken:"+token, ip, 24*time.Hour)
+		e.rdb.Set(e.ctx, "axelus:honeytoken:"+token, ip, 24*time.Hour)
 	}
 }
 
 // CheckHoneytoken validates if a URL token is a deployed honeytoken
 func (e *Engine) CheckHoneytoken(c *gin.Context, token string) {
 	if e.rdb == nil { return }
-	originalIP, err := e.rdb.Get(e.ctx, "ironwall:honeytoken:"+token).Result()
+	originalIP, err := e.rdb.Get(e.ctx, "axelus:honeytoken:"+token).Result()
 	if err != nil { return }
 
 	// Someone is visiting our unique URL — definite attacker
@@ -196,9 +196,9 @@ func (e *Engine) trigger(c *gin.Context, trapType TrapType, trapID string) {
 	// Log to Redis
 	if e.rdb != nil {
 		data, _ := json.Marshal(event)
-		e.rdb.LPush(e.ctx, "ironwall:honeypot:events", data)
-		e.rdb.LTrim(e.ctx, "ironwall:honeypot:events", 0, 999) // keep last 1000
-		e.rdb.Incr(e.ctx, fmt.Sprintf("ironwall:honeypot:hits:%s", trapID))
+		e.rdb.LPush(e.ctx, "axelus:honeypot:events", data)
+		e.rdb.LTrim(e.ctx, "axelus:honeypot:events", 0, 999) // keep last 1000
+		e.rdb.Incr(e.ctx, fmt.Sprintf("axelus:honeypot:hits:%s", trapID))
 	}
 
 	if e.onTrigger != nil {
@@ -211,16 +211,16 @@ func (e *Engine) trigger(c *gin.Context, trapType TrapType, trapID string) {
 
 func (e *Engine) blacklist(ip string, days int) {
 	if e.rdb == nil { return }
-	key := "ironwall:blacklist:" + ip
+	key := "axelus:blacklist:" + ip
 	e.rdb.Set(e.ctx, key, "honeypot", time.Duration(days)*24*time.Hour)
-	e.rdb.SAdd(e.ctx, "ironwall:honeypot:blacklisted", ip)
+	e.rdb.SAdd(e.ctx, "axelus:honeypot:blacklisted", ip)
 	fmt.Printf("[honeypot] BLACKLISTED: ip=%s duration=%dd\n", ip, days)
 }
 
 // IsBlacklisted checks if an IP is in the honeypot blacklist
 func (e *Engine) IsBlacklisted(ip string) bool {
 	if e.rdb == nil { return false }
-	exists, _ := e.rdb.Exists(e.ctx, "ironwall:blacklist:"+ip).Result()
+	exists, _ := e.rdb.Exists(e.ctx, "axelus:blacklist:"+ip).Result()
 	return exists > 0
 }
 
@@ -228,8 +228,8 @@ func (e *Engine) IsBlacklisted(ip string) bool {
 func (e *Engine) GetStats() map[string]interface{} {
 	stats := map[string]interface{}{"traps": len(e.traps)}
 	if e.rdb != nil {
-		total, _ := e.rdb.LLen(e.ctx, "ironwall:honeypot:events").Result()
-		blacklisted, _ := e.rdb.SCard(e.ctx, "ironwall:honeypot:blacklisted").Result()
+		total, _ := e.rdb.LLen(e.ctx, "axelus:honeypot:events").Result()
+		blacklisted, _ := e.rdb.SCard(e.ctx, "axelus:honeypot:blacklisted").Result()
 		stats["total_triggers"] = total
 		stats["blacklisted_ips"] = blacklisted
 	}

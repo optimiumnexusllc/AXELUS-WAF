@@ -1,6 +1,6 @@
-// IronWall - Threat Intelligence Feed Syncer
+// AXELUS - Threat Intelligence Feed Syncer
 // Syncs IP reputation feeds from AbuseIPDB, Emerging Threats, and custom sources
-// into Redis and the IronWall management API for real-time blocking.
+// into Redis and the AXELUS management API for real-time blocking.
 
 package main
 
@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	redisKeyPrefix    = "ironwall:threat-intel:"
-	redisIPSetKey     = "ironwall:blocked-ips"
+	redisKeyPrefix    = "axelus:threat-intel:"
+	redisIPSetKey     = "axelus:blocked-ips"
 	abuseIPDBEndpoint = "https://api.abuseipdb.com/api/v2/blacklist"
 )
 
@@ -241,7 +241,7 @@ func main() {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	log.Printf("[threat-intel] IronWall Threat Intelligence Syncer starting")
+	log.Printf("[threat-intel] AXELUS Threat Intelligence Syncer starting")
 	log.Printf("[threat-intel] Update interval: %ds", cfg.UpdateIntervalSecs)
 
 	// Initial sync

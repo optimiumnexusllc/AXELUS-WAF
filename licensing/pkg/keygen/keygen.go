@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	lic "github.com/optimiumnexusllc/ironwall/licensing/pkg/license"
+	lic "github.com/optimiumnexusllc/axelus/licensing/pkg/license"
 )
 
 // KeyPair holds the ED25519 key pair used to sign licenses
@@ -43,7 +43,7 @@ func GenerateKeyPair() (*KeyPair, error) {
 
 // ── License Key Format ────────────────────────────────────────────────────────
 // Format: IW-{TIER_PREFIX}-{XXXX}-{XXXX}-{XXXX}-{XXXX}
-// Example: IW-ENT-A3F2-B9K1-M7X4-Z2P8
+// Example: AX-ENT-A3F2-B9K1-M7X4-Z2P8
 
 const keyCharset = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789" // no 0,O,1,I to avoid confusion
 

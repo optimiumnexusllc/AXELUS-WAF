@@ -7,8 +7,8 @@ import (
 	"gorm.io/gorm/clause"
 
 	"optimiumnexus.com/dev/go/errors"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/constants"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/database"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/constants"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/database"
 )
 
 type PolicyGroup map[string]string

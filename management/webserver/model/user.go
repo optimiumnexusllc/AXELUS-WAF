@@ -3,8 +3,8 @@ package model
 import (
 	"gorm.io/gorm/clause"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/constants"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/database"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/constants"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/database"
 )
 
 type User struct {

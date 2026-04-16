@@ -1,4 +1,4 @@
-// IronWall-WAF — Automated Email Notification System
+// AXELUS-WAF — Automated Email Notification System
 // Handles license expiration alerts, security alerts, billing events,
 // welcome sequences, and system health notifications.
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
@@ -86,7 +86,7 @@ func LoadSMTPConfig() SMTPConfig {
 		User:     getenv("SMTP_USER", ""),
 		Password: getenv("SMTP_PASSWORD", ""),
 		From:     getenv("SMTP_FROM", "noreply@optimiumnexus.com"),
-		FromName: getenv("SMTP_FROM_NAME", "IronWall-WAF"),
+		FromName: getenv("SMTP_FROM_NAME", "AXELUS-WAF"),
 		TLSEnabled: os.Getenv("SMTP_TLS") != "false",
 	}
 }
@@ -136,7 +136,7 @@ var baseTemplate = `<!DOCTYPE html>
 <body>
 <div class="wrap">
   <div class="header">
-    <div class="header-logo">🛡️ IronWall-WAF</div>
+    <div class="header-logo">🛡️ AXELUS-WAF</div>
     <div class="header-sub">OPTIMIUM NEXUS LLC · Automated Notifications</div>
   </div>
   <div class="body">{{.Body}}</div>
@@ -152,10 +152,10 @@ var baseTemplate = `<!DOCTYPE html>
 var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 
 	NotifLicenseExpiring7d: {
-		Subject: "⚠️ Action Required: Your IronWall license expires in 7 days",
+		Subject: "⚠️ Action Required: Your AXELUS license expires in 7 days",
 		Body: `<h1>Your License Expires Soon</h1>
 <p>Hi {{.LicenseeName}},</p>
-<p>Your <strong>IronWall-WAF {{.Tier}}</strong> license will expire in <strong>7 days</strong>. After expiration, your WAF protection will fall back to Community tier.</p>
+<p>Your <strong>AXELUS-WAF {{.Tier}}</strong> license will expire in <strong>7 days</strong>. After expiration, your WAF protection will fall back to Community tier.</p>
 <div class="info-box warn">
   <div class="info-label">License Key</div>
   <div class="lic-key">{{.LicenseKey}}</div>
@@ -172,10 +172,10 @@ var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 	},
 
 	NotifLicenseExpiring30d: {
-		Subject: "🔑 Your IronWall license expires in 30 days",
+		Subject: "🔑 Your AXELUS license expires in 30 days",
 		Body: `<h1>License Renewal Reminder</h1>
 <p>Hi {{.LicenseeName}},</p>
-<p>This is a friendly reminder that your <strong>IronWall-WAF {{.Tier}}</strong> license expires in 30 days.</p>
+<p>This is a friendly reminder that your <strong>AXELUS-WAF {{.Tier}}</strong> license expires in 30 days.</p>
 <div class="info-box">
   <div class="info-label">License</div>
   <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
@@ -189,11 +189,11 @@ var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 	},
 
 	NotifLicenseExpired: {
-		Subject: "⛔ Your IronWall license has expired",
+		Subject: "⛔ Your AXELUS license has expired",
 		Body: `<h1>License Expired</h1>
 <p>Hi {{.LicenseeName}},</p>
 <div class="info-box danger">
-  <strong>Your IronWall-WAF {{.Tier}} license has expired.</strong><br/>
+  <strong>Your AXELUS-WAF {{.Tier}} license has expired.</strong><br/>
   Your WAF is now running in degraded Community mode with limited protection.
 </div>
 <p>To restore full protection, renew your license immediately:</p>
@@ -209,10 +209,10 @@ var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 	},
 
 	NotifLicenseIssued: {
-		Subject: "✅ Your IronWall license is ready",
+		Subject: "✅ Your AXELUS license is ready",
 		Body: `<h1>License Issued Successfully</h1>
 <p>Hi {{.LicenseeName}},</p>
-<p>Your new <strong>IronWall-WAF</strong> license has been issued and is ready to use.</p>
+<p>Your new <strong>AXELUS-WAF</strong> license has been issued and is ready to use.</p>
 <div class="info-box success">
   <div class="info-label">Your License Key</div>
   <div class="lic-key" style="margin-top:8px">{{.LicenseKey}}</div>
@@ -224,8 +224,8 @@ var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 <p><strong>Quick Start:</strong></p>
 <ol style="color:#475569;font-size:14px;line-height:2">
   <li>Download your <a href="{{.DownloadURL}}">license file (.lic)</a></li>
-  <li>Place it at <code>/etc/ironwall/ironwall.lic</code></li>
-  <li>Restart IronWall: <code>docker compose restart ironwall-mgt</code></li>
+  <li>Place it at <code>/etc/axelus/axelus.lic</code></li>
+  <li>Restart AXELUS: <code>docker compose restart axelus-mgt</code></li>
 </ol>
 <a href="{{.DashboardURL}}" class="btn">Open Dashboard</a>
 <a href="{{.DocsURL}}" class="btn btn-gold" style="margin-left:8px">Read Docs</a>`,
@@ -234,7 +234,7 @@ var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 	NotifSecurityAlert: {
 		Subject: "🚨 Security Alert: {{.AlertType}} — {{.TargetHost}}",
 		Body: `<h1>Security Alert Detected</h1>
-<p>IronWall-WAF has detected a security event that requires your attention.</p>
+<p>AXELUS-WAF has detected a security event that requires your attention.</p>
 <div class="info-box danger">
   <div style="font-size:20px;font-weight:700;color:#dc2626;margin-bottom:12px">{{.AlertType}}</div>
   <table class="details">
@@ -250,11 +250,11 @@ var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 	},
 
 	NotifBillingPaymentFailed: {
-		Subject: "💳 Payment failed — action required for IronWall",
+		Subject: "💳 Payment failed — action required for AXELUS",
 		Body: `<h1>Payment Failed</h1>
 <p>Hi {{.CustomerName}},</p>
 <div class="info-box danger">
-  <strong>We were unable to process your payment</strong> for the IronWall-WAF {{.Plan}} plan.<br/>
+  <strong>We were unable to process your payment</strong> for the AXELUS-WAF {{.Plan}} plan.<br/>
   Amount: <strong>${{.Amount}}</strong> · Attempted: {{.AttemptedAt}}
 </div>
 <p>Your service will continue for 48 hours. After that, your account will be suspended if payment is not received.</p>
@@ -262,11 +262,11 @@ var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 	},
 
 	NotifBillingTrialEnding: {
-		Subject: "⏳ Your IronWall trial ends in {{.DaysRemaining}} days",
+		Subject: "⏳ Your AXELUS trial ends in {{.DaysRemaining}} days",
 		Body: `<h1>Your Trial is Ending Soon</h1>
 <p>Hi {{.CustomerName}},</p>
-<p>Your <strong>30-day IronWall-WAF trial</strong> ends in <strong>{{.DaysRemaining}} days</strong>.</p>
-<p>During your trial, IronWall has protected you:</p>
+<p>Your <strong>30-day AXELUS-WAF trial</strong> ends in <strong>{{.DaysRemaining}} days</strong>.</p>
+<p>During your trial, AXELUS has protected you:</p>
 <div class="info-box success">
   <table class="details">
     <tr><td>Requests inspected</td><td><strong>{{.TotalRequests}}</strong></td></tr>
@@ -279,7 +279,7 @@ var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 	},
 
 	NotifBillingUpgraded: {
-		Subject: "🚀 Welcome to IronWall {{.NewPlan}} — upgrade confirmed",
+		Subject: "🚀 Welcome to AXELUS {{.NewPlan}} — upgrade confirmed",
 		Body: `<h1>Plan Upgrade Successful</h1>
 <p>Hi {{.CustomerName}},</p>
 <div class="info-box success">
@@ -294,10 +294,10 @@ var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 	},
 
 	NotifWelcome: {
-		Subject: "🛡️ Welcome to IronWall-WAF — your trial has started",
-		Body: `<h1>Welcome to IronWall-WAF</h1>
+		Subject: "🛡️ Welcome to AXELUS-WAF — your trial has started",
+		Body: `<h1>Welcome to AXELUS-WAF</h1>
 <p>Hi {{.CustomerName}},</p>
-<p>Welcome to <strong>IronWall-WAF</strong> by OPTIMIUM NEXUS LLC. Your 30-day trial has started and all Enterprise features are active.</p>
+<p>Welcome to <strong>AXELUS-WAF</strong> by OPTIMIUM NEXUS LLC. Your 30-day trial has started and all Enterprise features are active.</p>
 <div class="info-box success">
   <div class="info-label">Your Trial License</div>
   <div class="lic-key" style="margin-top:8px">{{.LicenseKey}}</div>
@@ -305,7 +305,7 @@ var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 </div>
 <p><strong>Get started in 3 steps:</strong></p>
 <ol style="color:#475569;font-size:14px;line-height:2">
-  <li><a href="{{.DocsURL}}/install">Install IronWall</a> on your server</li>
+  <li><a href="{{.DocsURL}}/install">Install AXELUS</a> on your server</li>
   <li>Add your first <a href="{{.DashboardURL}}/sites">protected site</a></li>
   <li>Review your <a href="{{.DashboardURL}}/dashboard">security dashboard</a></li>
 </ol>
@@ -317,7 +317,7 @@ var EmailTemplates = map[NotifType]struct{ Subject, Body string }{
 	NotifZeroDayDetected: {
 		Subject: "🧠 Zero-Day Shield: Novel attack pattern detected",
 		Body: `<h1>Zero-Day Pattern Detected</h1>
-<p>IronWall's ML-based Zero-Day Shield has detected an <strong>anomalous attack pattern</strong> that does not match any known signature.</p>
+<p>AXELUS's ML-based Zero-Day Shield has detected an <strong>anomalous attack pattern</strong> that does not match any known signature.</p>
 <div class="info-box danger">
   <table class="details">
     <tr><td>Anomaly Score</td><td><strong>{{.Score}}/100</strong></td></tr>
@@ -545,7 +545,7 @@ func (s *Scheduler) GetStats() map[string]interface{} {
 }
 
 func generateUnsubToken(email string) string {
-	h := fmt.Sprintf("%x", []byte(email+"ironwall-unsub-salt"))
+	h := fmt.Sprintf("%x", []byte(email+"axelus-unsub-salt"))
 	if len(h) > 16 { return h[:16] }
 	return h
 }

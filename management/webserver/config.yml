@@ -6,7 +6,7 @@ server:
   listen_addr: :9001
   dev_mode: true
 db:
-  url: postgres://ironwall:ironwall@127.0.0.1/ironwall
+  url: postgres://axelus:axelus@127.0.0.1/axelus
   log_sql: false
 detector:
   addr: ""

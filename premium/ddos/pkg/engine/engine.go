@@ -1,4 +1,4 @@
-// IronWall-WAF — DDoS Mitigation Engine
+// AXELUS-WAF — DDoS Mitigation Engine
 // Multi-layer volumetric detection + adaptive countermeasures.
 // Strategies: token bucket, EWMA velocity, connection limits,
 // SYN flood detection, amplification attack detection.
@@ -326,15 +326,15 @@ func (e *Engine) Middleware() gin.HandlerFunc {
 				return
 			}
 			// Challenge (JS/CAPTCHA redirect in production)
-			c.Header("X-IronWall-DDoS-Challenge", "1")
-			c.Header("X-IronWall-DDoS-Reason", reason)
+			c.Header("X-AXELUS-DDoS-Challenge", "1")
+			c.Header("X-AXELUS-DDoS-Reason", reason)
 		}
 
 		// Update adaptive baseline
 		e.adaptive.Update(ipRPS)
 
 		// Pass rate info downstream
-		c.Header("X-IronWall-RPS", strconv.FormatFloat(ipRPS, 'f', 1, 64))
+		c.Header("X-AXELUS-RPS", strconv.FormatFloat(ipRPS, 'f', 1, 64))
 		c.Next()
 	}
 }
@@ -401,14 +401,14 @@ func (e *Engine) isBlacklisted(ip string) bool {
 func (e *Engine) Blacklist(ip string, duration time.Duration) {
 	e.blacklist.Store(ip, time.Now().Add(duration))
 	if e.rdb != nil {
-		e.rdb.Set(e.ctx, "ironwall:ddos:blacklist:"+ip, 1, duration)
+		e.rdb.Set(e.ctx, "axelus:ddos:blacklist:"+ip, 1, duration)
 	}
 }
 
 func (e *Engine) Unblacklist(ip string) {
 	e.blacklist.Delete(ip)
 	if e.rdb != nil {
-		e.rdb.Del(e.ctx, "ironwall:ddos:blacklist:"+ip)
+		e.rdb.Del(e.ctx, "axelus:ddos:blacklist:"+ip)
 	}
 }
 

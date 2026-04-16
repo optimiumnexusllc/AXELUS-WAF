@@ -1,4 +1,4 @@
-# IronWall-WAF — Test Runner
+# AXELUS-WAF — Test Runner
 # Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 
 .PHONY: test test-e2e test-unit test-bench test-race lint coverage clean

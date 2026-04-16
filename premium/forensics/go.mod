@@ -1,4 +1,4 @@
-module github.com/optimiumnexusllc/ironwall/premium/forensics
+module github.com/optimiumnexusllc/axelus/premium/forensics
 
 go 1.21
 

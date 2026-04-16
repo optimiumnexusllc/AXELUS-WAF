@@ -1,4 +1,4 @@
-// IronWall-WAF — Customer License Portal Backend
+// AXELUS-WAF — Customer License Portal Backend
 // Self-service portal: register, manage licenses, billing, usage stats.
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 package api
@@ -239,7 +239,7 @@ func (ps *PortalServer) register(c *gin.Context) {
 
 	token, _ := ps.generateJWT(customer)
 	c.JSON(http.StatusCreated, gin.H{
-		"message":    "Welcome to IronWall-WAF! A 30-day trial license has been issued.",
+		"message":    "Welcome to AXELUS-WAF! A 30-day trial license has been issued.",
 		"token":      token,
 		"customer":   sanitiseCustomer(customer),
 		"next_steps": []string{
@@ -691,7 +691,7 @@ func (ps *PortalServer) generateJWT(c Customer) (string, error) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			Issuer:    "ironwall-portal",
+			Issuer:    "axelus-portal",
 			Subject:   c.ID,
 		},
 	}

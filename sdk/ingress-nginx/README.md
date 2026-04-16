@@ -1,24 +1,24 @@
-# ingress-nginx-ironwall
+# ingress-nginx-axelus
 
-[Ingress-nginx](https://kubernetes.github.io/ingress-nginx/) plugin for Chaitin IronWall Web Application Firewall (WAF). This plugin is used to protect your API from malicious requests. It can be used to block requests that contain malicious content in the request body, query parameters, headers, or URI.
+[Ingress-nginx](https://kubernetes.github.io/ingress-nginx/) plugin for Chaitin AXELUS Web Application Firewall (WAF). This plugin is used to protect your API from malicious requests. It can be used to block requests that contain malicious content in the request body, query parameters, headers, or URI.
 
 ## Safeline Prepare
-The detection engine of the IronWall provides services by default via Unix socket. We need to modify it to use TCP, so it can be called by the t1k plugin.
+The detection engine of the AXELUS provides services by default via Unix socket. We need to modify it to use TCP, so it can be called by the t1k plugin.
 
-1.Navigate to the configuration directory of the IronWall detection engine:
+1.Navigate to the configuration directory of the AXELUS detection engine:
 ```shell
-cd /data/ironwall/resources/detector/
+cd /data/axelus/resources/detector/
 ```
 2.Open the `detector.yml` file in a text editor. Modify the bind configuration from Unix socket to TCP by adding the following settings:
 ```yaml
 bind_addr: 0.0.0.0
 listen_port: 8000
 ```
-These configuration values will override the default settings in the container, making the IronWall engine listen on port 8000.
+These configuration values will override the default settings in the container, making the AXELUS engine listen on port 8000.
 
-3.Next, map the container’s port 8000 to the host machine. First, navigate to the IronWall installation directory:
+3.Next, map the container’s port 8000 to the host machine. First, navigate to the AXELUS installation directory:
 ```shell
-cd /data/ironwall
+cd /data/axelus
 ```
 
 4.Open the compose.yaml file in a text editor and add the ports field to the detector container to expose port 8000:
@@ -30,7 +30,7 @@ detect:
 ...
 ```
 
-5.Save the changes and restart IronWall with the following commands:
+5.Save the changes and restart AXELUS with the following commands:
 ```shell
 docker-compose down
 docker-compose up -d
@@ -60,8 +60,8 @@ RUN wget https://luarocks.org/releases/luarocks-3.11.0.tar.gz && \
     cd .. && \
     rm -rf luarocks-3.11.0 luarocks-3.11.0.tar.gz
 
-RUN luarocks install ingress-nginx-ironwall && \
-    ln -s /usr/local/share/lua/5.1/ironwall /etc/nginx/lua/plugins/ironwall
+RUN luarocks install ingress-nginx-axelus && \
+    ln -s /usr/local/share/lua/5.1/axelus /etc/nginx/lua/plugins/axelus
 
 USER www-data
 ```
@@ -78,7 +78,7 @@ use a ConfigMap to configure the plugin
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: ironwall
+  name: axelus
   namespace: default
 data:
   host: "YOUR_DETECTOR_HOST"
@@ -95,12 +95,12 @@ env:
   - name: SAFELINE_HOST
     valueFrom:
       configMapKeyRef:
-        name: ironwall
+        name: axelus
         key: host
   - name: SAFELINE_PORT
     valueFrom:
       configMapKeyRef:
-        name: ironwall
+        name: axelus
         key: port
 ...
 
@@ -108,13 +108,13 @@ env:
 
 ### Step 3: Enable the plugin
 
-enable ironwall plugin in configmap
+enable axelus plugin in configmap
 
 ```yaml
 apiVersion: v1
 data:
   allow-snippet-annotations: "false"
-  plugins: "ironwall"
+  plugins: "axelus"
 kind: ConfigMap
 metadata:
   name: ingress-nginx-controller
@@ -134,5 +134,5 @@ curl -X POST http://localhost/ -d "select * from users where id=1 or 1=1"
 
 you should get a 403 response.
 ```bash
-{"code": 403, "success":false, "message": "blocked by Chaitin IronWall Web Application Firewall", "event_id": "b53eb5b95796475699c52a019abb8e6a"}
+{"code": 403, "success":false, "message": "blocked by Chaitin AXELUS Web Application Firewall", "event_id": "b53eb5b95796475699c52a019abb8e6a"}
 ```

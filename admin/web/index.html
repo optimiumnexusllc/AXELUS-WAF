@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>IronWall-WAF — Admin Center</title>
+<title>AXELUS-WAF — Admin Center</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -424,7 +424,7 @@ nav{flex:1;overflow-y:auto;padding:8px 0}
     <div class="ni" onclick="window.open('/docs','_blank')"><div class="ni-icon">📖</div>API Docs ↗</div>
   </nav>
   <div class="sidebar-bottom">
-    <div class="ver-tag">IronWall-WAF v1.0.0 · OPTIMIUM NEXUS LLC</div>
+    <div class="ver-tag">AXELUS-WAF v1.0.0 · OPTIMIUM NEXUS LLC</div>
   </div>
 </div>
 
@@ -648,7 +648,7 @@ nav{flex:1;overflow-y:auto;padding:8px 0}
     <div class="panel" style="margin-bottom:14px">
       <div class="ph"><div class="pt">General</div></div>
       <div class="pb">
-        <div class="field"><label>Platform Name</label><input value="IronWall-WAF Admin Center"/></div>
+        <div class="field"><label>Platform Name</label><input value="AXELUS-WAF Admin Center"/></div>
         <div class="field"><label>Support Email</label><input value="contact@optimiumnexus.com"/></div>
         <div class="field"><label>Portal URL</label><input value="https://www.optimiumnexus.com/portal"/></div>
         <div class="field"><label>Default Tenant Plan</label>
@@ -680,7 +680,7 @@ nav{flex:1;overflow-y:auto;padding:8px 0}
           <div class="field"><label>Username</label><input placeholder="noreply@company.com"/></div>
           <div class="field"><label>Password</label><input type="password"/></div>
         </div>
-        <div class="field"><label>From Name</label><input value="IronWall-WAF"/></div>
+        <div class="field"><label>From Name</label><input value="AXELUS-WAF"/></div>
         <div style="display:flex;gap:8px">
           <button class="btn bp" onclick="toast('SMTP settings saved','ok')">Save</button>
           <button class="btn bo" onclick="toast('Test email sent to admin@optimiumnexus.com','info')">Send Test</button>
@@ -715,19 +715,19 @@ const USERS = [
 ];
 
 const LICENSES = [
-  {key:'IW-ULT-A3F2-B9K1-M7X4-Z2P8',tenant:'Palantir Technologies',tier:'ULTIMATE',expires:'Lifetime',domain:'palantir.com',status:'active'},
-  {key:'IW-ENT-X9K2-P4M1-Q7R3-W5N6',tenant:'BlackRock Inc.',tier:'ENTERPRISE',expires:'2025-02-01',domain:'blackrock.com',status:'active'},
-  {key:'IW-ENT-B6T3-C8Y4-D2S5-E4U7',tenant:'Goldman Sachs',tier:'ENTERPRISE',expires:'2024-12-20',domain:'gs.com',status:'expiring'},
-  {key:'IW-ULT-C4D5-E6F7-G8H9-I0J1',tenant:'NATO CCDCOE',tier:'ULTIMATE',expires:'Lifetime',domain:'ccdcoe.org',status:'active'},
-  {key:'IW-TRL-K2Z3-L4A5-M6B7-N8C9',tenant:'StartupXYZ',tier:'TRIAL',expires:'2024-05-06',domain:'',status:'expiring'},
-  {key:'IW-TRL-Q1W2-E3R4-T5Y6-U7I8',tenant:'Acme Startup',tier:'TRIAL',expires:'2024-04-21',domain:'',status:'expiring'},
+  {key:'AX-ULT-A3F2-B9K1-M7X4-Z2P8',tenant:'Palantir Technologies',tier:'ULTIMATE',expires:'Lifetime',domain:'palantir.com',status:'active'},
+  {key:'AX-ENT-X9K2-P4M1-Q7R3-W5N6',tenant:'BlackRock Inc.',tier:'ENTERPRISE',expires:'2025-02-01',domain:'blackrock.com',status:'active'},
+  {key:'AX-ENT-B6T3-C8Y4-D2S5-E4U7',tenant:'Goldman Sachs',tier:'ENTERPRISE',expires:'2024-12-20',domain:'gs.com',status:'expiring'},
+  {key:'AX-ULT-C4D5-E6F7-G8H9-I0J1',tenant:'NATO CCDCOE',tier:'ULTIMATE',expires:'Lifetime',domain:'ccdcoe.org',status:'active'},
+  {key:'AX-TRL-K2Z3-L4A5-M6B7-N8C9',tenant:'StartupXYZ',tier:'TRIAL',expires:'2024-05-06',domain:'',status:'expiring'},
+  {key:'AX-TRL-Q1W2-E3R4-T5Y6-U7I8',tenant:'Acme Startup',tier:'TRIAL',expires:'2024-04-21',domain:'',status:'expiring'},
 ];
 
 const AUDIT = [
   {ts:'2m ago',action:'tenant.create',detail:'Created "JPMorgan Chase" (ENTERPRISE, us-east-1)',user:'admin@optimiumnexus.com',status:'success'},
   {ts:'15m ago',action:'auth.login',detail:'Login from 192.168.1.42 · Chrome · macOS',user:'ops@optimiumnexus.com',status:'success'},
   {ts:'1h ago',action:'tenant.suspend',detail:'Suspended "Old Corp" · Reason: payment lapsed',user:'admin@optimiumnexus.com',status:'success'},
-  {ts:'2h ago',action:'license.revoke',detail:'Revoked IW-TRL-XXXX · Reason: abuse',user:'support@optimiumnexus.com',status:'success'},
+  {ts:'2h ago',action:'license.revoke',detail:'Revoked AX-TRL-XXXX · Reason: abuse',user:'support@optimiumnexus.com',status:'success'},
   {ts:'3h ago',action:'auth.login.failed',detail:'Failed login from 45.32.11.99 · brute force detected',user:'unknown',status:'failure'},
   {ts:'4h ago',action:'admin_user.create',detail:'Created support agent "Alex Dupont"',user:'admin@optimiumnexus.com',status:'success'},
   {ts:'1d ago',action:'tenant.create',detail:'Created "Citadel LLC" (ULTIMATE)',user:'admin@optimiumnexus.com',status:'success'},
@@ -1042,7 +1042,7 @@ function exportAudit() {
     .join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download = 'ironwall-audit-'+new Date().toISOString().split('T')[0]+'.csv';
+  a.download = 'axelus-audit-'+new Date().toISOString().split('T')[0]+'.csv';
   a.click();
   toast('Audit log exported','ok');
 }

@@ -1,4 +1,4 @@
-module optimiumnexus.com/patronus/ironwall-2/management/webserver
+module optimiumnexus.com/patronus/axelus-2/management/webserver
 
 go 1.21
 

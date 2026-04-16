@@ -1,4 +1,4 @@
-name: IronWall CI/CD
+name: AXELUS CI/CD
 
 on:
   push:
@@ -166,18 +166,18 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           body: |
-            ## 🛡️ IronWall ${{ github.ref_name }}
+            ## 🛡️ AXELUS ${{ github.ref_name }}
 
             ### Changes
             ${{ steps.changelog.outputs.changes }}
 
             ### Installation
             ```bash
-            bash <(curl -fsSL https://raw.githubusercontent.com/optimiumnexusllc/IronWall/${{ github.ref_name }}/scripts/install.sh)
+            bash <(curl -fsSL https://raw.githubusercontent.com/optimiumnexusllc/AXELUS/${{ github.ref_name }}/scripts/install.sh)
             ```
 
             ### Docker Images
-            Premium service images are available at `ghcr.io/optimiumnexusllc/IronWAll-WAF/*:${{ github.ref_name }}`
+            Premium service images are available at `ghcr.io/optimiumnexusllc/axelus-waf/*:${{ github.ref_name }}`
           draft: false
           prerelease: ${{ contains(github.ref_name, 'rc') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
 
@@ -195,7 +195,7 @@ jobs:
 
       - name: Package Helm chart
         run: |
-          helm package helm/ironwall --destination ./helm-dist
+          helm package helm/axelus --destination ./helm-dist
 
       - name: Upload Helm chart to release
         uses: softprops/action-gh-release@v1

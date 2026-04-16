@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/optimiumnexus/IronWall/mcp_server/pkg/errors"
-	"github.com/optimiumnexus/IronWall/mcp_server/pkg/logger"
+	"github.com/optimiumnexus/AXELUS/mcp_server/pkg/errors"
+	"github.com/optimiumnexus/AXELUS/mcp_server/pkg/logger"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 	"github.com/mcuadros/go-defaults"

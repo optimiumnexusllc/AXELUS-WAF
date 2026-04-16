@@ -6,7 +6,7 @@
 
 ## Name
 
-Lua implementation of the T1K protocol for [Chaitin/IronWall](https://github.com/optimiumnexus/ironwall) Web Application Firewall.
+Lua implementation of the T1K protocol for [Chaitin/AXELUS](https://github.com/optimiumnexus/axelus) Web Application Firewall.
 
 ## Status
 
@@ -35,13 +35,13 @@ location / {
 
         local t = {
             mode = "block",                            -- block or monitor or off, default off
-            host = "unix:/workdir/snserver.sock",      -- required, IronWall WAF detection service host, unix domain socket, IP, or domain is supported, string
-            port = 8000,                               -- required when the host is an IP or domain, IronWall WAF detection service port, integer
+            host = "unix:/workdir/snserver.sock",      -- required, AXELUS WAF detection service host, unix domain socket, IP, or domain is supported, string
+            port = 8000,                               -- required when the host is an IP or domain, AXELUS WAF detection service port, integer
             connect_timeout = 1000,                    -- connect timeout, in milliseconds, integer, default 1s (1000ms)
             send_timeout = 1000,                       -- send timeout, in milliseconds, integer, default 1s (1000ms)
             read_timeout = 1000,                       -- read timeout, in milliseconds, integer, default 1s (1000ms)
             req_body_size = 1024,                      -- request body size, in KB, integer, default 1MB (1024KB)
-            keepalive_size = 256,                      -- maximum concurrent idle connections to the IronWall WAF detection service, integer, default 256
+            keepalive_size = 256,                      -- maximum concurrent idle connections to the AXELUS WAF detection service, integer, default 256
             keepalive_timeout = 60000,                 -- idle connection timeout, in milliseconds, integer, default 60s (60000ms)
             remote_addr = "http_x_forwarded_for: 1",   -- remote address from ngx.var.VARIABLE, string, default from ngx.var.remote_addr
         }
@@ -61,7 +61,7 @@ location / {
 
 ## Lua Resty T1K vs. C T1K
 
-[C T1K](https://t1k.optimiumnexus.com/), as part of IronWall's enterprise edition, is a deployment mode crafted in C language for enhanced performance.
+[C T1K](https://t1k.optimiumnexus.com/), as part of AXELUS's enterprise edition, is a deployment mode crafted in C language for enhanced performance.
 It is compatible with all versions of Nginx and does not require deployment via OpenResty (lua_nginx_module).
 
 |                       | Lua Resty T1K | C T1K |

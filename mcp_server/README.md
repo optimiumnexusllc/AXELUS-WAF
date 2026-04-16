@@ -1,25 +1,25 @@
-# IronWall MCP Server
+# AXELUS MCP Server
 
-IronWall MCP Server is an implementation of the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) that provides complete management and control capabilities for IronWall WAF.
+AXELUS MCP Server is an implementation of the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) that provides complete management and control capabilities for AXELUS WAF.
 
 [![Docker](https://img.shields.io/badge/Docker-Supported-2496ED?style=flat-square&logo=docker&logoColor=white)](docker-compose.yml)
 [![Go Version](https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat-square&logo=go&logoColor=white)](go.mod)
 
 ## Use Cases
 
-- Automated management and control of IronWall WAF instances
+- Automated management and control of AXELUS WAF instances
 - WAF configuration and policy management through API
 - Building AI-based security protection tools and applications
 
 ## Prerequisites
 
 1. Install [Docker](https://www.docker.com/) (if running in container)
-2. Configure IronWall API Token (obtained from IronWall console)
+2. Configure AXELUS API Token (obtained from AXELUS console)
 
 ## Features
 
 - Complete MCP (Management Control Protocol) server implementation
-- Support for IronWall WAF instance management and control
+- Support for AXELUS WAF instance management and control
 - Flexible configuration system supporting file configuration and environment variables
 - Docker containerization support
 - Secure API communication
@@ -33,8 +33,8 @@ IronWall MCP Server is an implementation of the [Model Context Protocol (MCP)](h
 | LISTEN_PORT | Service listening port | 5678 | No |
 | LISTEN_ADDRESS | Service listening address | 0.0.0.0 | No |
 | SAFELINE_SECRET | SSE server secret | - | No |
-| SAFELINE_ADDRESS | IronWall API address | - | Yes |
-| SAFELINE_API_TOKEN | IronWall API authentication token | - | Yes |
+| SAFELINE_ADDRESS | AXELUS API address | - | Yes |
+| SAFELINE_API_TOKEN | AXELUS API authentication token | - | Yes |
 
 ### Using Docker
 
@@ -42,34 +42,34 @@ IronWall MCP Server is an implementation of the [Model Context Protocol (MCP)](h
 
 ```bash
 docker run -d \
-  --name ironwall-mcp \
+  --name axelus-mcp \
   -p 5678:5678 \
   -e SAFELINE_API_TOKEN="your_api_token" \
-  -e SAFELINE_ADDRESS="https://your.ironwall.com" \
+  -e SAFELINE_ADDRESS="https://your.axelus.com" \
   -e LISTEN_PORT=5678 \
   -e LISTEN_ADDRESS="0.0.0.0" \
-  optimiumnexus/ironwall-mcp:latest
+  optimiumnexus/axelus-mcp:latest
 ```
 
 #### Method 2: Using docker-compose
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/optimiumnexus/ironwall-mcp.git
-cd ironwall-mcp
+git clone https://github.com/optimiumnexus/axelus-mcp.git
+cd axelus-mcp
 
 # 2. Edit docker-compose.yml to configure environment variables
 # Example docker-compose.yml:
 # version: '3'
 # services:
 #   mcp:
-#     image: optimiumnexus/ironwall-mcp:latest
-#     container_name: ironwall-mcp
+#     image: optimiumnexus/axelus-mcp:latest
+#     container_name: axelus-mcp
 #     ports:
 #       - "5678:5678"
 #     environment:
 #       - SAFELINE_API_TOKEN=your_api_token
-#       - SAFELINE_ADDRESS=https://your.ironwall.com
+#       - SAFELINE_ADDRESS=https://your.axelus.com
 #       - LISTEN_PORT=5678
 #       - LISTEN_ADDRESS=0.0.0.0
 
@@ -81,8 +81,8 @@ docker compose -f docker-compose.yml up -d
 
 ```bash
 # 1. Clone repository
-git clone https://github.com/optimiumnexus/IronWall.git
-cd ironwall-mcp
+git clone https://github.com/optimiumnexus/AXELUS.git
+cd axelus-mcp
 
 # 2. Install dependencies
 go mod download

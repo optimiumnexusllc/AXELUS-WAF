@@ -1,4 +1,4 @@
-module github.com/optimiumnexusllc/ironwall/premium/ddos
+module github.com/optimiumnexusllc/axelus/premium/ddos
 
 go 1.21
 

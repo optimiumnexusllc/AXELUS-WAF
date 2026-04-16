@@ -12,10 +12,10 @@ import (
 	"path/filepath"
 	"strings"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/model"
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/ngcmd"
-	pb "optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/proto/website"
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/utils"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/model"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/pkg/ngcmd"
+	pb "optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/proto/website"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/utils"
 )
 
 const (

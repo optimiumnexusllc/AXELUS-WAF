@@ -1,4 +1,4 @@
-# IronWall-WAF — Forensics + PCAP Service
+# AXELUS-WAF — Forensics + PCAP Service
 # Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 # Usage: docker compose -f compose.yaml -f compose.forensics.yaml up -d
 
@@ -8,7 +8,7 @@ networks:
 
 services:
   forensics:
-    container_name: ironwall-forensics
+    container_name: axelus-forensics
     build:
       context: ./premium/forensics
       dockerfile: Dockerfile
@@ -31,7 +31,7 @@ services:
       - FORENSICS_API_PORT=8095
       - GIN_MODE=release
     volumes:
-      - ironwall-forensics-data:/data/forensics
+      - axelus-forensics-data:/data/forensics
       - /etc/localtime:/etc/localtime:ro
     logging:
       driver: "json-file"
@@ -40,5 +40,5 @@ services:
         max-file: "5"
 
 volumes:
-  ironwall-forensics-data:
-    name: ironwall-forensics-data
+  axelus-forensics-data:
+    name: axelus-forensics-data

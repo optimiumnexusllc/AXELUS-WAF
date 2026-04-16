@@ -1,4 +1,4 @@
-module github.com/optimiumnexusllc/ironwall/premium/mtls
+module github.com/optimiumnexusllc/axelus/premium/mtls
 
 go 1.21
 

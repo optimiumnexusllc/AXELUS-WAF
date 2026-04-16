@@ -9,11 +9,11 @@ import (
 
 	"optimiumnexus.com/dev/go/errors"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/api/response"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/model"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/constants"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/database"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/fvm"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/api/response"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/model"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/constants"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/database"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/fvm"
 )
 
 func PutPolicyGroupGlobal(ctx *gin.Context) {

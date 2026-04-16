@@ -1,4 +1,4 @@
-// Package api exposes the IronWall License Management REST API.
+// Package api exposes the AXELUS License Management REST API.
 // Secured with an admin API key. All sensitive endpoints require authentication.
 package api
 
@@ -11,10 +11,10 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/keygen"
-	lic "github.com/optimiumnexusllc/ironwall/licensing/pkg/license"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/store"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/validator"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/keygen"
+	lic "github.com/optimiumnexusllc/axelus/licensing/pkg/license"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/store"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/validator"
 )
 
 type Server struct {
@@ -292,7 +292,7 @@ func (s *Server) downloadLicense(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "license not found"})
 		return
 	}
-	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=ironwall-%s.lic", record.Key))
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=axelus-%s.lic", record.Key))
 	c.Header("Content-Type", "application/octet-stream")
 	c.String(http.StatusOK, record.LicenseFileB64)
 }
@@ -372,7 +372,7 @@ func (s *Server) getStats(c *gin.Context) {
 func (s *Server) health(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"status":  "ok",
-		"service": "IronWall License Server",
+		"service": "AXELUS License Server",
 		"version": "1.0.0",
 	})
 }

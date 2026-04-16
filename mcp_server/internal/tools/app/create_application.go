@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 
-	"github.com/optimiumnexus/IronWall/mcp_server/internal/api/app"
-	"github.com/optimiumnexus/IronWall/mcp_server/pkg/logger"
+	"github.com/optimiumnexus/AXELUS/mcp_server/internal/api/app"
+	"github.com/optimiumnexus/AXELUS/mcp_server/pkg/logger"
 )
 
 type CreateApp struct{}

@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
-	lic "github.com/optimiumnexusllc/ironwall/licensing/pkg/license"
+	lic "github.com/optimiumnexusllc/axelus/licensing/pkg/license"
 )
 
 // LicenseRecord is the GORM model for stored licenses

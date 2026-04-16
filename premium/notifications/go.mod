@@ -1,4 +1,4 @@
-module github.com/optimiumnexusllc/ironwall/premium/notifications
+module github.com/optimiumnexusllc/axelus/premium/notifications
 go 1.21
 require (
   gorm.io/gorm v1.25.10

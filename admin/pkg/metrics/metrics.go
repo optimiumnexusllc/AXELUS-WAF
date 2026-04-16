@@ -1,4 +1,4 @@
-// IronWall-WAF — Tenant Metrics & Resource Quota Enforcement
+// AXELUS-WAF — Tenant Metrics & Resource Quota Enforcement
 // Real-time per-tenant metrics, quota checking, isolation enforcement.
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 package metrics
@@ -353,7 +353,7 @@ func NewIsolationPolicy(tenantID, plan string) IsolationPolicy {
 	isolated := plan == "enterprise" || plan == "ultimate"
 	return IsolationPolicy{
 		TenantID:      tenantID,
-		Namespace:     fmt.Sprintf("ironwall-tenant-%s", slug),
+		Namespace:     fmt.Sprintf("axelus-tenant-%s", slug),
 		NetworkPolicy: fmt.Sprintf("np-tenant-%s", slug),
 		DataPrefix:    fmt.Sprintf("iw:t:%s:", tenantID),
 		DBSchema:      fmt.Sprintf("tenant_%s", slug),

@@ -1,4 +1,4 @@
-// IronWall-WAF — mTLS Certificate Manager
+// AXELUS-WAF — mTLS Certificate Manager
 // Manages mutual TLS for all inter-service communication.
 // Implements SPIFFE/SPIRE-compatible identity, automatic rotation,
 // short-lived certificates, and online OCSP stapling.
@@ -26,10 +26,10 @@ import (
 
 // ── Identity ──────────────────────────────────────────────────────────────────
 
-// SPIFFE URI format: spiffe://ironwall.local/ns/{namespace}/sa/{service}
+// SPIFFE URI format: spiffe://axelus.local/ns/{namespace}/sa/{service}
 type ServiceIdentity struct {
-	TrustDomain string // e.g. "ironwall.local"
-	Namespace   string // e.g. "ironwall"
+	TrustDomain string // e.g. "axelus.local"
+	Namespace   string // e.g. "axelus"
 	Service     string // e.g. "management" | "detector" | "forensics"
 }
 
@@ -340,7 +340,7 @@ func (r *Rotator) loop() {
 
 func (r *Rotator) Stop() { close(r.stopCh) }
 
-// ── Default IronWall Service Identities ───────────────────────────────────────
+// ── Default AXELUS Service Identities ───────────────────────────────────────
 
 func DefaultIdentities(namespace, trustDomain string) []ServiceIdentity {
 	services := []string{

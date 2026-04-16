@@ -10,18 +10,18 @@ import (
 
 	"optimiumnexus.com/dev/go/errors"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg"
 
 	"github.com/gin-gonic/gin"
 
 	"optimiumnexus.com/dev/go/log"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/api/response"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/model"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/config"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/constants"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/database"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/utils"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/api/response"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/model"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/config"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/constants"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/database"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/utils"
 )
 
 type (
@@ -42,7 +42,7 @@ type (
 			Id        string          `json:"id"`
 			Type      string          `json:"type"`
 			DetectLog model.DetectLog `json:"detect_log"`
-		} `json:"ironwall"`
+		} `json:"axelus"`
 	}
 )
 

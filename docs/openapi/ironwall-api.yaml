@@ -1,12 +1,12 @@
 openapi: "3.1.0"
 
 info:
-  title: IronWall-WAF API
+  title: AXELUS-WAF API
   version: "1.0.0"
   description: |
-    # IronWall-WAF REST API
+    # AXELUS-WAF REST API
 
-    Complete API reference for the IronWall-WAF platform by **OPTIMIUM NEXUS LLC**.
+    Complete API reference for the AXELUS-WAF platform by **OPTIMIUM NEXUS LLC**.
 
     ## Authentication
 
@@ -44,7 +44,7 @@ servers:
     variables:
       host:
         default: localhost
-        description: Your IronWall server hostname
+        description: Your AXELUS server hostname
 
   - url: http://{host}:8090
     description: License Server API
@@ -125,7 +125,7 @@ components:
         tier:            { type: string, enum: [COMMUNITY, PROFESSIONAL, ENTERPRISE, ULTIMATE, TRIAL, DEVELOPER] }
         licensee:        { type: string }
         email:           { type: string, format: email }
-        key:             { type: string, example: "IW-ENT-A3F2-B9K1-M7X4-Z2P8" }
+        key:             { type: string, example: "AX-ENT-A3F2-B9K1-M7X4-Z2P8" }
         is_lifetime:     { type: boolean }
         days_remaining:  { type: integer, description: "-1 = lifetime" }
         expires_at:      { type: string, format: date-time, nullable: true }
@@ -152,7 +152,7 @@ components:
       type: object
       properties:
         id:            { type: string, format: uuid }
-        key:           { type: string, example: "IW-ENT-A3F2-B9K1-M7X4-Z2P8" }
+        key:           { type: string, example: "AX-ENT-A3F2-B9K1-M7X4-Z2P8" }
         tier:          { type: string }
         licensee:      { type: string }
         email:         { type: string }
@@ -351,7 +351,7 @@ paths:
                 license_key:
                   type: string
                   description: Human-readable license key
-                  example: "IW-ENT-A3F2-B9K1-M7X4-Z2P8"
+                  example: "AX-ENT-A3F2-B9K1-M7X4-Z2P8"
                 feature:
                   type: string
                   description: Optional feature to check availability for

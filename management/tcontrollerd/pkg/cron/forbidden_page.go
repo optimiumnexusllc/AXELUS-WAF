@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"io/ioutil"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/constants"
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/utils"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/pkg/constants"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/utils"
 )
 
 const (

@@ -1,12 +1,12 @@
 apiVersion: v2
-name: ironwall
-description: IronWall — Enterprise-Grade Web Application Firewall
+name: axelus
+description: AXELUS — Enterprise-Grade Web Application Firewall
 type: application
 version: 1.0.0
 appVersion: "1.0.0"
-home: https://github.com/optimiumnexusllc/IronWall
+home: https://github.com/optimiumnexusllc/AXELUS
 sources:
-  - https://github.com/optimiumnexusllc/IronWall
+  - https://github.com/optimiumnexusllc/AXELUS
 maintainers:
   - name: OptiumNexus LLC
     url: https://github.com/optimiumnexusllc

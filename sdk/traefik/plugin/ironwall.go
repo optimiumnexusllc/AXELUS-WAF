@@ -1,14 +1,14 @@
-// IronWall-WAF — Traefik Middleware Plugin
-// Integrates IronWall into Traefik v3 via the plugin system.
+// AXELUS-WAF — Traefik Middleware Plugin
+// Integrates AXELUS into Traefik v3 via the plugin system.
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 //
 // Install via traefik static config:
 //   experimental:
 //     plugins:
-//       ironwall-waf:
-//         moduleName: github.com/optimiumnexusllc/ironwall-traefik
+//       axelus-waf:
+//         moduleName: github.com/optimiumnexusllc/axelus-traefik
 //         version: v1.0.0
-package ironwall_traefik
+package axelus_traefik
 
 import (
 	"bytes"
@@ -26,7 +26,7 @@ import (
 // ── Config ────────────────────────────────────────────────────────────────────
 
 type Config struct {
-	IronWallURL      string `json:"ironwallUrl"`
+	AXELUSURL      string `json:"axelusUrl"`
 	AdminKey         string `json:"adminKey"`
 	TimeoutMs        int    `json:"timeoutMs"`
 	GeoIPEnabled     bool   `json:"geoipEnabled"`
@@ -42,7 +42,7 @@ type Config struct {
 
 func CreateConfig() *Config {
 	return &Config{
-		IronWallURL:      "https://ironwall-mgt:9443",
+		AXELUSURL:      "https://axelus-mgt:9443",
 		TimeoutMs:        50,
 		GeoIPEnabled:     true,
 		ThreatIntelEnabled: true,
@@ -58,7 +58,7 @@ func CreateConfig() *Config {
 
 // ── Middleware ────────────────────────────────────────────────────────────────
 
-type IronWallMiddleware struct {
+type AXELUSMiddleware struct {
 	next   http.Handler
 	cfg    *Config
 	client *http.Client
@@ -66,8 +66,8 @@ type IronWallMiddleware struct {
 }
 
 func New(_ context.Context, next http.Handler, cfg *Config, name string) (http.Handler, error) {
-	if cfg.IronWallURL == "" {
-		return nil, fmt.Errorf("ironwall-waf: ironwallUrl is required")
+	if cfg.AXELUSURL == "" {
+		return nil, fmt.Errorf("axelus-waf: axelusUrl is required")
 	}
 	client := &http.Client{
 		Timeout: time.Duration(cfg.TimeoutMs) * time.Millisecond,
@@ -80,10 +80,10 @@ func New(_ context.Context, next http.Handler, cfg *Config, name string) (http.H
 			ResponseHeaderTimeout: time.Duration(cfg.TimeoutMs) * time.Millisecond,
 		},
 	}
-	return &IronWallMiddleware{next: next, cfg: cfg, client: client, name: name}, nil
+	return &AXELUSMiddleware{next: next, cfg: cfg, client: client, name: name}, nil
 }
 
-func (m *IronWallMiddleware) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+func (m *AXELUSMiddleware) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	clientIP := realIP(req)
 
 	// ── 1. GeoIP ──────────────────────────────────────────────────────────────
@@ -97,14 +97,14 @@ func (m *IronWallMiddleware) ServeHTTP(rw http.ResponseWriter, req *http.Request
 			}
 			if lookup, ok := result["lookup"].(map[string]interface{}); ok {
 				if cc, ok := lookup["country_code"].(string); ok {
-					req.Header.Set("X-IronWall-Country", cc)
+					req.Header.Set("X-AXELUS-Country", cc)
 				}
 				if rs, ok := lookup["risk_score"].(float64); ok {
-					req.Header.Set("X-IronWall-Risk-Score", fmt.Sprintf("%.0f", rs))
+					req.Header.Set("X-AXELUS-Risk-Score", fmt.Sprintf("%.0f", rs))
 				}
 			}
 		} else if err != nil && !m.cfg.FailOpen {
-			m.block(rw, req, "upstream_error", "IronWall-WAF unreachable")
+			m.block(rw, req, "upstream_error", "AXELUS-WAF unreachable")
 			return
 		}
 	}
@@ -174,7 +174,7 @@ func (m *IronWallMiddleware) ServeHTTP(rw http.ResponseWriter, req *http.Request
 				return
 			}
 			if score, ok := result["score"].(float64); ok {
-				req.Header.Set("X-IronWall-Threat-Score", fmt.Sprintf("%.0f", score))
+				req.Header.Set("X-AXELUS-Threat-Score", fmt.Sprintf("%.0f", score))
 			}
 		}
 	}
@@ -191,18 +191,18 @@ func (m *IronWallMiddleware) ServeHTTP(rw http.ResponseWriter, req *http.Request
 	}
 
 	// All checks passed
-	req.Header.Set("X-IronWall-Inspected", "1")
-	req.Header.Set("X-IronWall-Version", "1.0.0")
+	req.Header.Set("X-AXELUS-Inspected", "1")
+	req.Header.Set("X-AXELUS-Version", "1.0.0")
 	m.next.ServeHTTP(rw, req)
 }
 
 // ── HTTP helpers ──────────────────────────────────────────────────────────────
 
-func (m *IronWallMiddleware) post(path string, body interface{}) (map[string]interface{}, error) {
+func (m *AXELUSMiddleware) post(path string, body interface{}) (map[string]interface{}, error) {
 	data, err := json.Marshal(body)
 	if err != nil { return nil, err }
 
-	req, err := http.NewRequest("POST", m.cfg.IronWallURL+path, bytes.NewReader(data))
+	req, err := http.NewRequest("POST", m.cfg.AXELUSURL+path, bytes.NewReader(data))
 	if err != nil { return nil, err }
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("X-Admin-Key", m.cfg.AdminKey)
@@ -216,18 +216,18 @@ func (m *IronWallMiddleware) post(path string, body interface{}) (map[string]int
 	return result, nil
 }
 
-func (m *IronWallMiddleware) block(rw http.ResponseWriter, req *http.Request, code, reason string) {
+func (m *AXELUSMiddleware) block(rw http.ResponseWriter, req *http.Request, code, reason string) {
 	m.blockStatus(rw, req, m.cfg.BlockStatus, code, reason)
 }
 
-func (m *IronWallMiddleware) blockStatus(rw http.ResponseWriter, req *http.Request, status int, code, reason string) {
+func (m *AXELUSMiddleware) blockStatus(rw http.ResponseWriter, req *http.Request, status int, code, reason string) {
 	rw.Header().Set("Content-Type", "application/json")
-	rw.Header().Set("X-IronWall-Blocked", "1")
-	rw.Header().Set("X-IronWall-Block-Reason", code)
+	rw.Header().Set("X-AXELUS-Blocked", "1")
+	rw.Header().Set("X-AXELUS-Block-Reason", code)
 	rw.WriteHeader(status)
 
 	resp := map[string]interface{}{
-		"error":      "Request blocked by IronWall-WAF",
+		"error":      "Request blocked by AXELUS-WAF",
 		"code":       "IRONWALL_BLOCKED",
 		"reason":     code,
 		"message":    reason,

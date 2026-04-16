@@ -1,4 +1,4 @@
-module github.com/optimiumnexusllc/ironwall/premium/zerodayshield
+module github.com/optimiumnexusllc/axelus/premium/zerodayshield
 
 go 1.21
 

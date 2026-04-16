@@ -2,7 +2,7 @@ global:
   scrape_interval: 15s
   evaluation_interval: 15s
   external_labels:
-    monitor: 'ironwall'
+    monitor: 'axelus'
 
 rule_files:
   - 'alerts.yml'
@@ -14,8 +14,8 @@ alerting:
             - alertmanager:9093
 
 scrape_configs:
-  # IronWall management API metrics
-  - job_name: 'ironwall-mgt'
+  # AXELUS management API metrics
+  - job_name: 'axelus-mgt'
     scheme: https
     tls_config:
       insecure_skip_verify: true
@@ -24,24 +24,24 @@ scrape_configs:
     metrics_path: /api/open/metrics
 
   # Tengine/Nginx exporter
-  - job_name: 'ironwall-nginx'
+  - job_name: 'axelus-nginx'
     static_configs:
-      - targets: ['ironwall-nginx-exporter:9113']
+      - targets: ['axelus-nginx-exporter:9113']
 
   # PostgreSQL exporter
-  - job_name: 'ironwall-postgres'
+  - job_name: 'axelus-postgres'
     static_configs:
-      - targets: ['ironwall-postgres-exporter:9187']
+      - targets: ['axelus-postgres-exporter:9187']
 
   # Redis exporter
-  - job_name: 'ironwall-redis'
+  - job_name: 'axelus-redis'
     static_configs:
-      - targets: ['ironwall-redis-exporter:9121']
+      - targets: ['axelus-redis-exporter:9121']
 
   # Threat Intel service
-  - job_name: 'ironwall-threat-intel'
+  - job_name: 'axelus-threat-intel'
     static_configs:
-      - targets: ['ironwall-threat-intel:9200']
+      - targets: ['axelus-threat-intel:9200']
 
   # Prometheus self-monitoring
   - job_name: 'prometheus'

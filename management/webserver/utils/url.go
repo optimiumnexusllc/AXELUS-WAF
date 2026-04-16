@@ -5,7 +5,7 @@ import (
 	"net"
 	"strings"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/constants"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/constants"
 )
 
 func IsIPv6(str string) bool {

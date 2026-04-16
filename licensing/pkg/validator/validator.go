@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/keygen"
-	lic "github.com/optimiumnexusllc/ironwall/licensing/pkg/license"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/keygen"
+	lic "github.com/optimiumnexusllc/axelus/licensing/pkg/license"
 )
 
 // ValidationResult is the result of a license check

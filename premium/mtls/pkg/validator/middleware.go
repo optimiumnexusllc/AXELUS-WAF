@@ -1,4 +1,4 @@
-// IronWall-WAF — mTLS Enforcement Middleware & SPIFFE Validator
+// AXELUS-WAF — mTLS Enforcement Middleware & SPIFFE Validator
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 package validator
 
@@ -19,10 +19,10 @@ import (
 type Policy struct {
 	Service      string   // This service's identity
 	AllowedPeers []string // Allowed SPIFFE URIs (prefix match)
-	// e.g. "spiffe://ironwall.local/ns/ironwall/sa/management"
+	// e.g. "spiffe://axelus.local/ns/axelus/sa/management"
 }
 
-// AllowAll creates a policy that allows any IronWall service
+// AllowAll creates a policy that allows any AXELUS service
 func AllowAll(trustDomain, namespace string) *Policy {
 	return &Policy{
 		AllowedPeers: []string{
@@ -70,7 +70,7 @@ func Enforce(policy *Policy) gin.HandlerFunc {
 		spiffeURI := extractSPIFFE(peer)
 		if spiffeURI == "" {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{
-				"error": "client certificate missing SPIFFE URI — not an IronWall service identity",
+				"error": "client certificate missing SPIFFE URI — not an AXELUS service identity",
 				"code":  "MTLS_NO_SPIFFE",
 			})
 			return
@@ -93,8 +93,8 @@ func Enforce(policy *Policy) gin.HandlerFunc {
 		c.Set("mtls.peer.expiry",      peer.NotAfter.Format(time.RFC3339))
 
 		// Set request headers for upstream services
-		c.Request.Header.Set("X-IronWall-mTLS-Peer",  spiffeURI)
-		c.Request.Header.Set("X-IronWall-mTLS-CN",    peer.Subject.CommonName)
+		c.Request.Header.Set("X-AXELUS-mTLS-Peer",  spiffeURI)
+		c.Request.Header.Set("X-AXELUS-mTLS-CN",    peer.Subject.CommonName)
 
 		c.Next()
 	}
@@ -191,7 +191,7 @@ func RegisterCertAPI(rg *gin.RouterGroup) {
 func handleGetCACert(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "GET /api/open/mtls/ca/cert — returns CA cert PEM",
-		"usage":   "Use this cert to validate IronWall service certificates",
+		"usage":   "Use this cert to validate AXELUS service certificates",
 	})
 }
 
@@ -206,12 +206,12 @@ func handleIssueCert(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	if body.Namespace == "" { body.Namespace = "ironwall" }
+	if body.Namespace == "" { body.Namespace = "axelus" }
 	if body.ValidHrs == 0   { body.ValidHrs = 24 }
 
 	c.JSON(http.StatusCreated, gin.H{
 		"service":    body.Service,
-		"spiffe_uri": fmt.Sprintf("spiffe://ironwall.local/ns/%s/sa/%s", body.Namespace, body.Service),
+		"spiffe_uri": fmt.Sprintf("spiffe://axelus.local/ns/%s/sa/%s", body.Namespace, body.Service),
 		"valid_hours": body.ValidHrs,
 		"message":    "Certificate issued — connect certmgr.CA.Issue() for full implementation",
 	})
@@ -240,7 +240,7 @@ func handleListPeers(c *gin.Context) {
 	for i, s := range services {
 		peers[i] = map[string]string{
 			"service":    s,
-			"spiffe_uri": fmt.Sprintf("spiffe://ironwall.local/ns/ironwall/sa/%s", s),
+			"spiffe_uri": fmt.Sprintf("spiffe://axelus.local/ns/axelus/sa/%s", s),
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{"peers": peers})

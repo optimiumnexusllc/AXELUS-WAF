@@ -1,4 +1,4 @@
-// IronWall-WAF — Forensics Analyzer
+// AXELUS-WAF — Forensics Analyzer
 // Reconstructs attack timelines, correlates sessions, builds evidence packages.
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 package analyzer
@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/optimiumnexusllc/ironwall/premium/forensics/pkg/capture"
+	"github.com/optimiumnexusllc/axelus/premium/forensics/pkg/capture"
 )
 
 // ── Attack Event ──────────────────────────────────────────────────────────────
@@ -271,7 +271,7 @@ func (a *Analyzer) PackageEvidence(
 		"created_by":  createdBy,
 		"description": description,
 		"publisher":   "OPTIMIUM NEXUS LLC",
-		"tool":        "IronWall-WAF Forensics Engine v1.0",
+		"tool":        "AXELUS-WAF Forensics Engine v1.0",
 		"website":     "https://www.optimiumnexus.com",
 	}, "", "  ")
 	addToZip(zw, "manifest.json", manifestData, pkg)

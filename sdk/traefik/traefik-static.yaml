@@ -1,4 +1,4 @@
-# Traefik v3 Static Configuration — IronWall-WAF Integration
+# Traefik v3 Static Configuration — AXELUS-WAF Integration
 # Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 # Place at: /etc/traefik/traefik.yaml
 
@@ -23,7 +23,7 @@ entryPoints:
     address: ":443"
     http:
       tls:
-        options: ironwall-strict
+        options: axelus-strict
     http3: {}
 
 certificatesResolvers:
@@ -44,8 +44,8 @@ providers:
 
 experimental:
   plugins:
-    ironwall-waf:
-      moduleName: github.com/optimiumnexusllc/ironwall-traefik
+    axelus-waf:
+      moduleName: github.com/optimiumnexusllc/axelus-traefik
       version: v1.0.0
 
 log:
@@ -59,10 +59,10 @@ accessLog:
     headers:
       defaultMode: keep
       names:
-        X-IronWall-Blocked: keep
-        X-IronWall-Block-Reason: keep
-        X-IronWall-Country: keep
-        X-IronWall-Threat-Score: keep
+        X-AXELUS-Blocked: keep
+        X-AXELUS-Block-Reason: keep
+        X-AXELUS-Country: keep
+        X-AXELUS-Threat-Score: keep
 
 metrics:
   prometheus:
@@ -73,7 +73,7 @@ metrics:
     buckets: [0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5]
 
 tracing:
-  serviceName: traefik-ironwall
+  serviceName: traefik-axelus
   sampleRate: 0.1
 
 ping: {}

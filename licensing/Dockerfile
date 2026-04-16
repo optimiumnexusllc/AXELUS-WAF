@@ -10,8 +10,8 @@ COPY . .
 # Build CLI tool
 RUN CGO_ENABLED=1 GOOS=linux go build \
     -ldflags="-s -w -X main.version=1.0.0" \
-    -o /usr/local/bin/ironwall-license \
-    ./cmd/ironwall-license
+    -o /usr/local/bin/axelus-license \
+    ./cmd/axelus-license
 
 # Build server
 RUN CGO_ENABLED=1 GOOS=linux go build \
@@ -23,11 +23,11 @@ RUN CGO_ENABLED=1 GOOS=linux go build \
 FROM alpine:3.19
 RUN apk add --no-cache sqlite-libs ca-certificates tzdata curl
 
-COPY --from=builder /usr/local/bin/ironwall-license /usr/local/bin/
+COPY --from=builder /usr/local/bin/axelus-license /usr/local/bin/
 COPY --from=builder /usr/local/bin/license-server   /usr/local/bin/
 
-RUN addgroup -S ironwall && adduser -S ironwall -G ironwall
-USER ironwall
+RUN addgroup -S axelus && adduser -S axelus -G axelus
+USER axelus
 
 WORKDIR /data
 VOLUME ["/data"]

@@ -1,4 +1,4 @@
-module github.com/optimiumnexusllc/ironwall/admin
+module github.com/optimiumnexusllc/axelus/admin
 go 1.21
 require (
   github.com/gin-gonic/gin v1.10.0

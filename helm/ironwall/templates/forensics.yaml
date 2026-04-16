@@ -1,4 +1,4 @@
-{{- $fullName := include "ironwall.fullname" . }}
+{{- $fullName := include "axelus.fullname" . }}
 # ── Forensics Engine Deployment ───────────────────────────────────────────────
 apiVersion: apps/v1
 kind: Deployment
@@ -6,31 +6,31 @@ metadata:
   name: {{ $fullName }}-forensics
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
     app.kubernetes.io/component: forensics
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "ironwall.selectorLabels" . | nindent 6 }}
+      {{- include "axelus.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: forensics
   template:
     metadata:
       labels:
-        {{- include "ironwall.selectorLabels" . | nindent 8 }}
+        {{- include "axelus.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: forensics
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "9096"
     spec:
-      serviceAccountName: {{ include "ironwall.serviceAccountName" . }}
+      serviceAccountName: {{ include "axelus.serviceAccountName" . }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000
         fsGroup: 1000
       containers:
         - name: forensics
-          image: "ghcr.io/optimiumnexusllc/ironwall/forensics:{{ .Values.management.image.tag }}"
+          image: "ghcr.io/optimiumnexusllc/axelus/forensics:{{ .Values.management.image.tag }}"
           imagePullPolicy: IfNotPresent
           ports:
             - name: api
@@ -53,7 +53,7 @@ spec:
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: ironwall-redis-secret
+                  name: axelus-redis-secret
                   key: password
             - name: MGT_API
               value: "https://{{ $fullName }}-mgt:1443"
@@ -86,7 +86,7 @@ metadata:
   name: {{ $fullName }}-forensics
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
     app.kubernetes.io/component: forensics
 spec:
   type: ClusterIP
@@ -98,7 +98,7 @@ spec:
       targetPort: metrics
       name: metrics
   selector:
-    {{- include "ironwall.selectorLabels" . | nindent 4 }}
+    {{- include "axelus.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: forensics
 ---
 apiVersion: v1
@@ -107,7 +107,7 @@ metadata:
   name: {{ $fullName }}-forensics-data
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   accessModes: ["ReadWriteOnce"]
   resources:

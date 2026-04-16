@@ -1,5 +1,5 @@
-// IronWall - SIEM Log Forwarder
-// Tails IronWall Nginx access/attack logs and forwards them to
+// AXELUS - SIEM Log Forwarder
+// Tails AXELUS Nginx access/attack logs and forwards them to
 // Elasticsearch, Splunk HEC, or Grafana Loki in real time.
 
 package main
@@ -45,10 +45,10 @@ func loadConfig() Config {
 		ElasticsearchURL:  os.Getenv("ELASTICSEARCH_URL"),
 		ElasticsearchUser: os.Getenv("ELASTICSEARCH_USER"),
 		ElasticsearchPass: os.Getenv("ELASTICSEARCH_PASSWORD"),
-		ElasticsearchIdx:  getEnv("ELASTICSEARCH_INDEX", "ironwall-logs"),
+		ElasticsearchIdx:  getEnv("ELASTICSEARCH_INDEX", "axelus-logs"),
 		SplunkHECURL:      os.Getenv("SPLUNK_HEC_URL"),
 		SplunkHECToken:    os.Getenv("SPLUNK_HEC_TOKEN"),
-		SplunkIndex:       getEnv("SPLUNK_INDEX", "ironwall"),
+		SplunkIndex:       getEnv("SPLUNK_INDEX", "axelus"),
 		LokiURL:           os.Getenv("LOKI_URL"),
 	}
 }
@@ -114,7 +114,7 @@ func sendToSplunk(cfg Config, entries []LogEntry) error {
 		event := map[string]interface{}{
 			"time":       entry.Timestamp.Unix(),
 			"host":       entry.Host,
-			"sourcetype": "ironwall:nginx",
+			"sourcetype": "axelus:nginx",
 			"index":      cfg.SplunkIndex,
 			"event":      entry,
 		}
@@ -144,7 +144,7 @@ func sendToLoki(cfg Config, entries []LogEntry) error {
 		ts := fmt.Sprintf("%d", entry.Timestamp.UnixNano())
 		streams = append(streams, map[string]interface{}{
 			"stream": map[string]string{
-				"job":    "ironwall",
+				"job":    "axelus",
 				"source": entry.SourceFile,
 				"host":   entry.Host,
 			},
@@ -206,7 +206,7 @@ func main() {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	log.Printf("[siem] IronWall SIEM Forwarder starting")
+	log.Printf("[siem] AXELUS SIEM Forwarder starting")
 	if cfg.ElasticsearchURL != "" {
 		log.Printf("[siem] Forwarding to Elasticsearch: %s / index: %s", cfg.ElasticsearchURL, cfg.ElasticsearchIdx)
 	}

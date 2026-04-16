@@ -1,4 +1,4 @@
-// IronWall-WAF — End-to-End Integration Test Suite
+// AXELUS-WAF — End-to-End Integration Test Suite
 // Tests the full stack: WAF → License → GeoIP → RateLimit → ZeroDay → Portal
 // Run: go test ./tests/e2e/... -v -timeout 120s
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
@@ -18,13 +18,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/keygen"
-	lic "github.com/optimiumnexusllc/ironwall/licensing/pkg/license"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/validator"
-	"github.com/optimiumnexusllc/ironwall/premium/ddos/pkg/engine"
-	zdscorer "github.com/optimiumnexusllc/ironwall/premium/zerodayshield/pkg/scorer"
-	zdapi "github.com/optimiumnexusllc/ironwall/premium/zerodayshield/pkg/api"
-	geoengine "github.com/optimiumnexusllc/ironwall/geoip/pkg"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/keygen"
+	lic "github.com/optimiumnexusllc/axelus/licensing/pkg/license"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/validator"
+	"github.com/optimiumnexusllc/axelus/premium/ddos/pkg/engine"
+	zdscorer "github.com/optimiumnexusllc/axelus/premium/zerodayshield/pkg/scorer"
+	zdapi "github.com/optimiumnexusllc/axelus/premium/zerodayshield/pkg/api"
+	geoengine "github.com/optimiumnexusllc/axelus/geoip/pkg"
 )
 
 // ── Test Fixtures ─────────────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ func setupFixtures(t *testing.T) *TestFixtures {
 		l, lf, err := keygen.Issue(keygen.LicenseRequest{
 			Tier:         tier,
 			Licensee:     "E2E Test Corp — " + string(tier),
-			Email:        "e2e@test.ironwall.local",
+			Email:        "e2e@test.axelus.local",
 			ValidForDays: 30,
 		}, kp)
 		if err != nil { t.Fatalf("issue %s failed: %v", tier, err) }
@@ -377,7 +377,7 @@ func TestE2E_LicenseAPI_IssueWithAuth(t *testing.T) {
 	if err != nil { t.Fatalf("issue request failed: %v", err) }
 	if resp.StatusCode != 201 { t.Errorf("want 201, got %d: %v", resp.StatusCode, body) }
 	if body["key"] == nil || body["key"] == "" { t.Errorf("no license key in response") }
-	if !strings.HasPrefix(fmt.Sprint(body["key"]), "IW-PRO-") {
+	if !strings.HasPrefix(fmt.Sprint(body["key"]), "AX-PRO-") {
 		t.Errorf("wrong key prefix: %v", body["key"])
 	}
 }
@@ -693,7 +693,7 @@ func TestE2E_Portal_StaticAssets(t *testing.T) {
 	// Verify the portal HTML exists
 	data, err := os.ReadFile("../../portal/web/index.html")
 	if err != nil { t.Skipf("portal HTML not found (expected): %v", err) }
-	if !strings.Contains(string(data), "IronWall") { t.Error("portal HTML should contain IronWall") }
+	if !strings.Contains(string(data), "AXELUS") { t.Error("portal HTML should contain AXELUS") }
 	if !strings.Contains(string(data), "OPTIMIUM NEXUS LLC") { t.Error("portal HTML should contain publisher") }
 }
 

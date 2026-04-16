@@ -1,7 +1,7 @@
-# IronWall-WAF Helm Chart — Default Values
+# AXELUS-WAF Helm Chart — Default Values
 # Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 # Contact:   contact@optimiumnexus.com
-# Override:  helm install ironwall ./helm/ironwall -f my-values.yaml
+# Override:  helm install axelus ./helm/axelus -f my-values.yaml
 
 global:
   imageRegistry: "ghcr.io/optimiumnexusllc"
@@ -11,15 +11,15 @@ global:
   website: "https://www.optimiumnexus.com"
 
 nameOverride: ""
-fullnameOverride: "ironwall"
+fullnameOverride: "axelus"
 
 namespace:
   create: true
-  name: ironwall
+  name: axelus
 
 management:
   image:
-    repository: ironwall/management
+    repository: axelus/management
     tag: "1.0.0"
     pullPolicy: IfNotPresent
   replicaCount: 2
@@ -33,13 +33,13 @@ management:
       nginx.ingress.kubernetes.io/backend-protocol: HTTPS
       cert-manager.io/cluster-issuer: letsencrypt-prod
     hosts:
-      - host: ironwall.example.com
+      - host: axelus.example.com
         paths:
           - path: /
             pathType: Prefix
     tls:
-      - secretName: ironwall-tls
-        hosts: [ironwall.example.com]
+      - secretName: axelus-tls
+        hosts: [axelus.example.com]
   resources:
     requests: {cpu: 200m, memory: 256Mi}
     limits:   {cpu: 1000m, memory: 1Gi}
@@ -49,7 +49,7 @@ management:
 
 detector:
   image:
-    repository: ironwall/detector
+    repository: axelus/detector
     tag: "1.0.0"
     pullPolicy: IfNotPresent
   replicaCount: 2
@@ -60,9 +60,9 @@ detector:
 postgresql:
   enabled: true
   auth:
-    username: ironwall
-    database: ironwall
-    existingSecret: ironwall-postgres-secret
+    username: axelus
+    database: axelus
+    existingSecret: axelus-postgres-secret
     secretKeys:
       userPasswordKey: password
   primary:
@@ -79,7 +79,7 @@ redis:
   enabled: true
   auth:
     enabled: true
-    existingSecret: ironwall-redis-secret
+    existingSecret: axelus-redis-secret
     existingSecretPasswordKey: password
   master:
     persistence: {size: 10Gi}
@@ -91,29 +91,29 @@ redis:
 threatIntel:
   enabled: true
   image:
-    repository: ironwall/threat-intel
+    repository: axelus/threat-intel
     tag: "1.0.0"
   updateIntervalSecs: 3600
-  existingSecret: ironwall-threat-intel-secret
+  existingSecret: axelus-threat-intel-secret
   resources:
     requests: {cpu: 100m, memory: 128Mi}
 
 alerting:
   enabled: true
   image:
-    repository: ironwall/alerting
+    repository: axelus/alerting
     tag: "1.0.0"
   thresholdSeverity: high
-  existingSecret: ironwall-alerting-secret
+  existingSecret: axelus-alerting-secret
   resources:
     requests: {cpu: 50m, memory: 64Mi}
 
 siem:
   enabled: false
   image:
-    repository: ironwall/siem
+    repository: axelus/siem
     tag: "1.0.0"
-  existingSecret: ironwall-siem-secret
+  existingSecret: axelus-siem-secret
   resources:
     requests: {cpu: 100m, memory: 128Mi}
 
@@ -121,7 +121,7 @@ siem:
 forensics:
   enabled: false
   image:
-    repository: ironwall/forensics
+    repository: axelus/forensics
     tag: "1.0.0"
   captureMode: threat        # full|session|threat|header
   ringBufferSize: 100000
@@ -138,16 +138,16 @@ forensics:
 licenseServer:
   enabled: true
   image:
-    repository: ironwall/license-server
+    repository: axelus/license-server
     tag: "1.0.0"
-  existingSecret: ironwall-license-secret
+  existingSecret: axelus-license-secret
   port: 8090
   resources:
     requests: {cpu: 100m, memory: 128Mi}
 
 geoip:
   enabled: true
-  maxmindSecret: ironwall-maxmind-secret
+  maxmindSecret: axelus-maxmind-secret
   dbPath: /data/geoip/GeoIP2-City.mmdb
   updateSchedule: "0 4 * * 3"
   defaultRules:
@@ -165,7 +165,7 @@ monitoring:
       requests: {cpu: 200m, memory: 512Mi}
   grafana:
     enabled: true
-    adminPasswordSecret: ironwall-grafana-secret
+    adminPasswordSecret: axelus-grafana-secret
     persistence: {size: 10Gi}
     sidecar:
       dashboards: {enabled: true}
@@ -211,4 +211,4 @@ compliance:
   enabled: false
   schedule: "0 6 * * 1"
   recipients: ""
-  existingSecret: ironwall-compliance-secret
+  existingSecret: axelus-compliance-secret

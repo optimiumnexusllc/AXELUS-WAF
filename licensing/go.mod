@@ -1,4 +1,4 @@
-module github.com/optimiumnexusllc/ironwall/licensing
+module github.com/optimiumnexusllc/axelus/licensing
 
 go 1.21
 

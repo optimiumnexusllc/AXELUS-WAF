@@ -15,7 +15,7 @@ type DBConfig struct {
 
 func DefaultDBConfig() DBConfig {
 	return DBConfig{
-		URL:     "postgres://ironwall:ironwall@127.0.0.1/ironwall",
+		URL:     "postgres://axelus:axelus@127.0.0.1/axelus",
 		LogSQL:  false,
 		SSLMode: false,
 	}

@@ -1,4 +1,4 @@
-module optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd
+module optimiumnexus.com/patronus/axelus-2/management/tcontrollerd
 
 go 1.21
 

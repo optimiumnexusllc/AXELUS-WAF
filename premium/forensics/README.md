@@ -1,15 +1,15 @@
-# 🔬 IronWall-WAF — Forensics & PCAP Module
+# 🔬 AXELUS-WAF — Forensics & PCAP Module
 
 **Publisher: OPTIMIUM NEXUS LLC** — [www.optimiumnexus.com](https://www.optimiumnexus.com)
 **Contact:** [contact@optimiumnexus.com](mailto:contact@optimiumnexus.com)
 
-> **License requirement:** Ultimate tier (`IW-ULT-*`)
+> **License requirement:** Ultimate tier (`AX-ULT-*`)
 
 ---
 
 ## Overview
 
-The IronWall Forensics module provides Palantir-grade network packet capture,
+The AXELUS Forensics module provides Palantir-grade network packet capture,
 session reconstruction, attack timeline building, and cryptographic evidence packaging.
 
 ```
@@ -54,7 +54,7 @@ docker compose \
   up -d
 
 # Verify
-docker logs ironwall-forensics
+docker logs axelus-forensics
 curl http://localhost:8095/health
 ```
 

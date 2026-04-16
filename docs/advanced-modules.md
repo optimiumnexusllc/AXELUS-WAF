@@ -1,4 +1,4 @@
-# 🧠 IronWall-WAF — Advanced Modules
+# 🧠 AXELUS-WAF — Advanced Modules
 
 **Publisher: OPTIMIUM NEXUS LLC** — [www.optimiumnexus.com](https://www.optimiumnexus.com)
 **Contact:** [contact@optimiumnexus.com](mailto:contact@optimiumnexus.com)
@@ -7,7 +7,7 @@
 
 ## 🧠 Zero-Day Shield (`premium/zerodayshield/`)
 
-**License requirement: Ultimate** (`IW-ULT-*`)
+**License requirement: Ultimate** (`AX-ULT-*`)
 
 ML-based anomaly detection using Isolation Forest + statistical z-scoring.
 Detects previously-unseen attack patterns — no signature updates needed.
@@ -62,7 +62,7 @@ GET  /api/open/zerodayshield/health
 
 ## 🌊 DDoS Mitigation (`premium/ddos/`)
 
-**License requirement: Enterprise+** (`IW-ENT-*` or `IW-ULT-*`)
+**License requirement: Enterprise+** (`AX-ENT-*` or `AX-ULT-*`)
 
 Volumetric + application-layer DDoS protection with adaptive thresholds.
 

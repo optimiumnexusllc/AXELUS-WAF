@@ -1,13 +1,13 @@
-# IronWall - Premium Features Stack
+# AXELUS - Premium Features Stack
 # Usage: docker compose -f compose.yaml -f compose.monitoring.yaml -f compose.premium.yaml up -d
 
 networks:
-  ironwall:
+  axelus:
     external: true
 
 services:
   redis:
-    container_name: ironwall-redis
+    container_name: axelus-redis
     image: redis:7.2-alpine
     restart: always
     command: >
@@ -17,10 +17,10 @@ services:
       --maxmemory-policy allkeys-lru
       --appendonly yes
     volumes:
-      - ironwall-redis-data:/data
+      - axelus-redis-data:/data
       - /etc/localtime:/etc/localtime:ro
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.30
     healthcheck:
       test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
@@ -31,13 +31,13 @@ services:
         max-file: "3"
 
   threat-intel:
-    container_name: ironwall-threat-intel
+    container_name: axelus-threat-intel
     image: golang:1.21-alpine
     restart: always
     working_dir: /app
     volumes:
       - ./premium/threat-intel:/app:ro
-      - ironwall-threat-intel-data:/data
+      - axelus-threat-intel-data:/data
       - /etc/localtime:/etc/localtime:ro
     environment:
       - ABUSEIPDB_KEY=${THREAT_INTEL_ABUSEIPDB_KEY}
@@ -51,7 +51,7 @@ services:
     depends_on:
       - redis
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.31
     logging:
       driver: "json-file"
@@ -60,7 +60,7 @@ services:
         max-file: "3"
 
   alerting:
-    container_name: ironwall-alerting
+    container_name: axelus-alerting
     image: golang:1.21-alpine
     restart: always
     working_dir: /app
@@ -86,7 +86,7 @@ services:
     depends_on:
       - redis
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.32
     logging:
       driver: "json-file"
@@ -95,27 +95,27 @@ services:
         max-file: "3"
 
   siem-forwarder:
-    container_name: ironwall-siem
+    container_name: axelus-siem
     image: golang:1.21-alpine
     restart: always
     working_dir: /app
     volumes:
       - ./premium/siem:/app:ro
-      - ${SAFELINE_DIR:-/data/ironwall}/logs/nginx:/logs/nginx:ro
+      - ${SAFELINE_DIR:-/data/axelus}/logs/nginx:/logs/nginx:ro
       - /etc/localtime:/etc/localtime:ro
     environment:
       - ELASTICSEARCH_URL=${SIEM_ELASTICSEARCH_URL}
       - ELASTICSEARCH_USER=${SIEM_ELASTICSEARCH_USER}
       - ELASTICSEARCH_PASSWORD=${SIEM_ELASTICSEARCH_PASSWORD}
-      - ELASTICSEARCH_INDEX=${SIEM_ELASTICSEARCH_INDEX:-ironwall-logs}
+      - ELASTICSEARCH_INDEX=${SIEM_ELASTICSEARCH_INDEX:-axelus-logs}
       - SPLUNK_HEC_URL=${SIEM_SPLUNK_HEC_URL}
       - SPLUNK_HEC_TOKEN=${SIEM_SPLUNK_HEC_TOKEN}
-      - SPLUNK_INDEX=${SIEM_SPLUNK_INDEX:-ironwall}
+      - SPLUNK_INDEX=${SIEM_SPLUNK_INDEX:-axelus}
       - LOKI_URL=${SIEM_LOKI_URL}
       - LOG_DIR=/logs/nginx
     command: ["sh", "-c", "go run main.go"]
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.33
     logging:
       driver: "json-file"
@@ -124,13 +124,13 @@ services:
         max-file: "3"
 
   compliance:
-    container_name: ironwall-compliance
+    container_name: axelus-compliance
     image: python:3.12-slim
     restart: always
     working_dir: /app
     volumes:
       - ./premium/compliance:/app:ro
-      - ironwall-compliance-reports:/reports
+      - axelus-compliance-reports:/reports
       - /etc/localtime:/etc/localtime:ro
     environment:
       - MGT_API=https://${SUBNET_PREFIX}.4:1443
@@ -142,7 +142,7 @@ services:
       - SMTP_PASSWORD=${ALERT_SMTP_PASSWORD}
     command: ["python", "scheduler.py"]
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.34
     logging:
       driver: "json-file"
@@ -151,9 +151,9 @@ services:
         max-file: "3"
 
 volumes:
-  ironwall-redis-data:
-    name: ironwall-redis-data
-  ironwall-threat-intel-data:
-    name: ironwall-threat-intel-data
-  ironwall-compliance-reports:
-    name: ironwall-compliance-reports
+  axelus-redis-data:
+    name: axelus-redis-data
+  axelus-threat-intel-data:
+    name: axelus-threat-intel-data
+  axelus-compliance-reports:
+    name: axelus-compliance-reports

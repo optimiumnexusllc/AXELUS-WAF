@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>IronWall — License Command Center</title>
+<title>AXELUS — License Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
 <style>
@@ -583,7 +583,7 @@ tbody td{padding:11px 12px;font-size:13px;white-space:nowrap}
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo-wrap">
-    <div class="logo-main">IronWall</div>
+    <div class="logo-main">AXELUS</div>
     <div class="logo-sub">WAF · LICENSE CENTER</div>
     <div class="logo-badge">PALANTIR-GRADE</div>
   </div>
@@ -936,16 +936,16 @@ tbody td{padding:11px 12px;font-size:13px;white-space:nowrap}
 <script>
 // ── DATA ────────────────────────────────────────────
 const LICENSES = [
-  {id:'a1b2c3d4',key:'IW-ULT-A3F2-B9K1-M7X4-Z2P8',tier:'ULTIMATE',licensee:'Palantir Technologies',email:'security@palantir.com',domain:'palantir.com',issued:'2024-01-15',expires:'LIFETIME',daysLeft:-1,status:'lifetime',features:30},
-  {id:'e5f6g7h8',key:'IW-ENT-X9K2-P4M1-Q7R3-W5N6',tier:'ENTERPRISE',licensee:'BlackRock Inc.',email:'infosec@blackrock.com',domain:'blackrock.com',issued:'2024-02-01',expires:'2025-02-01',daysLeft:312,status:'active',features:19},
-  {id:'i9j0k1l2',key:'IW-ENT-B6T3-C8Y4-D2S5-E4U7',tier:'ENTERPRISE',licensee:'Goldman Sachs',email:'sec-ops@gs.com',domain:'gs.com',issued:'2024-01-20',expires:'2025-01-20',daysLeft:6,status:'expiring',features:19},
-  {id:'m3n4o5p6',key:'IW-PRO-F1V8-G3W9-H5X0-J7Y1',tier:'PROFESSIONAL',licensee:'Acme Corp',email:'admin@acme.com',domain:'acme.com',issued:'2024-03-01',expires:'2025-03-01',daysLeft:337,status:'active',features:11},
-  {id:'q7r8s9t0',key:'IW-TRL-K2Z3-L4A5-M6B7-N8C9',tier:'TRIAL',licensee:'Prospect Security',email:'trial@prospect.io',domain:'',issued:'2024-04-01',expires:'2024-05-01',daysLeft:0,status:'revoked',features:18},
-  {id:'u1v2w3x4',key:'IW-PRO-D0E1-F2G3-H4I5-J6K7',tier:'PROFESSIONAL',licensee:'StartupXYZ',email:'ops@startup.xyz',domain:'startup.xyz',issued:'2024-03-15',expires:'2025-03-15',daysLeft:351,status:'active',features:12},
-  {id:'y5z6a7b8',key:'IW-ENT-L8M9-N0P1-Q2R3-S4T5',tier:'ENTERPRISE',licensee:'Citadel LLC',email:'risk@citadel.com',domain:'citadel.com',issued:'2024-02-10',expires:'2025-02-10',daysLeft:322,status:'active',features:19},
-  {id:'c9d0e1f2',key:'IW-COM-U6V7-W8X9-Y0Z1-A2B3',tier:'COMMUNITY',licensee:'Open Source Project',email:'admin@oss.dev',domain:'',issued:'2024-04-01',expires:'LIFETIME',daysLeft:-1,status:'lifetime',features:4},
-  {id:'g3h4i5j6',key:'IW-ULT-C4D5-E6F7-G8H9-I0J1',tier:'ULTIMATE',licensee:'NATO CCDCOE',email:'sec@ccdcoe.org',domain:'ccdcoe.org',issued:'2024-01-01',expires:'LIFETIME',daysLeft:-1,status:'lifetime',features:30},
-  {id:'k7l8m9n0',key:'IW-ENT-K2L3-M4N5-O6P7-Q8R9',tier:'ENTERPRISE',licensee:'JPMorgan Chase',email:'cyber@jpmorgan.com',domain:'jpmorgan.com',issued:'2024-03-20',expires:'2025-03-20',daysLeft:355,status:'active',features:19},
+  {id:'a1b2c3d4',key:'AX-ULT-A3F2-B9K1-M7X4-Z2P8',tier:'ULTIMATE',licensee:'Palantir Technologies',email:'security@palantir.com',domain:'palantir.com',issued:'2024-01-15',expires:'LIFETIME',daysLeft:-1,status:'lifetime',features:30},
+  {id:'e5f6g7h8',key:'AX-ENT-X9K2-P4M1-Q7R3-W5N6',tier:'ENTERPRISE',licensee:'BlackRock Inc.',email:'infosec@blackrock.com',domain:'blackrock.com',issued:'2024-02-01',expires:'2025-02-01',daysLeft:312,status:'active',features:19},
+  {id:'i9j0k1l2',key:'AX-ENT-B6T3-C8Y4-D2S5-E4U7',tier:'ENTERPRISE',licensee:'Goldman Sachs',email:'sec-ops@gs.com',domain:'gs.com',issued:'2024-01-20',expires:'2025-01-20',daysLeft:6,status:'expiring',features:19},
+  {id:'m3n4o5p6',key:'AX-PRO-F1V8-G3W9-H5X0-J7Y1',tier:'PROFESSIONAL',licensee:'Acme Corp',email:'admin@acme.com',domain:'acme.com',issued:'2024-03-01',expires:'2025-03-01',daysLeft:337,status:'active',features:11},
+  {id:'q7r8s9t0',key:'AX-TRL-K2Z3-L4A5-M6B7-N8C9',tier:'TRIAL',licensee:'Prospect Security',email:'trial@prospect.io',domain:'',issued:'2024-04-01',expires:'2024-05-01',daysLeft:0,status:'revoked',features:18},
+  {id:'u1v2w3x4',key:'AX-PRO-D0E1-F2G3-H4I5-J6K7',tier:'PROFESSIONAL',licensee:'StartupXYZ',email:'ops@startup.xyz',domain:'startup.xyz',issued:'2024-03-15',expires:'2025-03-15',daysLeft:351,status:'active',features:12},
+  {id:'y5z6a7b8',key:'AX-ENT-L8M9-N0P1-Q2R3-S4T5',tier:'ENTERPRISE',licensee:'Citadel LLC',email:'risk@citadel.com',domain:'citadel.com',issued:'2024-02-10',expires:'2025-02-10',daysLeft:322,status:'active',features:19},
+  {id:'c9d0e1f2',key:'AX-COM-U6V7-W8X9-Y0Z1-A2B3',tier:'COMMUNITY',licensee:'Open Source Project',email:'admin@oss.dev',domain:'',issued:'2024-04-01',expires:'LIFETIME',daysLeft:-1,status:'lifetime',features:4},
+  {id:'g3h4i5j6',key:'AX-ULT-C4D5-E6F7-G8H9-I0J1',tier:'ULTIMATE',licensee:'NATO CCDCOE',email:'sec@ccdcoe.org',domain:'ccdcoe.org',issued:'2024-01-01',expires:'LIFETIME',daysLeft:-1,status:'lifetime',features:30},
+  {id:'k7l8m9n0',key:'AX-ENT-K2L3-M4N5-O6P7-Q8R9',tier:'ENTERPRISE',licensee:'JPMorgan Chase',email:'cyber@jpmorgan.com',domain:'jpmorgan.com',issued:'2024-03-20',expires:'2025-03-20',daysLeft:355,status:'active',features:19},
 ];
 
 const GEO_RULES = [
@@ -966,11 +966,11 @@ const FEEDS = [
 
 const EVENTS = [
   {type:'issue',msg:'License issued to Palantir Technologies (ULTIMATE · lifetime)',time:'2m ago'},
-  {type:'check',msg:'License IW-ENT-X9K2 validated by 192.168.1.42',time:'5m ago'},
-  {type:'expire',msg:'License IW-ENT-B6T3 expires in 6 days — Goldman Sachs',time:'1h ago'},
+  {type:'check',msg:'License AX-ENT-X9K2 validated by 192.168.1.42',time:'5m ago'},
+  {type:'expire',msg:'License AX-ENT-B6T3 expires in 6 days — Goldman Sachs',time:'1h ago'},
   {type:'issue',msg:'License issued to JPMorgan Chase (ENTERPRISE · 365d)',time:'2h ago'},
-  {type:'check',msg:'Feature geoip_blocking checked on IW-ENT-L8M9',time:'3h ago'},
-  {type:'revoke',msg:'License IW-TRL-K2Z3 revoked — payment dispute',time:'5h ago'},
+  {type:'check',msg:'Feature geoip_blocking checked on AX-ENT-L8M9',time:'3h ago'},
+  {type:'revoke',msg:'License AX-TRL-K2Z3 revoked — payment dispute',time:'5h ago'},
   {type:'issue',msg:'License issued to StartupXYZ (PROFESSIONAL · 365d)',time:'6h ago'},
   {type:'check',msg:'1,847 license validations processed today',time:'8h ago'},
 ];
@@ -1303,7 +1303,7 @@ function exportCSV() {
   const blob = new Blob([header + rows], {type:'text/csv'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = `ironwall-licenses-${new Date().toISOString().split('T')[0]}.csv`;
+  a.download = `axelus-licenses-${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
   toast('Licenses exported to CSV', 'success');
 }

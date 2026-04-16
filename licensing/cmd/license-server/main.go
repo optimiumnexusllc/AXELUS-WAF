@@ -1,4 +1,4 @@
-// IronWall License Server — standalone HTTP API for license management
+// AXELUS License Server — standalone HTTP API for license management
 package main
 
 import (
@@ -7,17 +7,17 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/api"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/keygen"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/store"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/validator"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/api"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/keygen"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/store"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/validator"
 	"gorm.io/driver/sqlite"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
 func main() {
-	log.Println("🛡️  IronWall License Server starting...")
+	log.Println("🛡️  AXELUS License Server starting...")
 
 	// ── Database ─────────────────────────────────────────────────────────────
 	var db *gorm.DB
@@ -25,7 +25,7 @@ func main() {
 	if dsn := os.Getenv("LICENSE_DB_DSN"); dsn != "" {
 		db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	} else {
-		dbPath := getEnv("LICENSE_DB_PATH", "./ironwall-licenses.db")
+		dbPath := getEnv("LICENSE_DB_PATH", "./axelus-licenses.db")
 		db, err = gorm.Open(sqlite.Open(dbPath), &gorm.Config{})
 		log.Printf("Using SQLite database: %s", dbPath)
 	}

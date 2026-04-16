@@ -4,9 +4,9 @@ import (
 	"crypto/x509/pkix"
 	"path/filepath"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/config"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/constants"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/utils"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/config"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/constants"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/utils"
 )
 
 func GenCerts() error {

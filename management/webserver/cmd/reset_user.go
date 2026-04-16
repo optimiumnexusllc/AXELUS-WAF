@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/model"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/database"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/model"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/database"
 )
 
 func ResetUser(username string) {

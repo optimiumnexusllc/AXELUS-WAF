@@ -1,4 +1,4 @@
-// IronWall-WAF — Multi-Tenant Administration Backend
+// AXELUS-WAF — Multi-Tenant Administration Backend
 // Full tenant isolation, RBAC, audit logging, resource quotas.
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 package admin
@@ -268,7 +268,7 @@ func (s *AdminServer) login(c *gin.Context) {
 }
 
 func (s *AdminServer) health(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"status": "ok", "service": "IronWall Admin API"})
+	c.JSON(http.StatusOK, gin.H{"status": "ok", "service": "AXELUS Admin API"})
 }
 
 // ── Tenant Handlers ───────────────────────────────────────────────────────────
@@ -572,7 +572,7 @@ func (s *AdminServer) exportAudit(c *gin.Context) {
 			l.OccurredAt.Format(time.RFC3339), l.TenantID, l.UserEmail,
 			l.Action, l.Resource, l.ResourceID, l.Status, l.IPAddress))
 	}
-	c.Header("Content-Disposition", "attachment; filename=ironwall-audit-"+time.Now().Format("20060102")+".csv")
+	c.Header("Content-Disposition", "attachment; filename=axelus-audit-"+time.Now().Format("20060102")+".csv")
 	c.Data(http.StatusOK, "text/csv", []byte(sb.String()))
 }
 
@@ -662,7 +662,7 @@ func (s *AdminServer) issueJWT(u AdminUser) (string, error) {
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(8 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			Issuer:    "ironwall-admin",
+			Issuer:    "axelus-admin",
 		},
 	}
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString(s.jwtSecret)

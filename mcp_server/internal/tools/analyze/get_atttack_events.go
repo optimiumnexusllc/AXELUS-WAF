@@ -3,8 +3,8 @@ package analyze
 import (
 	"context"
 
-	"github.com/optimiumnexus/IronWall/mcp_server/internal/api/analyze"
-	"github.com/optimiumnexus/IronWall/mcp_server/pkg/logger"
+	"github.com/optimiumnexus/AXELUS/mcp_server/internal/api/analyze"
+	"github.com/optimiumnexus/AXELUS/mcp_server/pkg/logger"
 )
 
 type GetAttackEventsParams struct {

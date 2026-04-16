@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🛡️ IronWall-WAF
+# AXELUS-WAF
+
+<p align="center"><img src="assets/axelus-logo.svg" width="500" alt="AXELUS-WAF"/></p>
 
 ### The Palantir of Web Application Firewalls
 
@@ -8,9 +10,9 @@
 [![Version](https://img.shields.io/badge/version-v1.0.0-green.svg)](version.json)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](compose.yaml)
 [![Go](https://img.shields.io/badge/go-1.21+-00ADD8.svg)](https://golang.org/)
-[![CI](https://github.com/optimiumnexusllc/IronWAll-WAF/actions/workflows/ci.yml/badge.svg)](https://github.com/optimiumnexusllc/IronWAll-WAF/actions)
+[![CI](https://github.com/optimiumnexusllc/axelus-waf/actions/workflows/ci.yml/badge.svg)](https://github.com/optimiumnexusllc/axelus-waf/actions)
 
-**IronWall-WAF** is a next-generation, AI-powered Web Application Firewall engineered for enterprise and government environments. Designed and developed by **OPTIMIUM NEXUS LLC**, IronWall delivers military-grade threat protection with cryptographic licensing, real-time threat intelligence, Kubernetes-native deployment, full SIEM integration, deep packet inspection, deception layers, and a Palantir-grade security dashboard.
+**AXELUS-WAF** is a next-generation, AI-powered Web Application Firewall engineered for enterprise and government environments. Designed and developed by **OPTIMIUM NEXUS LLC**, AXELUS delivers military-grade threat protection with cryptographic licensing, real-time threat intelligence, Kubernetes-native deployment, full SIEM integration, deep packet inspection, deception layers, and a Palantir-grade security dashboard.
 
 [Features](#-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [Licensing](#-licensing) • [Contributing](#-contributing)
 
@@ -32,7 +34,7 @@
 - **Reverse proxy** on Tengine (hardened Nginx fork, battle-tested at scale)
 - **Real-time attack dashboard** with live block feed
 
-### 🆕 IronWall Premium Modules
+### 🆕 AXELUS Premium Modules
 | Module | Description | Tier |
 |--------|-------------|------|
 | 🧠 **Threat Intelligence** | AbuseIPDB + Emerging Threats + custom feeds auto-sync | Enterprise+ |
@@ -59,12 +61,12 @@
 
 ### One-Line Install
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/optimiumnexusllc/IronWAll-WAF/main/scripts/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/optimiumnexusllc/axelus-waf/main/scripts/install.sh)
 ```
 
 ### Manual Install
 ```bash
-git clone https://github.com/optimiumnexusllc/IronWAll-WAF.git
+git clone https://github.com/optimiumnexusllc/axelus-waf.git
 cd IronWAll-WAF
 cp .env.example .env && nano .env
 
@@ -78,7 +80,7 @@ docker compose -f compose.yaml -f compose.monitoring.yaml up -d
 docker compose -f compose.yaml -f compose.monitoring.yaml -f compose.premium.yaml up -d
 
 # Dashboard → https://YOUR_IP:9443
-docker logs ironwall-mgt | grep "Initial password"
+docker logs axelus-mgt | grep "Initial password"
 ```
 
 ---
@@ -125,35 +127,35 @@ docker logs ironwall-mgt | grep "Initial password"
 
 | Container | Role | Port |
 |-----------|------|------|
-| `ironwall-tengine` | WAF reverse proxy | 80, 443 |
-| `ironwall-mgt` | Management API + Dashboard | 9443 |
-| `ironwall-detector` | AI semantic detection | internal |
-| `ironwall-postgres` | Primary database | internal |
-| `ironwall-redis` | Cache + rate limit + honeypot | internal |
-| `ironwall-threat-intel` | Feed syncer | internal |
-| `ironwall-alerting` | Slack/Teams/PD/Email router | internal |
-| `ironwall-siem` | Log forwarder | internal |
-| `ironwall-forensics` | PCAP capture + session store | internal |
-| `ironwall-honeypot` | Deception layer | internal |
-| `ironwall-license-server` | License API | 8090 |
-| `ironwall-prometheus` | Metrics | 9090 |
-| `ironwall-grafana` | Dashboards | 3000 |
-| `ironwall-alertmanager` | Alert routing | 9093 |
+| `axelus-tengine` | WAF reverse proxy | 80, 443 |
+| `axelus-mgt` | Management API + Dashboard | 9443 |
+| `axelus-detector` | AI semantic detection | internal |
+| `axelus-postgres` | Primary database | internal |
+| `axelus-redis` | Cache + rate limit + honeypot | internal |
+| `axelus-threat-intel` | Feed syncer | internal |
+| `axelus-alerting` | Slack/Teams/PD/Email router | internal |
+| `axelus-siem` | Log forwarder | internal |
+| `axelus-forensics` | PCAP capture + session store | internal |
+| `axelus-honeypot` | Deception layer | internal |
+| `axelus-license-server` | License API | 8090 |
+| `axelus-prometheus` | Metrics | 9090 |
+| `axelus-grafana` | Dashboards | 3000 |
+| `axelus-alertmanager` | Alert routing | 9093 |
 
 ---
 
 ## 🔑 Licensing
 
-IronWall-WAF uses a **cryptographic license system** (ED25519 signatures).
+AXELUS-WAF uses a **cryptographic license system** (ED25519 signatures).
 
 ### Tiers
 | Tier | Sites | RPS | Support | Key Format |
 |------|-------|-----|---------|------------|
-| COMMUNITY | 1 | 500/s | Community | `IW-COM-XXXX-XXXX-XXXX-XXXX` |
-| PROFESSIONAL | 10 | 5,000/s | Email | `IW-PRO-XXXX-XXXX-XXXX-XXXX` |
-| ENTERPRISE | ∞ | 50,000/s | Priority | `IW-ENT-XXXX-XXXX-XXXX-XXXX` |
-| ULTIMATE | ∞ | ∞ | 24/7 Dedicated | `IW-ULT-XXXX-XXXX-XXXX-XXXX` |
-| TRIAL | ∞ | ∞ | Email (30d) | `IW-TRL-XXXX-XXXX-XXXX-XXXX` |
+| COMMUNITY | 1 | 500/s | Community | `AX-COM-XXXX-XXXX-XXXX-XXXX` |
+| PROFESSIONAL | 10 | 5,000/s | Email | `AX-PRO-XXXX-XXXX-XXXX-XXXX` |
+| ENTERPRISE | ∞ | 50,000/s | Priority | `AX-ENT-XXXX-XXXX-XXXX-XXXX` |
+| ULTIMATE | ∞ | ∞ | 24/7 Dedicated | `AX-ULT-XXXX-XXXX-XXXX-XXXX` |
+| TRIAL | ∞ | ∞ | Email (30d) | `AX-TRL-XXXX-XXXX-XXXX-XXXX` |
 
 **→ [License Documentation](licensing/README.md)** · **[Admin Dashboard](licensing/web/dashboard.html)**
 
@@ -172,7 +174,7 @@ IronWAll-WAF/
 ├── management/                 # WAF management API (Go)
 ├── geoip/                      # GeoIP blocking engine
 ├── licensing/                  # License system (CLI + API + Dashboard)
-│   ├── cmd/ironwall-license/   # CLI tool
+│   ├── cmd/axelus-license/   # CLI tool
 │   ├── cmd/license-server/     # HTTP API
 │   ├── pkg/                    # Core packages
 │   ├── web/dashboard.html      # Admin dashboard
@@ -186,7 +188,7 @@ IronWAll-WAF/
 │   ├── honeypot/               # Deception layer
 │   ├── ratelimit/              # Advanced rate limiter
 │   └── forensics/              # PCAP + session forensics
-├── helm/ironwall/              # Kubernetes Helm chart
+├── helm/axelus/              # Kubernetes Helm chart
 │   ├── Chart.yaml
 │   ├── values.yaml
 │   └── templates/

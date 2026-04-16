@@ -1,7 +1,7 @@
 """
-IronWall-WAF Python SDK
+AXELUS-WAF Python SDK
 =======================
-Client library for validating IronWall licenses and gating features
+Client library for validating AXELUS licenses and gating features
 in Python applications.
 
 Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
@@ -9,16 +9,16 @@ Contact:   contact@optimiumnexus.com
 License:   MIT (SDK only)
 
 Installation:
-    pip install ironwall-sdk
+    pip install axelus-sdk
 
 Usage:
-    from ironwall import IronWallClient, Feature
+    from axelus import AXELUSClient, Feature
 
-    client = IronWallClient(
-        license_file="path/to/ironwall.lic",
+    client = AXELUSClient(
+        license_file="path/to/axelus.lic",
         # OR
-        license_key="IW-ENT-XXXX-XXXX-XXXX-XXXX",
-        api_url="https://your-ironwall-instance:9443",
+        license_key="AX-ENT-XXXX-XXXX-XXXX-XXXX",
+        api_url="https://your-axelus-instance:9443",
     )
 
     # Validate license
@@ -58,7 +58,7 @@ import ssl
 # ── Feature Enum ──────────────────────────────────────────────────────────────
 
 class Feature(str, Enum):
-    """All available IronWall-WAF features."""
+    """All available AXELUS-WAF features."""
 
     # Core (all tiers)
     CORE_WAF          = "core_waf"
@@ -196,16 +196,16 @@ class ValidationResult:
 
 # ── Exceptions ────────────────────────────────────────────────────────────────
 
-class IronWallError(Exception):
-    """Base IronWall SDK exception."""
+class AXELUSError(Exception):
+    """Base AXELUS SDK exception."""
 
-class LicenseNotFoundError(IronWallError):
+class LicenseNotFoundError(AXELUSError):
     """License file or key not found."""
 
-class LicenseInvalidError(IronWallError):
+class LicenseInvalidError(AXELUSError):
     """License is invalid, expired, or revoked."""
 
-class FeatureNotAvailableError(IronWallError):
+class FeatureNotAvailableError(AXELUSError):
     """Feature not available on current license tier."""
     def __init__(self, feature: Feature, tier: str):
         self.feature = feature
@@ -218,22 +218,22 @@ class FeatureNotAvailableError(IronWallError):
 
 # ── Client ────────────────────────────────────────────────────────────────────
 
-class IronWallClient:
+class AXELUSClient:
     """
-    IronWall-WAF Python SDK client.
+    AXELUS-WAF Python SDK client.
 
-    Validates licenses online (via IronWall API) or offline (from license file).
+    Validates licenses online (via AXELUS API) or offline (from license file).
     Caches validation results and auto-refreshes in the background.
 
     Examples:
         # Online validation
-        client = IronWallClient(
-            license_key="IW-ENT-XXXX-XXXX-XXXX-XXXX",
+        client = AXELUSClient(
+            license_key="AX-ENT-XXXX-XXXX-XXXX-XXXX",
             api_url="https://waf.mycompany.com:9443",
         )
 
         # Offline validation from file
-        client = IronWallClient(license_file="/etc/ironwall/ironwall.lic")
+        client = AXELUSClient(license_file="/etc/axelus/axelus.lic")
 
         # Check feature and use decorator
         if client.has_feature(Feature.GEO_IP_BLOCKING):
@@ -266,7 +266,7 @@ class IronWallClient:
         self._lock          = threading.Lock()
 
         if not self._license_file and not self._license_key:
-            raise IronWallError(
+            raise AXELUSError(
                 "Provide license_file or license_key (or set IRONWALL_LICENSE_FILE / IRONWALL_LICENSE_KEY env var)"
             )
 
@@ -298,7 +298,7 @@ class IronWallClient:
             return result
 
     def _validate_online(self) -> ValidationResult:
-        """Validate via IronWall management API."""
+        """Validate via AXELUS management API."""
         payload = self._build_validation_payload()
         try:
             ctx = ssl.create_default_context()
@@ -571,41 +571,41 @@ class IronWallClient:
 
 # ── Django Middleware ────────────────────────────────────────────────────────
 
-class IronWallMiddleware:
+class AXELUSMiddleware:
     """
-    Django middleware that validates IronWall license on startup
+    Django middleware that validates AXELUS license on startup
     and gates feature usage.
 
     Add to MIDDLEWARE in settings.py:
         MIDDLEWARE = [
             ...
-            'ironwall.django.IronWallMiddleware',
+            'axelus.django.AXELUSMiddleware',
         ]
     """
     def __init__(self, get_response):
         self.get_response = get_response
-        self.client = IronWallClient(
+        self.client = AXELUSClient(
             license_file=os.getenv("IRONWALL_LICENSE_FILE"),
             api_url=os.getenv("IRONWALL_API_URL"),
         )
 
     def __call__(self, request):
-        request.ironwall = self.client
+        request.axelus = self.client
         return self.get_response(request)
 
 
 # ── FastAPI Dependency ────────────────────────────────────────────────────────
 
-def create_fastapi_dependency(client: IronWallClient, feature: Feature):
+def create_fastapi_dependency(client: AXELUSClient, feature: Feature):
     """
-    Creates a FastAPI dependency that requires a specific IronWall feature.
+    Creates a FastAPI dependency that requires a specific AXELUS feature.
 
     Usage::
 
-        from ironwall import IronWallClient, Feature, create_fastapi_dependency
+        from axelus import AXELUSClient, Feature, create_fastapi_dependency
         from fastapi import Depends
 
-        client = IronWallClient(license_file="ironwall.lic")
+        client = AXELUSClient(license_file="axelus.lic")
 
         @app.get("/advanced")
         async def advanced_endpoint(
@@ -632,33 +632,33 @@ def create_fastapi_dependency(client: IronWallClient, feature: Feature):
 
 # ── Flask Extension ───────────────────────────────────────────────────────────
 
-class IronWall:
+class AXELUS:
     """
-    Flask extension for IronWall license validation.
+    Flask extension for AXELUS license validation.
 
     Usage::
 
-        from ironwall import IronWall, Feature
+        from axelus import AXELUS, Feature
 
         app = Flask(__name__)
-        ironwall = IronWall(app)  # or ironwall.init_app(app)
+        axelus = AXELUS(app)  # or axelus.init_app(app)
 
         @app.route("/premium")
-        @ironwall.require(Feature.FORENSICS)
+        @axelus.require(Feature.FORENSICS)
         def premium_view():
             return "OK"
     """
 
     def __init__(self, app=None):
-        self.client: Optional[IronWallClient] = None
+        self.client: Optional[AXELUSClient] = None
         if app:
             self.init_app(app)
 
     def init_app(self, app):
         license_file = app.config.get("IRONWALL_LICENSE_FILE") or os.getenv("IRONWALL_LICENSE_FILE")
         api_url      = app.config.get("IRONWALL_API_URL")     or os.getenv("IRONWALL_API_URL")
-        self.client  = IronWallClient(license_file=license_file, api_url=api_url)
-        app.ironwall = self
+        self.client  = AXELUSClient(license_file=license_file, api_url=api_url)
+        app.axelus = self
 
     def require(self, feature: Feature):
         """Route decorator that requires a specific feature."""

@@ -1,6 +1,6 @@
-# Contributing to IronWall
+# Contributing to AXELUS
 
-Thank you for your interest in making IronWall better! This document explains how to contribute.
+Thank you for your interest in making AXELUS better! This document explains how to contribute.
 
 ## Code of Conduct
 
@@ -10,10 +10,10 @@ Be respectful, constructive, and professional in all interactions.
 
 ### Reporting Bugs
 Open an issue with:
-- IronWall version and OS
+- AXELUS version and OS
 - Steps to reproduce
 - Expected vs actual behavior
-- Relevant logs (`docker logs ironwall-mgt`)
+- Relevant logs (`docker logs axelus-mgt`)
 
 ### Proposing Features
 Open a Discussion before implementing large features. For small improvements, a PR is fine directly.
@@ -24,8 +24,8 @@ Open a Discussion before implementing large features. For small improvements, a 
 ## Development Setup
 
 ```bash
-git clone https://github.com/optimiumnexusllc/IronWall.git
-cd IronWall
+git clone https://github.com/optimiumnexusllc/AXELUS.git
+cd AXELUS
 cp .env.example .env
 # Edit .env with your test passwords
 docker compose up -d postgres fvm

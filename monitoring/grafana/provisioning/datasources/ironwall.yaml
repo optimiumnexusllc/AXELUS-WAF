@@ -3,9 +3,9 @@ apiVersion: 1
 datasources:
   - name: Prometheus
     type: prometheus
-    uid: ironwall-prometheus
+    uid: axelus-prometheus
     access: proxy
-    url: http://ironwall-prometheus:9090
+    url: http://axelus-prometheus:9090
     isDefault: true
     editable: false
     jsonData:
@@ -15,10 +15,10 @@ datasources:
 
   - name: PostgreSQL
     type: postgres
-    uid: ironwall-postgres
-    url: ironwall-postgres:5432
-    database: ironwall
-    user: ironwall
+    uid: axelus-postgres
+    url: axelus-postgres:5432
+    database: axelus
+    user: axelus
     editable: false
     secureJsonData:
       password: "${POSTGRES_PASSWORD}"
@@ -31,9 +31,9 @@ datasources:
 
   - name: Loki
     type: loki
-    uid: ironwall-loki
+    uid: axelus-loki
     access: proxy
-    url: http://ironwall-loki:3100
+    url: http://axelus-loki:3100
     editable: false
     jsonData:
       maxLines: 1000

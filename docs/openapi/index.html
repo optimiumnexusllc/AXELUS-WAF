@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>IronWall-WAF — API Documentation</title>
+<title>AXELUS-WAF — API Documentation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -89,22 +89,22 @@ body{background:var(--bg);color:var(--txt);font-family:var(--sans);min-height:10
 
 <div class="header">
   <div>
-    <div class="header-logo">🛡️ IronWall-WAF</div>
+    <div class="header-logo">🛡️ AXELUS-WAF</div>
     <div class="header-tag">API DOCUMENTATION · v1.0.0 · OPTIMIUM NEXUS LLC</div>
   </div>
   <div class="tabs">
     <div class="tab active" onclick="switchTab('overview',this)">Overview</div>
     <div class="tab" onclick="switchTab('reference',this)">API Reference</div>
     <div class="tab" onclick="switchTab('guides',this)">Guides</div>
-    <div class="tab" onclick="window.open('ironwall-api.yaml','_blank')">↓ OpenAPI YAML</div>
+    <div class="tab" onclick="window.open('axelus-api.yaml','_blank')">↓ OpenAPI YAML</div>
   </div>
 </div>
 
 <!-- OVERVIEW -->
 <div class="view active" id="tab-overview">
 <div style="max-width:900px;margin:0 auto;padding:32px">
-  <h1 style="font-size:28px;font-weight:700;color:#fff;margin-bottom:8px">IronWall-WAF REST API</h1>
-  <p style="color:var(--txt2);font-size:14px;margin-bottom:28px">Complete API reference for the IronWall platform. All APIs follow REST conventions with JSON request/response bodies.</p>
+  <h1 style="font-size:28px;font-weight:700;color:#fff;margin-bottom:8px">AXELUS-WAF REST API</h1>
+  <p style="color:var(--txt2);font-size:14px;margin-bottom:28px">Complete API reference for the AXELUS platform. All APIs follow REST conventions with JSON request/response bodies.</p>
 
   <div class="overview-grid">
     <div class="ov-card"><div class="ov-card-title">Total Endpoints</div><div class="ov-card-value">47</div><div class="ov-card-sub">Across 4 API servers</div></div>
@@ -259,7 +259,7 @@ X-API-Key: iwk_a3f2b1c4d5e6f7g8...
 }<div class="code-lang">JSON</div></div>
         <div class="section-title">Response 201</div>
         <div class="code-block">{
-  <span class="key">"key"</span>: <span class="str">"IW-ENT-A3F2-B9K1-M7X4-Z2P8"</span>,
+  <span class="key">"key"</span>: <span class="str">"AX-ENT-A3F2-B9K1-M7X4-Z2P8"</span>,
   <span class="key">"tier"</span>: <span class="str">"ENTERPRISE"</span>,
   <span class="key">"expires_at"</span>: <span class="str">"2026-01-15T00:00:00Z"</span>,
   <span class="key">"license_file"</span>: <span class="str">"-----BEGIN IRONWALL LICENSE-----\n..."</span>
@@ -363,7 +363,7 @@ X-API-Key: iwk_a3f2b1c4d5e6f7g8...
     <div id="ep-audit"></div>
 
     <div style="text-align:center;padding:40px;color:var(--txt2);font-size:12px">
-      <p>Full OpenAPI specification: <a href="ironwall-api.yaml" style="color:var(--accent)">ironwall-api.yaml</a></p>
+      <p>Full OpenAPI specification: <a href="axelus-api.yaml" style="color:var(--accent)">axelus-api.yaml</a></p>
       <p style="margin-top:8px">Need help? <a href="mailto:contact@optimiumnexus.com" style="color:var(--accent)">contact@optimiumnexus.com</a></p>
     </div>
   </div>
@@ -378,11 +378,11 @@ X-API-Key: iwk_a3f2b1c4d5e6f7g8...
 
     <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px">
       <h3 style="color:var(--accent);font-family:var(--mono);font-size:13px;margin-bottom:8px">🐍 Python SDK</h3>
-      <div class="code-block">pip install ironwall-sdk
+      <div class="code-block">pip install axelus-sdk
 
-from ironwall import IronWallClient, Feature
+from axelus import AXELUSClient, Feature
 
-client = IronWallClient(license_file=<span class="str">'/etc/ironwall/ironwall.lic'</span>)
+client = AXELUSClient(license_file=<span class="str">'/etc/axelus/axelus.lic'</span>)
 if client.has_feature(Feature.GEO_IP_BLOCKING):
     enable_geoip()
 
@@ -392,10 +392,10 @@ def start_capture(): ...<div class="code-lang">Python</div></div>
 
     <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px">
       <h3 style="color:var(--accent);font-family:var(--mono);font-size:13px;margin-bottom:8px">🟨 Node.js / TypeScript SDK</h3>
-      <div class="code-block">npm install ironwall-sdk
+      <div class="code-block">npm install axelus-sdk
 
-import { IronWallClient, Feature } from <span class="str">'ironwall-sdk'</span>
-const client = await createIronWallClient({ licenseFile: <span class="str">'ironwall.lic'</span> })
+import { AXELUSClient, Feature } from <span class="str">'axelus-sdk'</span>
+const client = await createAXELUSClient({ licenseFile: <span class="str">'axelus.lic'</span> })
 
 app.get(<span class="str">'/forensics'</span>, client.requireFeature(Feature.Forensics), handler)<div class="code-lang">TypeScript</div></div>
     </div>
@@ -403,16 +403,16 @@ app.get(<span class="str">'/forensics'</span>, client.requireFeature(Feature.For
     <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px">
       <h3 style="color:var(--accent);font-family:var(--mono);font-size:13px;margin-bottom:8px">🔗 Kong Gateway</h3>
       <div class="code-block">curl -X POST http://kong-admin:8001/services/my-api/plugins \
-  -d name=ironwall-waf \
-  -d config.ironwall_host=ironwall-mgt \
+  -d name=axelus-waf \
+  -d config.axelus_host=axelus-mgt \
   -d config.admin_key=YOUR_KEY \
   -d config.dpi_enabled=true<div class="code-lang">Shell</div></div>
     </div>
 
     <div style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px">
       <h3 style="color:var(--accent);font-family:var(--mono);font-size:13px;margin-bottom:8px">☸️ Kubernetes / Helm</h3>
-      <div class="code-block">helm install ironwall ./helm/ironwall \
-  --namespace ironwall --create-namespace \
+      <div class="code-block">helm install axelus ./helm/axelus \
+  --namespace axelus --create-namespace \
   --set forensics.enabled=true \
   --set networkPolicies.enabled=true \
   --set autoscaling.enabled=true<div class="code-lang">Shell</div></div>
@@ -436,7 +436,7 @@ function goto(id) {
   if (el) { el.scrollIntoView({behavior:'smooth'}); el.classList.add('open'); }
 }
 function tryIt(ep) {
-  alert('Interactive "Try It" panel — connect to your IronWall instance.\nSee the OpenAPI spec for full details: ironwall-api.yaml');
+  alert('Interactive "Try It" panel — connect to your AXELUS instance.\nSee the OpenAPI spec for full details: axelus-api.yaml');
 }
 </script>
 </body>

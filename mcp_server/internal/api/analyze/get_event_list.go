@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/optimiumnexus/IronWall/mcp_server/internal/api"
+	"github.com/optimiumnexus/AXELUS/mcp_server/internal/api"
 )
 
 type GetEventListRequest struct {

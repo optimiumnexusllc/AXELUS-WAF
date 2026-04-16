@@ -1,22 +1,22 @@
-{{- $fullName := include "ironwall.fullname" . }}
+{{- $fullName := include "axelus.fullname" . }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ $fullName }}-mgt
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
     app.kubernetes.io/component: management
 spec:
   replicas: {{ .Values.management.replicaCount }}
   selector:
     matchLabels:
-      {{- include "ironwall.selectorLabels" . | nindent 6 }}
+      {{- include "axelus.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: management
   template:
     metadata:
       labels:
-        {{- include "ironwall.selectorLabels" . | nindent 8 }}
+        {{- include "axelus.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: management
       annotations:
         prometheus.io/scrape: "true"
@@ -28,7 +28,7 @@ spec:
       securityContext:
         {{- toYaml . | nindent 8 }}
       {{- end }}
-      serviceAccountName: {{ include "ironwall.serviceAccountName" . }}
+      serviceAccountName: {{ include "axelus.serviceAccountName" . }}
       containers:
         - name: mgt
           image: "{{ .Values.management.image.repository }}:{{ .Values.management.image.tag }}"
@@ -41,7 +41,7 @@ spec:
             - name: MGT_PG
               valueFrom:
                 secretKeyRef:
-                  name: ironwall-postgres-secret
+                  name: axelus-postgres-secret
                   key: dsn
           livenessProbe:
             httpGet:
@@ -96,7 +96,7 @@ metadata:
   name: {{ $fullName }}-mgt
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
     app.kubernetes.io/component: management
 spec:
   type: {{ .Values.management.service.type }}
@@ -106,7 +106,7 @@ spec:
       protocol: TCP
       name: https
   selector:
-    {{- include "ironwall.selectorLabels" . | nindent 4 }}
+    {{- include "axelus.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: management
 {{- if .Values.management.ingress.enabled }}
 ---
@@ -116,7 +116,7 @@ metadata:
   name: {{ $fullName }}-mgt
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
   {{- with .Values.management.ingress.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}

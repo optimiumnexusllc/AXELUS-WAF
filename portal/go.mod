@@ -1,4 +1,4 @@
-module github.com/optimiumnexusllc/ironwall/portal
+module github.com/optimiumnexusllc/axelus/portal
 
 go 1.21
 

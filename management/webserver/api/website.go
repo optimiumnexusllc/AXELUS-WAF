@@ -10,11 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/api/response"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/model"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/config"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/database"
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/rpc"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/api/response"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/model"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/config"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/database"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/rpc"
 )
 
 func publishWebsiteConfig(website *model.Website) error {

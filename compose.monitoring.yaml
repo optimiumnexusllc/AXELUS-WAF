@@ -1,13 +1,13 @@
-# IronWall - Monitoring Stack
+# AXELUS - Monitoring Stack
 # Usage: docker compose -f compose.yaml -f compose.monitoring.yaml up -d
 
 networks:
-  ironwall:
+  axelus:
     external: true
 
 services:
   prometheus:
-    container_name: ironwall-prometheus
+    container_name: axelus-prometheus
     image: prom/prometheus:v2.50.1
     restart: always
     command:
@@ -18,12 +18,12 @@ services:
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
-      - ironwall-prometheus-data:/prometheus
+      - axelus-prometheus-data:/prometheus
       - /etc/localtime:/etc/localtime:ro
     ports:
       - "127.0.0.1:9090:9090"
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.20
     logging:
       driver: "json-file"
@@ -32,17 +32,17 @@ services:
         max-file: "3"
 
   grafana:
-    container_name: ironwall-grafana
+    container_name: axelus-grafana
     image: grafana/grafana:10.4.0
     restart: always
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-ironwall_grafana}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-axelus_grafana}
       - GF_SECURITY_ADMIN_USER=admin
       - GF_USERS_ALLOW_SIGN_UP=false
       - GF_SERVER_ROOT_URL=https://%(domain)s/grafana/
       - GF_INSTALL_PLUGINS=grafana-worldmap-panel,grafana-piechart-panel
     volumes:
-      - ironwall-grafana-data:/var/lib/grafana
+      - axelus-grafana-data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
       - /etc/localtime:/etc/localtime:ro
@@ -51,7 +51,7 @@ services:
     depends_on:
       - prometheus
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.21
     logging:
       driver: "json-file"
@@ -60,7 +60,7 @@ services:
         max-file: "3"
 
   alertmanager:
-    container_name: ironwall-alertmanager
+    container_name: axelus-alertmanager
     image: prom/alertmanager:v0.27.0
     restart: always
     command:
@@ -68,12 +68,12 @@ services:
       - '--storage.path=/alertmanager'
     volumes:
       - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
-      - ironwall-alertmanager-data:/alertmanager
+      - axelus-alertmanager-data:/alertmanager
       - /etc/localtime:/etc/localtime:ro
     ports:
       - "127.0.0.1:9093:9093"
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.22
     logging:
       driver: "json-file"
@@ -83,13 +83,13 @@ services:
 
   # Nginx exporter — exposes Tengine/Nginx metrics to Prometheus
   nginx-exporter:
-    container_name: ironwall-nginx-exporter
+    container_name: axelus-nginx-exporter
     image: nginx/nginx-prometheus-exporter:1.1.0
     restart: always
     command:
       - '-nginx.scrape-uri=http://${SUBNET_PREFIX}.4:8080/nginx_status'
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.23
     logging:
       driver: "json-file"
@@ -99,13 +99,13 @@ services:
 
   # PostgreSQL exporter
   postgres-exporter:
-    container_name: ironwall-postgres-exporter
+    container_name: axelus-postgres-exporter
     image: prometheuscommunity/postgres-exporter:v0.15.0
     restart: always
     environment:
-      - DATA_SOURCE_NAME=postgresql://ironwall:${POSTGRES_PASSWORD}@${SUBNET_PREFIX}.2:5432/ironwall?sslmode=disable
+      - DATA_SOURCE_NAME=postgresql://axelus:${POSTGRES_PASSWORD}@${SUBNET_PREFIX}.2:5432/axelus?sslmode=disable
     networks:
-      ironwall:
+      axelus:
         ipv4_address: ${SUBNET_PREFIX}.24
     logging:
       driver: "json-file"
@@ -114,9 +114,9 @@ services:
         max-file: "3"
 
 volumes:
-  ironwall-prometheus-data:
-    name: ironwall-prometheus-data
-  ironwall-grafana-data:
-    name: ironwall-grafana-data
-  ironwall-alertmanager-data:
-    name: ironwall-alertmanager-data
+  axelus-prometheus-data:
+    name: axelus-prometheus-data
+  axelus-grafana-data:
+    name: axelus-grafana-data
+  axelus-alertmanager-data:
+    name: axelus-alertmanager-data

@@ -1,4 +1,4 @@
-module github.com/optimiumnexusllc/ironwall/docs/openapi
+module github.com/optimiumnexusllc/axelus/docs/openapi
 
 go 1.21
 

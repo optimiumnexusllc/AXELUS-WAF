@@ -1,13 +1,13 @@
-# 🔑 IronWall Licensing Module
+# 🔑 AXELUS Licensing Module
 
-Enterprise license key generation, validation, and management for IronWall WAF.
+Enterprise license key generation, validation, and management for AXELUS WAF.
 
 ## Architecture
 
 ```
 licensing/
 ├── cmd/
-│   ├── ironwall-license/   ← CLI tool (generate, validate, inspect)
+│   ├── axelus-license/   ← CLI tool (generate, validate, inspect)
 │   └── license-server/     ← Standalone REST API server
 ├── pkg/
 │   ├── license/            ← Tier definitions, feature flags, License struct
@@ -63,10 +63,10 @@ licensing/
 
 ```bash
 # Build the CLI
-cd licensing && go build -o ironwall-license ./cmd/ironwall-license
+cd licensing && go build -o axelus-license ./cmd/axelus-license
 
 # Generate key pair — STORE THE PRIVATE KEY SECURELY
-./ironwall-license genkey
+./axelus-license genkey
 
 # Output:
 # ╔═══ NEW IRONWALL SIGNING KEY PAIR ═══╗
@@ -84,14 +84,14 @@ export IRONWALL_KEY_ID=a1b2c3d4
 
 ```bash
 # 1-year Enterprise license
-./ironwall-license issue \
+./axelus-license issue \
   --tier ENTERPRISE \
   --licensee "Acme Corporation" \
   --email admin@acme.com \
   --days 365
 
 # Lifetime Ultimate license
-./ironwall-license issue \
+./axelus-license issue \
   --tier ULTIMATE \
   --licensee "BigCo International" \
   --email cto@bigco.com \
@@ -99,14 +99,14 @@ export IRONWALL_KEY_ID=a1b2c3d4
   --domain bigco.com
 
 # 30-day Trial
-./ironwall-license issue \
+./axelus-license issue \
   --tier TRIAL \
   --licensee "Prospect Inc" \
   --email trial@prospect.com \
   --days 30
 
 # Professional + extra AI feature
-./ironwall-license issue \
+./axelus-license issue \
   --tier PROFESSIONAL \
   --licensee "StartupXYZ" \
   --email ops@startup.xyz \
@@ -114,8 +114,8 @@ export IRONWALL_KEY_ID=a1b2c3d4
   --extra-features ai_threat_hunting
 
 # Hardware-bound license
-HWID=$(./ironwall-license hardware-id)
-./ironwall-license issue \
+HWID=$(./axelus-license hardware-id)
+./axelus-license issue \
   --tier ENTERPRISE \
   --licensee "Secure Corp" \
   --email sec@corp.com \
@@ -126,20 +126,20 @@ HWID=$(./ironwall-license hardware-id)
 ### 3. Validate a license
 
 ```bash
-./ironwall-license validate ironwall-ENT-XXXX-XXXX-XXXX-XXXX.lic
+./axelus-license validate axelus-ENT-XXXX-XXXX-XXXX-XXXX.lic
 
 # Check specific feature
-./ironwall-license validate ironwall-ENT-XXXX.lic --feature geoip_blocking
+./axelus-license validate axelus-ENT-XXXX.lic --feature geoip_blocking
 
 # Inspect all details
-./ironwall-license inspect ironwall-ENT-XXXX.lic
+./axelus-license inspect axelus-ENT-XXXX.lic
 ```
 
 ### 4. Explore tiers and features
 
 ```bash
-./ironwall-license tiers
-./ironwall-license features --tier ULTIMATE
+./axelus-license tiers
+./axelus-license features --tier ULTIMATE
 ```
 
 ---
@@ -225,7 +225,7 @@ Content-Type: application/json
 ```http
 GET /api/v1/licensing/admin/licenses/{id}/download
 X-Admin-Key: your-strong-admin-key
-→ Downloads ironwall-ENT-XXXX-XXXX-XXXX-XXXX.lic
+→ Downloads axelus-ENT-XXXX-XXXX-XXXX-XXXX.lic
 ```
 
 #### Bulk issue (admin)
@@ -272,7 +272,7 @@ Response:
 - **License format**: JSON payload → SHA256 hash → ED25519 signature → base64 → PEM
 - **Offline validation**: any node with the public key can validate without contacting the server
 - **Tamper-proof**: modifying any field invalidates the signature
-- **Key format**: `IW-{TIER}-{4x4 alphanum segments}` (e.g. `IW-ENT-A3F2-B9K1-M7X4-Z2P8`)
+- **Key format**: `IW-{TIER}-{4x4 alphanum segments}` (e.g. `AX-ENT-A3F2-B9K1-M7X4-Z2P8`)
 
 ## Security Recommendations
 

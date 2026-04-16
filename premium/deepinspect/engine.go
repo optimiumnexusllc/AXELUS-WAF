@@ -1,4 +1,4 @@
-// IronWall — Deep Packet Inspection Engine
+// AXELUS — Deep Packet Inspection Engine
 // Palantir-grade multi-layer payload analysis beyond standard WAF rules.
 // Detects: polyglot attacks, encoding evasions, zero-day patterns,
 // deserialization payloads, SSRF chains, and business logic abuse.

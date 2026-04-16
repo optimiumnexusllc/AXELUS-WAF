@@ -1,4 +1,4 @@
-// IronWall — Comprehensive Unit Test Suite
+// AXELUS — Comprehensive Unit Test Suite
 // Tests for: licensing tiers, keygen, validator, GeoIP engine
 package tests
 
@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/keygen"
-	lic "github.com/optimiumnexusllc/ironwall/licensing/pkg/license"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/validator"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/keygen"
+	lic "github.com/optimiumnexusllc/axelus/licensing/pkg/license"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/validator"
 )
 
 // ═══════════════════════════════════════════════════════════
@@ -87,7 +87,7 @@ func TestIssueLicense_Enterprise(t *testing.T) {
 	if l.IsLifetime                   { t.Error("365-day license should not be lifetime") }
 	if l.Signature == ""              { t.Error("signature must not be empty") }
 	if l.Key == ""                    { t.Error("key must not be empty") }
-	if !strings.HasPrefix(l.Key,"IW-ENT-") { t.Errorf("Enterprise key should start with IW-ENT-, got %s", l.Key) }
+	if !strings.HasPrefix(l.Key,"AX-ENT-") { t.Errorf("Enterprise key should start with AX-ENT-, got %s", l.Key) }
 	if !strings.HasPrefix(lf,"-----BEGIN IRONWALL LICENSE-----") { t.Error("license file bad format") }
 	if l.ID == ""                     { t.Error("ID must not be empty") }
 	if _, err := uuid.Parse(l.ID); err != nil { t.Errorf("ID is not a valid UUID: %v", err) }
@@ -104,7 +104,7 @@ func TestIssueLicense_Lifetime(t *testing.T) {
 	if !l.IsLifetime  { t.Error("ValidForDays=0 should produce lifetime license") }
 	if l.IsExpired()  { t.Error("lifetime license should not be expired") }
 	if l.DaysRemaining() != -1 { t.Errorf("lifetime DaysRemaining should be -1, got %d", l.DaysRemaining()) }
-	if !strings.HasPrefix(l.Key,"IW-ULT-") { t.Errorf("Ultimate key should start IW-ULT-, got %s", l.Key) }
+	if !strings.HasPrefix(l.Key,"AX-ULT-") { t.Errorf("Ultimate key should start AX-ULT-, got %s", l.Key) }
 }
 
 func TestIssueLicense_AllTiers(t *testing.T) {
@@ -113,12 +113,12 @@ func TestIssueLicense_AllTiers(t *testing.T) {
 		tier   lic.Tier
 		prefix string
 	}{
-		{lic.TierCommunity,    "IW-COM-"},
-		{lic.TierProfessional, "IW-PRO-"},
-		{lic.TierEnterprise,   "IW-ENT-"},
-		{lic.TierUltimate,     "IW-ULT-"},
-		{lic.TierTrial,        "IW-TRL-"},
-		{lic.TierDeveloper,    "IW-DEV-"},
+		{lic.TierCommunity,    "AX-COM-"},
+		{lic.TierProfessional, "AX-PRO-"},
+		{lic.TierEnterprise,   "AX-ENT-"},
+		{lic.TierUltimate,     "AX-ULT-"},
+		{lic.TierTrial,        "AX-TRL-"},
+		{lic.TierDeveloper,    "AX-DEV-"},
 	}
 	for _, tt := range tiers {
 		t.Run(string(tt.tier), func(t *testing.T) {
@@ -403,10 +403,10 @@ func TestLimits_CustomOverride(t *testing.T) {
 
 func TestKeyFormat_Valid(t *testing.T) {
 	validKeys := []string{
-		"IW-ENT-A3F2-B9K1-M7X4-Z2P8",
-		"IW-ULT-XXXX-YYYY-ZZZZ-AAAA",
-		"IW-COM-1234-5678-ABCD-EFGH",
-		"IW-PRO-AAAA-BBBB-CCCC-DDDD",
+		"AX-ENT-A3F2-B9K1-M7X4-Z2P8",
+		"AX-ULT-XXXX-YYYY-ZZZZ-AAAA",
+		"AX-COM-1234-5678-ABCD-EFGH",
+		"AX-PRO-AAAA-BBBB-CCCC-DDDD",
 	}
 	for _, k := range validKeys {
 		if !validator.ValidateKeyFormat(k) { t.Errorf("key %q should be valid", k) }
@@ -416,11 +416,11 @@ func TestKeyFormat_Valid(t *testing.T) {
 func TestKeyFormat_Invalid(t *testing.T) {
 	invalidKeys := []string{
 		"",
-		"IW-ENT-A3F2-B9K1-M7X4",        // too few segments
-		"IW-ENT-A3F2-B9K1-M7X4-Z2P8-XX", // too many segments
-		"IW-XXX-A3F2-B9K1-M7X4-Z2P8",   // invalid tier
+		"AX-ENT-A3F2-B9K1-M7X4",        // too few segments
+		"AX-ENT-A3F2-B9K1-M7X4-Z2P8-XX", // too many segments
+		"AX-XXX-A3F2-B9K1-M7X4-Z2P8",   // invalid tier
 		"XX-ENT-A3F2-B9K1-M7X4-Z2P8",   // wrong prefix
-		"IW-ENT-A3F-B9K1-M7X4-Z2P8",    // short segment
+		"AX-ENT-A3F-B9K1-M7X4-Z2P8",    // short segment
 	}
 	for _, k := range invalidKeys {
 		if validator.ValidateKeyFormat(k) { t.Errorf("key %q should be invalid", k) }

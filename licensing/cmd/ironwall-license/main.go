@@ -1,5 +1,5 @@
-// IronWall License CLI
-// Usage: ironwall-license [command] [flags]
+// AXELUS License CLI
+// Usage: axelus-license [command] [flags]
 package main
 
 import (
@@ -13,9 +13,9 @@ import (
 	"time"
 
 	"github.com/spf13/cobra"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/keygen"
-	lic "github.com/optimiumnexusllc/ironwall/licensing/pkg/license"
-	"github.com/optimiumnexusllc/ironwall/licensing/pkg/validator"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/keygen"
+	lic "github.com/optimiumnexusllc/axelus/licensing/pkg/license"
+	"github.com/optimiumnexusllc/axelus/licensing/pkg/validator"
 )
 
 var (
@@ -26,15 +26,15 @@ var (
 
 func main() {
 	root := &cobra.Command{
-		Use:   "ironwall-license",
-		Short: "🛡️  IronWall License Manager",
+		Use:   "axelus-license",
+		Short: "🛡️  AXELUS License Manager",
 		Long: `
 ╔══════════════════════════════════════════════════════╗
-║         IronWall WAF — License Manager CLI           ║
+║         AXELUS WAF — License Manager CLI           ║
 ║         OptiumNexus LLC — Palantir-grade Security    ║
 ╚══════════════════════════════════════════════════════╝
 
-Manage IronWall license keys: generate, validate, inspect, revoke.
+Manage AXELUS license keys: generate, validate, inspect, revoke.
 `,
 	}
 
@@ -57,7 +57,7 @@ Manage IronWall license keys: generate, validate, inspect, revoke.
 	}
 }
 
-// ── ironwall-license genkey ───────────────────────────────────────────────────
+// ── axelus-license genkey ───────────────────────────────────────────────────
 
 func cmdGenKeyPair() *cobra.Command {
 	cmd := &cobra.Command{
@@ -88,7 +88,7 @@ func cmdGenKeyPair() *cobra.Command {
 				"private_key": kp.PrivateKey,
 			}
 			data, _ := json.MarshalIndent(out, "", "  ")
-			fname := fmt.Sprintf("ironwall-keypair-%s.json", kp.ID)
+			fname := fmt.Sprintf("axelus-keypair-%s.json", kp.ID)
 			os.WriteFile(fname, data, 0600)
 			fmt.Printf("\n   Saved to: %s (chmod 600)\n\n", fname)
 			return nil
@@ -97,7 +97,7 @@ func cmdGenKeyPair() *cobra.Command {
 	return cmd
 }
 
-// ── ironwall-license issue ────────────────────────────────────────────────────
+// ── axelus-license issue ────────────────────────────────────────────────────
 
 func cmdIssue() *cobra.Command {
 	var (
@@ -116,16 +116,16 @@ func cmdIssue() *cobra.Command {
 		Use:   "issue",
 		Short: "Issue a new license key",
 		Example: `  # 1-year Enterprise license
-  ironwall-license issue --tier ENTERPRISE --licensee "Acme Corp" --email admin@acme.com --days 365
+  axelus-license issue --tier ENTERPRISE --licensee "Acme Corp" --email admin@acme.com --days 365
 
   # Lifetime Ultimate license bound to a domain
-  ironwall-license issue --tier ULTIMATE --licensee "BigCo" --email cto@bigco.com --lifetime --domain bigco.com
+  axelus-license issue --tier ULTIMATE --licensee "BigCo" --email cto@bigco.com --lifetime --domain bigco.com
 
   # 30-day Trial
-  ironwall-license issue --tier TRIAL --licensee "Prospect Inc" --email test@prospect.com --days 30
+  axelus-license issue --tier TRIAL --licensee "Prospect Inc" --email test@prospect.com --days 30
 
   # Professional with extra AI feature
-  ironwall-license issue --tier PROFESSIONAL --licensee "StartupXYZ" --email ops@startup.xyz --days 365 \
+  axelus-license issue --tier PROFESSIONAL --licensee "StartupXYZ" --email ops@startup.xyz --days 365 \
     --extra-features ai_threat_hunting`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			kp, err := loadKeyPair()
@@ -187,7 +187,7 @@ func cmdIssue() *cobra.Command {
 
 			// Save license file
 			if outputFile == "" {
-				outputFile = fmt.Sprintf("ironwall-%s-%s.lic", strings.ToLower(string(t)), license.Key)
+				outputFile = fmt.Sprintf("axelus-%s-%s.lic", strings.ToLower(string(t)), license.Key)
 			}
 			if err := os.WriteFile(outputFile, []byte(licFile), 0644); err != nil {
 				return fmt.Errorf("failed to write license file: %w", err)
@@ -212,7 +212,7 @@ func cmdIssue() *cobra.Command {
 	return cmd
 }
 
-// ── ironwall-license validate ─────────────────────────────────────────────────
+// ── axelus-license validate ─────────────────────────────────────────────────
 
 func cmdValidate() *cobra.Command {
 	var feature string
@@ -272,7 +272,7 @@ func cmdValidate() *cobra.Command {
 	return cmd
 }
 
-// ── ironwall-license inspect ──────────────────────────────────────────────────
+// ── axelus-license inspect ──────────────────────────────────────────────────
 
 func cmdInspect() *cobra.Command {
 	return &cobra.Command{
@@ -286,7 +286,7 @@ func cmdInspect() *cobra.Command {
 				return err
 			}
 
-			fmt.Printf("\n🛡️  IronWall License Inspection\n")
+			fmt.Printf("\n🛡️  AXELUS License Inspection\n")
 			fmt.Printf("═══════════════════════════════════════════════════\n")
 			fmt.Printf("  ID:         %s\n", l.ID)
 			fmt.Printf("  Key:        %s\n", l.Key)
@@ -336,7 +336,7 @@ func cmdInspect() *cobra.Command {
 	}
 }
 
-// ── ironwall-license hardware-id ───────────────────────────────────────────────
+// ── axelus-license hardware-id ───────────────────────────────────────────────
 
 func cmdHardwareID() *cobra.Command {
 	return &cobra.Command{
@@ -346,19 +346,19 @@ func cmdHardwareID() *cobra.Command {
 			id := validator.GetHardwareID()
 			fmt.Printf("\n🖥️  Hardware ID: %s\n\n", id)
 			fmt.Printf("Use this value when issuing a hardware-bound license:\n")
-			fmt.Printf("  ironwall-license issue --hardware-id %s ...\n\n", id)
+			fmt.Printf("  axelus-license issue --hardware-id %s ...\n\n", id)
 		},
 	}
 }
 
-// ── ironwall-license tiers ────────────────────────────────────────────────────
+// ── axelus-license tiers ────────────────────────────────────────────────────
 
 func cmdListTiers() *cobra.Command {
 	return &cobra.Command{
 		Use:   "tiers",
 		Short: "List all available license tiers and their limits",
 		Run: func(cmd *cobra.Command, args []string) {
-			fmt.Printf("\n🛡️  IronWall License Tiers\n\n")
+			fmt.Printf("\n🛡️  AXELUS License Tiers\n\n")
 			tiers := []lic.Tier{
 				lic.TierCommunity, lic.TierProfessional,
 				lic.TierEnterprise, lic.TierUltimate,
@@ -377,7 +377,7 @@ func cmdListTiers() *cobra.Command {
 	}
 }
 
-// ── ironwall-license features ─────────────────────────────────────────────────
+// ── axelus-license features ─────────────────────────────────────────────────
 
 func cmdListFeatures() *cobra.Command {
 	var tier string
@@ -413,7 +413,7 @@ func fmtLimit(v int) string {
 
 func loadKeyPair() (*keygen.KeyPair, error) {
 	if privateKeyHex == "" {
-		return nil, fmt.Errorf("private key required: set --private-key or IRONWALL_PRIVATE_KEY env variable\nGenerate a key pair first: ironwall-license genkey")
+		return nil, fmt.Errorf("private key required: set --private-key or IRONWALL_PRIVATE_KEY env variable\nGenerate a key pair first: axelus-license genkey")
 	}
 	privBytes, err := hex.DecodeString(privateKeyHex)
 	if err != nil || len(privBytes) != 64 {

@@ -19,8 +19,8 @@ import socket
 
 texts = {
     'hello1': {
-        'en': 'IronWall is a self-hosted WAF(Web Application Firewall) to protect your web apps from attacks and exploits.',
-        'zh': 'IronWall，中文名 "雷池"，是一款简单好用, 效果突出的 Web 应用防火墙(WAF)，可以保护 Web 服务不受黑客攻击。'
+        'en': 'AXELUS is a self-hosted WAF(Web Application Firewall) to protect your web apps from attacks and exploits.',
+        'zh': 'AXELUS，中文名 "雷池"，是一款简单好用, 效果突出的 Web 应用防火墙(WAF)，可以保护 Web 服务不受黑客攻击。'
     },
     'hello2': {
         'en': 'A web application firewall helps protect web apps by filtering and monitoring HTTP traffic between a web application and the Internet. It typically protects web apps from attacks such as SQL injection, XSS, code injection, os command injection, CRLF injection, ldap injection, xpath injection, RCE, XXE, SSRF, path traversal, backdoor, bruteforce, http-flood, bot abused, among others.',
@@ -30,7 +30,7 @@ texts = {
         'en': '\n'
               'https://discord.gg/SVnZGzHFvn\n'
               '\n'
-              'Join discord group for more informations of IronWall by above address',
+              'Join discord group for more informations of AXELUS by above address',
         'zh': '\n'
               '▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄\n'
               '█ ▄▄▄▄▄ █▀ █▀▀██▀▄▀▀▄▀▄▀▄██ ▄▄▄▄▄ █\n'
@@ -514,7 +514,7 @@ def init_global_config():
     if args.en:
         LANG = 'en'
         DOMAIN = 'waf.optimiumnexus.com'
-        PRODUCT = 'IronWall WAF'
+        PRODUCT = 'AXELUS WAF'
     else:
         PRODUCT = '雷池 WAF'
 
@@ -904,7 +904,7 @@ def docker_exec(container, command):
 
 def image_clean():
     log.info(text('image-clean'))
-    proc = exec_command('docker image prune -f --filter="label=maintainer=IronWall-CE"', shell=True)
+    proc = exec_command('docker image prune -f --filter="label=maintainer=AXELUS-CE"', shell=True)
     if proc[0] != 0:
         log.warning("remove docker image failed: "+proc[2])
 
@@ -966,7 +966,7 @@ pull_failed_prefix = []
 def image_source():
     source = {
         'https://registry-1.docker.io': 'optimiumnexus',
-        "https://swr.cn-east-3.myhuaweicloud.com": 'swr.cn-east-3.myhuaweicloud.com/optimiumnexus-ironwall'
+        "https://swr.cn-east-3.myhuaweicloud.com": 'swr.cn-east-3.myhuaweicloud.com/optimiumnexus-axelus'
     }
 
     min_delay = -1
@@ -1091,23 +1091,23 @@ def show_address(mgt_port):
 
 def init_mgt():
     while True:
-        p = exec_command('docker', 'inspect','--format=\'{{.State.Health.Status}}\'', 'ironwall-mgt')
+        p = exec_command('docker', 'inspect','--format=\'{{.State.Health.Status}}\'', 'axelus-mgt')
         if p[0] == 0 and p[1].strip().replace("'",'') == 'healthy':
             break
         elif p[0] != 0:
-            log.debug("get ironwall-mgt status error: "+str(p[2]))
+            log.debug("get axelus-mgt status error: "+str(p[2]))
         log.info(text('wait-mgt-health'))
         time.sleep(5)
 
     log.info(text('reset-admin'))
-    proc = exec_command('docker exec ironwall-mgt /app/mgt-cli reset-admin --once',shell=True)
+    proc = exec_command('docker exec axelus-mgt /app/mgt-cli reset-admin --once',shell=True)
     if proc[0] != 0:
         log.warning(proc[2])
     elif proc[1].strip() != '':
         log.info('\n'+proc[1].strip())
 
-def check_install_path(ironwall_path):
-    if not ironwall_path.startswith('/'):
+def check_install_path(axelus_path):
+    if not axelus_path.startswith('/'):
         return False
     proc = exec_command('which', 'docker')
     if proc[0] != 0:
@@ -1116,7 +1116,7 @@ def check_install_path(ironwall_path):
     if not proc[1].startswith('/snap'):
         return True
     home_path = os.path.expanduser('~')
-    if not ironwall_path.startswith(home_path):
+    if not axelus_path.startswith(home_path):
         log.warning(text('snap-docker-should-use-home-path', home_path))
         return False
     return True
@@ -1131,30 +1131,30 @@ def install():
         return
     log.info(text('precheck-passed'))
 
-    default_path = '/data/ironwall'
+    default_path = '/data/axelus'
     if not SELF:
         default_path = '/data/waf'
 
     while True:
-        ironwall_path = ui_read(text('input-target-path', PRODUCT), default_path)
-        if not check_install_path(ironwall_path):
-            log.warning(text('invalid-path', ironwall_path))
+        axelus_path = ui_read(text('input-target-path', PRODUCT), default_path)
+        if not check_install_path(axelus_path):
+            log.warning(text('invalid-path', axelus_path))
             continue
-        if os.path.exists(ironwall_path):
-            log.warning(text('path-exists', ironwall_path))
+        if os.path.exists(axelus_path):
+            log.warning(text('path-exists', axelus_path))
             continue
-        if free_space(ironwall_path) < 5 * 1024 * 1024 * 1024:
-            log.warning(text('insufficient-disk-capacity', (ironwall_path, PRODUCT)))
+        if free_space(axelus_path) < 5 * 1024 * 1024 * 1024:
+            log.warning(text('insufficient-disk-capacity', (axelus_path, PRODUCT)))
             continue
         break
 
     try:
-        os.makedirs(ironwall_path)
+        os.makedirs(axelus_path)
     except Exception as e:
-        log.error(text('fail-to-create-dir', ironwall_path) + ' ' + str(e))
+        log.error(text('fail-to-create-dir', axelus_path) + ' ' + str(e))
         return
 
-    mgt_path = os.path.join(ironwall_path,'resources','mgt')
+    mgt_path = os.path.join(axelus_path,'resources','mgt')
     try:
         os.makedirs(mgt_path, exist_ok=True)
     except Exception as e:
@@ -1163,15 +1163,15 @@ def install():
     if GLOBAL_ARGS.patch != '':
         shutil.copyfile(GLOBAL_ARGS.patch, os.path.join(mgt_path, 'product.data'))
 
-    log.info(text('remain-disk-capacity', (ironwall_path, humen_size(free_space(ironwall_path)))))
+    log.info(text('remain-disk-capacity', (axelus_path, humen_size(free_space(axelus_path)))))
 
     log.info(text('download-compose'))
-    if not save_file_from_url('https://'+DOMAIN+'/release/latest/compose.yaml',os.path.join(ironwall_path, 'docker-compose.yaml')):
+    if not save_file_from_url('https://'+DOMAIN+'/release/latest/compose.yaml',os.path.join(axelus_path, 'docker-compose.yaml')):
         log.error(text('fail-to-download-compose'))
         return
-    rename_file(os.path.join(ironwall_path, 'compose.yaml'),os.path.join(ironwall_path, 'compose.yaml.bak'))
+    rename_file(os.path.join(axelus_path, 'compose.yaml'),os.path.join(axelus_path, 'compose.yaml.bak'))
 
-    mgt_port = generate_config_and_run(ironwall_path)
+    mgt_port = generate_config_and_run(axelus_path)
     if mgt_port is None:
         return
 
@@ -1179,18 +1179,18 @@ def install():
     finish(mgt_port)
 
 def get_installed_dir():
-    ironwall_path = ''
-    ironwall_path_proc = exec_command('docker','inspect','--format','\'{{index .Config.Labels "com.docker.compose.project.working_dir"}}\'', 'ironwall-mgt')
-    if ironwall_path_proc[0] == 0:
-        ironwall_path = ironwall_path_proc[1].strip().replace("'",'')
+    axelus_path = ''
+    axelus_path_proc = exec_command('docker','inspect','--format','\'{{index .Config.Labels "com.docker.compose.project.working_dir"}}\'', 'axelus-mgt')
+    if axelus_path_proc[0] == 0:
+        axelus_path = axelus_path_proc[1].strip().replace("'",'')
     else:
-        log.debug("get installed dir error: "+ ironwall_path_proc[2])
-    log.debug("find ironwall installed path: " + ironwall_path)
-    if ironwall_path == '' or not os.path.exists(ironwall_path):
+        log.debug("get installed dir error: "+ axelus_path_proc[2])
+    log.debug("find axelus installed path: " + axelus_path)
+    if axelus_path == '' or not os.path.exists(axelus_path):
         log.warning(text('fail-to-get-installed-dir'))
         return ui_read(text('input-target-path', PRODUCT),None)
 
-    return ironwall_path
+    return axelus_path
 
 def save_file_from_url(url, path):
     log.debug('saving '+url+' to '+path)
@@ -1209,22 +1209,22 @@ def remove_file(src):
     if os.path.exists(src):
         os.remove(src)
 
-def generate_config_and_run(ironwall_path):
-    env_file = os.path.join(ironwall_path, '.env')
-    env_bak_file = os.path.join(ironwall_path, '.env.bak')
+def generate_config_and_run(axelus_path):
+    env_file = os.path.join(axelus_path, '.env')
+    env_bak_file = os.path.join(axelus_path, '.env.bak')
     if os.path.exists(env_file):
         shutil.copyfile(env_file, env_bak_file)
 
     try:
         while True:
-            config = generate_config(ironwall_path)
-            if docker_pull(ironwall_path):
+            config = generate_config(axelus_path)
+            if docker_pull(axelus_path):
                 break
 
             pull_failed_prefix.append(config['IMAGE_PREFIX'])
             log.info(text('try-another-image-source'))
 
-        if not docker_up(ironwall_path):
+        if not docker_up(axelus_path):
             log.error(text('fail-to-up'))
             rename_file(env_bak_file, env_file)
             return None
@@ -1241,19 +1241,19 @@ def generate_config_and_run(ironwall_path):
     return config['MGT_PORT']
 
 def upgrade():
-    ironwall_path = get_installed_dir()
+    axelus_path = get_installed_dir()
 
     if not precheck_docker_compose() or not precheck_dns_scope():
         log.error(text('precheck-failed', PRODUCT))
         return
 
     log.info(text('download-compose'))
-    rename_file(os.path.join(ironwall_path, 'compose.yaml'), os.path.join(ironwall_path, 'compose.yaml.bak'))
-    if not save_file_from_url('https://'+DOMAIN+'/release/latest/compose.yaml', os.path.join(ironwall_path, 'docker-compose.yaml')):
+    rename_file(os.path.join(axelus_path, 'compose.yaml'), os.path.join(axelus_path, 'compose.yaml.bak'))
+    if not save_file_from_url('https://'+DOMAIN+'/release/latest/compose.yaml', os.path.join(axelus_path, 'docker-compose.yaml')):
         log.error(text('fail-to-download-compose'))
         return
 
-    mgt_port = generate_config_and_run(ironwall_path)
+    mgt_port = generate_config_and_run(axelus_path)
     if mgt_port is None:
         return
 
@@ -1268,8 +1268,8 @@ def finish(mgt_port):
     show_address(mgt_port)
 
 def reset_tengine():
-    ironwall_path = get_installed_dir()
-    resources_path = os.path.join(ironwall_path, 'resources')
+    axelus_path = get_installed_dir()
+    resources_path = os.path.join(axelus_path, 'resources')
     nginx_path = os.path.join(resources_path,'nginx')
     if not os.path.exists(nginx_path):
         log.error(text('fail-to-find-nginx'))
@@ -1282,8 +1282,8 @@ def reset_tengine():
         log.error(text('fail-to-backup-nginx')+': '+str(e))
         return
 
-    if docker_restart('ironwall-tengine'):
-        docker_exec('ironwall-mgt', 'gentenginewebsite')
+    if docker_restart('axelus-tengine'):
+        docker_exec('axelus-mgt', 'gentenginewebsite')
 
     if os.path.exists(os.path.join(backup_path, 'static')):
         try:
@@ -1306,9 +1306,9 @@ def docker_restart_all(cwd):
     return True
 
 def reset_postgres():
-    ironwall_path = get_installed_dir()
+    axelus_path = get_installed_dir()
 
-    env_file = os.path.join(ironwall_path, '.env')
+    env_file = os.path.join(axelus_path, '.env')
     if not os.path.exists(env_file):
         log.error(text('fail-to-find-env'))
         return
@@ -1318,7 +1318,7 @@ def reset_postgres():
     config['POSTGRES_PASSWORD'] = ''.join([random.choice(string.ascii_letters + string.digits) for i in range(20)])
     write_config(env_file, config)
 
-    if not docker_exec('ironwall-pg','psql -U ironwall -c "ALTER USER \\"ironwall\\" WITH PASSWORD \''+config['POSTGRES_PASSWORD']+'\';"'):
+    if not docker_exec('axelus-pg','psql -U axelus -c "ALTER USER \\"axelus\\" WITH PASSWORD \''+config['POSTGRES_PASSWORD']+'\';"'):
         log.error(text('fail-to-reset-postgres-password'))
         return
 
@@ -1332,7 +1332,7 @@ def reset_postgres():
             log.error(text('precheck-failed', PRODUCT))
             return
 
-        if not docker_restart_all(ironwall_path):
+        if not docker_restart_all(axelus_path):
             return
 
     log.info(text('reset-postgres-password-finish'))
@@ -1349,13 +1349,13 @@ def repair():
         reset_postgres()
 
 def restart():
-    ironwall_path = get_installed_dir()
+    axelus_path = get_installed_dir()
 
     if not precheck_docker_compose():
         log.error(text('precheck-failed', PRODUCT))
         return
 
-    if not docker_restart_all(ironwall_path):
+    if not docker_restart_all(axelus_path):
         return
 
     log.info(text('restart-docker-finish', PRODUCT))
@@ -1364,9 +1364,9 @@ def backup():
     pass
 
 def uninstall():
-    ironwall_path = get_installed_dir()
+    axelus_path = get_installed_dir()
 
-    action = ui_choice(text('if-remove-waf', (PRODUCT, ironwall_path)),[
+    action = ui_choice(text('if-remove-waf', (PRODUCT, axelus_path)),[
         ('y', text('yes')),
         ('n', text('no')),
     ])
@@ -1378,14 +1378,14 @@ def uninstall():
         log.error(text('precheck-failed', PRODUCT))
         return
 
-    if not docker_down(ironwall_path):
+    if not docker_down(axelus_path):
         log.error(text('fail-to-docker-down'))
         return
 
     image_clean()
 
     try:
-        shutil.rmtree(ironwall_path)
+        shutil.rmtree(axelus_path)
     except Exception as e:
         log.debug("remove dir failed: "+str(e))
         log.error(text('fail-to-remove-dir', PRODUCT))
@@ -1454,7 +1454,7 @@ def compare_version(old_version, new_version):
 
 
 def get_version_from_mgt():
-    proc = exec_command('docker exec ironwall-mgt /app/mgt version',shell=True)
+    proc = exec_command('docker exec axelus-mgt /app/mgt version',shell=True)
     if proc[0] != 0:
         raise Exception('stderr: ' + proc[2])
     for line in proc[1].split('\n'):

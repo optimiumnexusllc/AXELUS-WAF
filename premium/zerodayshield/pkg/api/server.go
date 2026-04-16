@@ -1,4 +1,4 @@
-// IronWall-WAF — Zero-Day Shield: Gin Middleware + REST API
+// AXELUS-WAF — Zero-Day Shield: Gin Middleware + REST API
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 package api
 
@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/optimiumnexusllc/ironwall/premium/zerodayshield/pkg/scorer"
+	"github.com/optimiumnexusllc/axelus/premium/zerodayshield/pkg/scorer"
 )
 
 type Shield struct {
@@ -59,10 +59,10 @@ func (s *Shield) Middleware() gin.HandlerFunc {
 		result := s.scorer.Score(req)
 
 		// Set informational headers
-		c.Header("X-IronWall-ZD-Score", strconv.FormatFloat(result.Score, 'f', 3, 64))
-		c.Header("X-IronWall-ZD-Level", string(result.Level))
+		c.Header("X-AXELUS-ZD-Score", strconv.FormatFloat(result.Score, 'f', 3, 64))
+		c.Header("X-AXELUS-ZD-Level", string(result.Level))
 		if result.IsZeroDay {
-			c.Header("X-IronWall-ZeroDay", "1")
+			c.Header("X-AXELUS-ZeroDay", "1")
 		}
 
 		// Blocking decisions

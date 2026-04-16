@@ -1,4 +1,4 @@
-// IronWall GeoIP Module — Country/Region/ASN-based access control
+// AXELUS GeoIP Module — Country/Region/ASN-based access control
 // Uses MaxMind GeoIP2 databases for offline lookup + Redis-backed rule cache.
 package geoip
 
@@ -155,7 +155,7 @@ func (e *Engine) Lookup(ipStr string) (*GeoLookup, error) {
 
 	// Cache check
 	if e.rdb != nil {
-		key := "ironwall:geoip:" + ipStr
+		key := "axelus:geoip:" + ipStr
 		cached, err := e.rdb.Get(e.ctx, key).Result()
 		if err == nil {
 			var lookup GeoLookup
@@ -176,7 +176,7 @@ func (e *Engine) Lookup(ipStr string) (*GeoLookup, error) {
 	// Cache result
 	if e.rdb != nil {
 		if data, err := json.Marshal(lookup); err == nil {
-			e.rdb.Set(e.ctx, "ironwall:geoip:"+ipStr, data, 6*time.Hour)
+			e.rdb.Set(e.ctx, "axelus:geoip:"+ipStr, data, 6*time.Hour)
 		}
 	}
 
@@ -292,7 +292,7 @@ func (e *Engine) Evaluate(ipStr string) (*Decision, error) {
 
 			// Increment rule hit counter in Redis
 			if e.rdb != nil {
-				e.rdb.Incr(e.ctx, fmt.Sprintf("ironwall:geoip:hits:%s", r.ID))
+				e.rdb.Incr(e.ctx, fmt.Sprintf("axelus:geoip:hits:%s", r.ID))
 			}
 
 			return &Decision{
@@ -374,7 +374,7 @@ func (e *Engine) AddRule(r GeoRule) {
 	// Persist to Redis
 	if e.rdb != nil {
 		data, _ := json.Marshal(r)
-		e.rdb.HSet(e.ctx, "ironwall:geoip:rules", r.ID, data)
+		e.rdb.HSet(e.ctx, "axelus:geoip:rules", r.ID, data)
 	}
 }
 
@@ -386,7 +386,7 @@ func (e *Engine) RemoveRule(id string) bool {
 		if r.ID == id {
 			e.rules = append(e.rules[:i], e.rules[i+1:]...)
 			if e.rdb != nil {
-				e.rdb.HDel(e.ctx, "ironwall:geoip:rules", id)
+				e.rdb.HDel(e.ctx, "axelus:geoip:rules", id)
 			}
 			return true
 		}

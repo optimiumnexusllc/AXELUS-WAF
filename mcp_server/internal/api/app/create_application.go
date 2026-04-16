@@ -3,8 +3,8 @@ package app
 import (
 	"context"
 
-	"github.com/optimiumnexus/IronWall/mcp_server/internal/api"
-	"github.com/optimiumnexus/IronWall/mcp_server/pkg/errors"
+	"github.com/optimiumnexus/AXELUS/mcp_server/internal/api"
+	"github.com/optimiumnexus/AXELUS/mcp_server/pkg/errors"
 )
 
 type CreateAppRequest struct {

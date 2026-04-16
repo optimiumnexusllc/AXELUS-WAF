@@ -1,5 +1,5 @@
-// IronWall - Multi-Channel Alerting Service
-// Monitors the IronWall management API and sends real-time alerts
+// AXELUS - Multi-Channel Alerting Service
+// Monitors the AXELUS management API and sends real-time alerts
 // to Slack, Microsoft Teams, PagerDuty, and email.
 
 package main
@@ -98,7 +98,7 @@ func sendSlack(cfg Config, alert Alert) error {
 		"attachments": []map[string]interface{}{
 			{
 				"color":      map[string]string{"critical": "danger", "high": "warning", "medium": "#FFAA00", "low": "good"}[alert.Severity],
-				"title":      fmt.Sprintf("%s IronWall Alert: %s", emoji, strings.ToUpper(alert.Severity)),
+				"title":      fmt.Sprintf("%s AXELUS Alert: %s", emoji, strings.ToUpper(alert.Severity)),
 				"title_link": cfg.MgtAPI + "/dashboard",
 				"fields": []map[string]string{
 					{"title": "Attack Type", "value": alert.Type, "short": "true"},
@@ -108,7 +108,7 @@ func sendSlack(cfg Config, alert Alert) error {
 					{"title": "Count", "value": fmt.Sprintf("%d requests", alert.Count), "short": "true"},
 					{"title": "Time", "value": alert.Timestamp.UTC().Format(time.RFC3339), "short": "true"},
 				},
-				"footer": "IronWall WAF by OptiumNexus",
+				"footer": "AXELUS WAF by OptiumNexus",
 				"ts":     alert.Timestamp.Unix(),
 			},
 		},
@@ -130,9 +130,9 @@ func sendTeams(cfg Config, alert Alert) error {
 	payload := map[string]interface{}{
 		"@type":      "MessageCard",
 		"@context":   "https://schema.org/extensions",
-		"summary":    fmt.Sprintf("IronWall Alert: %s", alert.Severity),
+		"summary":    fmt.Sprintf("AXELUS Alert: %s", alert.Severity),
 		"themeColor": map[string]string{"critical": "FF0000", "high": "FFA500", "medium": "FFFF00", "low": "00FF00"}[alert.Severity],
-		"title":      fmt.Sprintf("IronWall Security Alert — %s", strings.ToUpper(alert.Severity)),
+		"title":      fmt.Sprintf("AXELUS Security Alert — %s", strings.ToUpper(alert.Severity)),
 		"sections": []map[string]interface{}{
 			{
 				"facts": []map[string]string{
@@ -165,7 +165,7 @@ func sendPagerDuty(cfg Config, alert Alert) error {
 		"event_action": "trigger",
 		"dedup_key":    alert.ID,
 		"payload": map[string]interface{}{
-			"summary":   fmt.Sprintf("IronWall %s: %s from %s", strings.ToUpper(alert.Severity), alert.Type, alert.SourceIP),
+			"summary":   fmt.Sprintf("AXELUS %s: %s from %s", strings.ToUpper(alert.Severity), alert.Type, alert.SourceIP),
 			"source":    alert.TargetHost,
 			"severity":  alert.Severity,
 			"timestamp": alert.Timestamp.UTC().Format(time.RFC3339),
@@ -177,7 +177,7 @@ func sendPagerDuty(cfg Config, alert Alert) error {
 			},
 		},
 		"links": []map[string]string{
-			{"href": cfg.MgtAPI + "/dashboard", "text": "Open IronWall Dashboard"},
+			{"href": cfg.MgtAPI + "/dashboard", "text": "Open AXELUS Dashboard"},
 		},
 	}
 	body, _ := json.Marshal(payload)
@@ -194,9 +194,9 @@ func sendEmail(cfg Config, alert Alert) error {
 	if cfg.SMTPHost == "" || cfg.SMTPTo == "" {
 		return nil
 	}
-	subject := fmt.Sprintf("[IronWall] %s Security Alert: %s", strings.ToUpper(alert.Severity), alert.Type)
+	subject := fmt.Sprintf("[AXELUS] %s Security Alert: %s", strings.ToUpper(alert.Severity), alert.Type)
 	body := fmt.Sprintf(`<html><body>
-<h2 style="color:%s;">%s IronWall Security Alert</h2>
+<h2 style="color:%s;">%s AXELUS Security Alert</h2>
 <table border="1" cellpadding="8">
 <tr><td><b>Severity</b></td><td>%s</td></tr>
 <tr><td><b>Attack Type</b></td><td>%s</td></tr>
@@ -206,7 +206,7 @@ func sendEmail(cfg Config, alert Alert) error {
 <tr><td><b>Request Count</b></td><td>%d</td></tr>
 <tr><td><b>Timestamp</b></td><td>%s</td></tr>
 </table>
-<p><a href="%s/dashboard">Open IronWall Dashboard</a></p>
+<p><a href="%s/dashboard">Open AXELUS Dashboard</a></p>
 </body></html>`,
 		map[string]string{"critical": "#cc0000", "high": "#ff6600", "medium": "#ffaa00", "low": "#009900"}[alert.Severity],
 		severityEmoji(alert.Severity),
@@ -255,9 +255,9 @@ func main() {
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 
-	log.Printf("[alerting] IronWall Alerting Service starting (threshold: %s)", cfg.ThresholdSeverity)
+	log.Printf("[alerting] AXELUS Alerting Service starting (threshold: %s)", cfg.ThresholdSeverity)
 
-	// Poll IronWall management API for new attack events
+	// Poll AXELUS management API for new attack events
 	ticker := time.NewTicker(15 * time.Second)
 	defer ticker.Stop()
 

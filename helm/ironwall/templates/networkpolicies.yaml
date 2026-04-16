@@ -1,9 +1,9 @@
 {{- if .Values.networkPolicies.enabled }}
-{{- $fullName := include "ironwall.fullname" . }}
+{{- $fullName := include "axelus.fullname" . }}
 {{- $ns := .Values.namespace.name }}
 
 # ═══════════════════════════════════════════════════════════════════════════
-# IronWall-WAF — Zero-Trust NetworkPolicies
+# AXELUS-WAF — Zero-Trust NetworkPolicies
 # Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 # Default posture: DENY ALL. Only explicitly listed flows are permitted.
 # ═══════════════════════════════════════════════════════════════════════════
@@ -15,7 +15,7 @@ metadata:
   name: {{ $fullName }}-default-deny-all
   namespace: {{ $ns }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   podSelector: {}
   policyTypes: ["Ingress", "Egress"]
@@ -27,7 +27,7 @@ metadata:
   name: {{ $fullName }}-tengine
   namespace: {{ $ns }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -83,7 +83,7 @@ metadata:
   name: {{ $fullName }}-management
   namespace: {{ $ns }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -96,10 +96,10 @@ spec:
               app.kubernetes.io/component: tengine
         - podSelector:
             matchLabels:
-              app.kubernetes.io/part-of: ironwall
+              app.kubernetes.io/part-of: axelus
         - namespaceSelector:
             matchLabels:
-              ironwall.io/admin: "true"
+              axelus.io/admin: "true"
       ports:
         - port: 1443
           protocol: TCP
@@ -145,7 +145,7 @@ metadata:
   name: {{ $fullName }}-detector
   namespace: {{ $ns }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -181,7 +181,7 @@ metadata:
   name: {{ $fullName }}-postgres
   namespace: {{ $ns }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -212,7 +212,7 @@ metadata:
   name: {{ $fullName }}-redis
   namespace: {{ $ns }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -222,7 +222,7 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app.kubernetes.io/part-of: ironwall
+              app.kubernetes.io/part-of: axelus
       ports:
         - port: 6379
           protocol: TCP
@@ -234,7 +234,7 @@ metadata:
   name: {{ $fullName }}-threat-intel
   namespace: {{ $ns }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -287,7 +287,7 @@ metadata:
   name: {{ $fullName }}-forensics
   namespace: {{ $ns }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -300,7 +300,7 @@ spec:
               app.kubernetes.io/component: management
         - namespaceSelector:
             matchLabels:
-              ironwall.io/admin: "true"
+              axelus.io/admin: "true"
       ports:
         - port: 8095
           protocol: TCP
@@ -344,7 +344,7 @@ metadata:
   name: {{ $fullName }}-prometheus
   namespace: {{ $ns }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -360,7 +360,7 @@ spec:
               app.kubernetes.io/name: alertmanager
         - namespaceSelector:
             matchLabels:
-              ironwall.io/admin: "true"
+              axelus.io/admin: "true"
       ports:
         - port: 9090
           protocol: TCP
@@ -368,7 +368,7 @@ spec:
     - to:
         - podSelector:
             matchLabels:
-              app.kubernetes.io/part-of: ironwall
+              app.kubernetes.io/part-of: axelus
     - to:
         - podSelector: {}
       ports:
@@ -393,7 +393,7 @@ metadata:
   name: {{ $fullName }}-license-server
   namespace: {{ $ns }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   podSelector:
     matchLabels:
@@ -403,10 +403,10 @@ spec:
     - from:
         - podSelector:
             matchLabels:
-              app.kubernetes.io/part-of: ironwall
+              app.kubernetes.io/part-of: axelus
         - namespaceSelector:
             matchLabels:
-              ironwall.io/admin: "true"
+              axelus.io/admin: "true"
       ports:
         - port: 8090
           protocol: TCP

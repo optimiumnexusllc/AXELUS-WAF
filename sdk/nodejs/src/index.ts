@@ -1,17 +1,17 @@
 /**
- * IronWall-WAF Node.js / TypeScript SDK
+ * AXELUS-WAF Node.js / TypeScript SDK
  * License validation and feature gating for Node.js applications.
  *
  * Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
  * Contact:   contact@optimiumnexus.com
  *
- * Install: npm install ironwall-sdk
+ * Install: npm install axelus-sdk
  *
  * @example
- * import { IronWallClient, Feature } from 'ironwall-sdk';
+ * import { AXELUSClient, Feature } from 'axelus-sdk';
  *
- * const client = new IronWallClient({
- *   licenseFile: '/etc/ironwall/ironwall.lic',
+ * const client = new AXELUSClient({
+ *   licenseFile: '/etc/axelus/axelus.lic',
  *   apiUrl: 'https://waf.mycompany.com:9443',
  * });
  *
@@ -148,7 +148,7 @@ export interface ValidationResult {
   validatedAt:       Date;
 }
 
-export interface IronWallClientOptions {
+export interface AXELUSClientOptions {
   licenseFile?:   string;
   licenseKey?:    string;
   apiUrl?:        string;
@@ -160,19 +160,19 @@ export interface IronWallClientOptions {
 
 // ── Errors ────────────────────────────────────────────────────────────────────
 
-export class IronWallError extends Error {
-  constructor(msg: string) { super(msg); this.name = 'IronWallError'; }
+export class AXELUSError extends Error {
+  constructor(msg: string) { super(msg); this.name = 'AXELUSError'; }
 }
 
-export class LicenseNotFoundError extends IronWallError {
+export class LicenseNotFoundError extends AXELUSError {
   constructor(msg: string) { super(msg); this.name = 'LicenseNotFoundError'; }
 }
 
-export class LicenseInvalidError extends IronWallError {
+export class LicenseInvalidError extends AXELUSError {
   constructor(msg: string) { super(msg); this.name = 'LicenseInvalidError'; }
 }
 
-export class FeatureNotAvailableError extends IronWallError {
+export class FeatureNotAvailableError extends AXELUSError {
   constructor(
     public readonly feature: Feature,
     public readonly tier: string,
@@ -187,13 +187,13 @@ export class FeatureNotAvailableError extends IronWallError {
 
 // ── Client ────────────────────────────────────────────────────────────────────
 
-export class IronWallClient {
-  private readonly opts: Required<IronWallClientOptions>;
+export class AXELUSClient {
+  private readonly opts: Required<AXELUSClientOptions>;
   private cache: ValidationResult | null = null;
   private cacheTs = 0;
   private refreshTimer?: ReturnType<typeof setInterval>;
 
-  constructor(opts: IronWallClientOptions = {}) {
+  constructor(opts: AXELUSClientOptions = {}) {
     this.opts = {
       licenseFile:          opts.licenseFile  ?? process.env.IRONWALL_LICENSE_FILE ?? '',
       licenseKey:           opts.licenseKey   ?? process.env.IRONWALL_LICENSE_KEY  ?? '',
@@ -205,7 +205,7 @@ export class IronWallClient {
     };
 
     if (!this.opts.licenseFile && !this.opts.licenseKey) {
-      throw new IronWallError(
+      throw new AXELUSError(
         'Provide licenseFile or licenseKey option (or set IRONWALL_LICENSE_FILE env var)'
       );
     }
@@ -379,7 +379,7 @@ export class IronWallClient {
    */
   createGuard(feature: Feature) {
     const self = this;
-    return class IronWallGuard {
+    return class AXELUSGuard {
       async canActivate(): Promise<boolean> {
         const r = await self.validate();
         if (!self.checkFeature(r, feature)) {
@@ -486,10 +486,10 @@ export class IronWallClient {
 
 // ── Convenience factory ───────────────────────────────────────────────────────
 
-export async function createIronWallClient(opts: IronWallClientOptions): Promise<IronWallClient> {
-  const client = new IronWallClient(opts);
+export async function createAXELUSClient(opts: AXELUSClientOptions): Promise<AXELUSClient> {
+  const client = new AXELUSClient(opts);
   await client.init();
   return client;
 }
 
-export default IronWallClient;
+export default AXELUSClient;

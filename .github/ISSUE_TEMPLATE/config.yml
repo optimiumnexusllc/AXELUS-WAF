@@ -2,10 +2,10 @@ blank_issues_enabled: false
 contact_links:
   - name: Discord
     url: https://discord.gg/wyshSVuvxC
-    about: Ask questions and discuss with other IronWall users in real time.
+    about: Ask questions and discuss with other AXELUS users in real time.
   - name: Home page 官网
     url: https://waf.optimiumnexus.com/
     about: Get feature descriptions, technical documentation and more information. 获取功能描述、技术文档和更多信息。
   - name: 绕过反馈
-    url: https://stack.optimiumnexus.com/security-challenge/ironwall/index
+    url: https://stack.optimiumnexus.com/security-challenge/axelus/index
     about: Waf 绕过可在 CT Stack 安全挑战赛提交细节

@@ -3,7 +3,7 @@ package cron
 import (
 	"github.com/robfig/cron/v3"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/log"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/pkg/log"
 )
 
 var logger = log.GetLogger("cron")

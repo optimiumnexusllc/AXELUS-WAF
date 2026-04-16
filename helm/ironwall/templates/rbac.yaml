@@ -1,13 +1,13 @@
-{{- $fullName := include "ironwall.fullname" . }}
+{{- $fullName := include "axelus.fullname" . }}
 # ── ServiceAccount ────────────────────────────────────────────────────────────
 {{- if .Values.serviceAccount.create }}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: {{ include "ironwall.serviceAccountName" . }}
+  name: {{ include "axelus.serviceAccountName" . }}
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
   {{- with .Values.serviceAccount.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
@@ -22,7 +22,7 @@ metadata:
   name: {{ $fullName }}-waf
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 rules:
   # Read own config and secrets
   - apiGroups: [""]
@@ -30,8 +30,8 @@ rules:
     verbs: ["get", "list", "watch"]
     resourceNames:
       - {{ $fullName }}-config
-      - ironwall-postgres-secret
-      - ironwall-redis-secret
+      - axelus-postgres-secret
+      - axelus-redis-secret
   # Manage own endpoints (for health checks)
   - apiGroups: [""]
     resources: ["endpoints"]
@@ -52,10 +52,10 @@ metadata:
   name: {{ $fullName }}-waf
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "ironwall.serviceAccountName" . }}
+    name: {{ include "axelus.serviceAccountName" . }}
     namespace: {{ .Values.namespace.name }}
 roleRef:
   kind: Role
@@ -68,7 +68,7 @@ kind: ClusterRole
 metadata:
   name: {{ $fullName }}-cluster-reader
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 rules:
   - apiGroups: [""]
     resources: ["nodes"]
@@ -82,10 +82,10 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ $fullName }}-cluster-reader
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
-    name: {{ include "ironwall.serviceAccountName" . }}
+    name: {{ include "axelus.serviceAccountName" . }}
     namespace: {{ .Values.namespace.name }}
 roleRef:
   kind: ClusterRole
@@ -99,7 +99,7 @@ kind: Namespace
 metadata:
   name: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
     pod-security.kubernetes.io/enforce: restricted
     pod-security.kubernetes.io/audit: restricted
     pod-security.kubernetes.io/warn: restricted

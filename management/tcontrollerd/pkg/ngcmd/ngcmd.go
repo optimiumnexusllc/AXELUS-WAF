@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"optimiumnexus.com/dev/go/errors"
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/log"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/pkg/log"
 )
 
 var logger = log.GetLogger("ngcmd")

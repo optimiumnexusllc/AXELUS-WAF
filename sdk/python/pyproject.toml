@@ -3,15 +3,15 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.backends.legacy:build"
 
 [project]
-name = "ironwall-sdk"
+name = "axelus-sdk"
 version = "1.0.0"
-description = "IronWall-WAF Python SDK — License validation and feature gating"
+description = "AXELUS-WAF Python SDK — License validation and feature gating"
 readme = "README.md"
 license = { text = "MIT" }
 authors = [
     { name = "OPTIMIUM NEXUS LLC", email = "contact@optimiumnexus.com" }
 ]
-keywords = ["waf", "firewall", "security", "license", "ironwall"]
+keywords = ["waf", "firewall", "security", "license", "axelus"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -37,12 +37,12 @@ all      = ["django>=3.2", "fastapi>=0.100", "flask>=2.0", "requests>=2.28"]
 [project.urls]
 Homepage      = "https://www.optimiumnexus.com"
 Documentation = "https://www.optimiumnexus.com/docs/sdk/python"
-Repository    = "https://github.com/optimiumnexusllc/IronWAll-WAF"
-Issues        = "https://github.com/optimiumnexusllc/IronWAll-WAF/issues"
+Repository    = "https://github.com/optimiumnexusllc/axelus-waf"
+Issues        = "https://github.com/optimiumnexusllc/axelus-waf/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["ironwall*"]
+include = ["axelus*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

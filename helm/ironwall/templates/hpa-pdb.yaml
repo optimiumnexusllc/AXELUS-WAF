@@ -1,4 +1,4 @@
-{{- $fullName := include "ironwall.fullname" . }}
+{{- $fullName := include "axelus.fullname" . }}
 
 # ── HorizontalPodAutoscaler — Management API ──────────────────────────────────
 {{- if .Values.autoscaling.enabled }}
@@ -8,7 +8,7 @@ metadata:
   name: {{ $fullName }}-mgt
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -50,7 +50,7 @@ metadata:
   name: {{ $fullName }}-detector
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -68,7 +68,7 @@ spec:
     - type: Pods
       pods:
         metric:
-          name: ironwall_requests_per_second
+          name: axelus_requests_per_second
         target:
           type: AverageValue
           averageValue: "1000"
@@ -91,12 +91,12 @@ metadata:
   name: {{ $fullName }}-mgt
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
   selector:
     matchLabels:
-      {{- include "ironwall.selectorLabels" . | nindent 6 }}
+      {{- include "axelus.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: management
 ---
 # ── PDB — Detector ────────────────────────────────────────────────────────────
@@ -106,12 +106,12 @@ metadata:
   name: {{ $fullName }}-detector
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
   selector:
     matchLabels:
-      {{- include "ironwall.selectorLabels" . | nindent 6 }}
+      {{- include "axelus.selectorLabels" . | nindent 6 }}
       app.kubernetes.io/component: detector
 ---
 # ── PDB — PostgreSQL ──────────────────────────────────────────────────────────
@@ -121,7 +121,7 @@ metadata:
   name: {{ $fullName }}-postgres
   namespace: {{ .Values.namespace.name }}
   labels:
-    {{- include "ironwall.labels" . | nindent 4 }}
+    {{- include "axelus.labels" . | nindent 4 }}
 spec:
   maxUnavailable: 0
   selector:

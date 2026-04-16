@@ -10,13 +10,13 @@ import (
 	"syscall"
 	"time"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/controller"
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/cron"
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/ngcmd"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/controller"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/pkg/cron"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/pkg/ngcmd"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/config"
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/constants"
-	"optimiumnexus.com/patronus/ironwall-2/management/tcontrollerd/pkg/log"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/pkg/config"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/pkg/constants"
+	"optimiumnexus.com/patronus/axelus-2/management/tcontrollerd/pkg/log"
 )
 
 var (

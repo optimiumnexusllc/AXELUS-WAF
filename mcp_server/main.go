@@ -4,11 +4,11 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/optimiumnexus/IronWall/mcp_server/internal/api"
-	"github.com/optimiumnexus/IronWall/mcp_server/internal/config"
-	"github.com/optimiumnexus/IronWall/mcp_server/internal/tools"
-	"github.com/optimiumnexus/IronWall/mcp_server/pkg/logger"
-	"github.com/optimiumnexus/IronWall/mcp_server/pkg/mcp"
+	"github.com/optimiumnexus/AXELUS/mcp_server/internal/api"
+	"github.com/optimiumnexus/AXELUS/mcp_server/internal/config"
+	"github.com/optimiumnexus/AXELUS/mcp_server/internal/tools"
+	"github.com/optimiumnexus/AXELUS/mcp_server/pkg/logger"
+	"github.com/optimiumnexus/AXELUS/mcp_server/pkg/mcp"
 )
 
 func main() {

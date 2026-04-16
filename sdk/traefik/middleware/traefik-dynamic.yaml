@@ -1,11 +1,11 @@
-# IronWall-WAF — Traefik v3 Dynamic Configuration
+# AXELUS-WAF — Traefik v3 Dynamic Configuration
 # Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 #
 # Static config (traefik.yaml) must declare:
 #   experimental:
 #     plugins:
-#       ironwall-waf:
-#         moduleName: github.com/optimiumnexusllc/ironwall-traefik
+#       axelus-waf:
+#         moduleName: github.com/optimiumnexusllc/axelus-traefik
 #         version: v1.0.0
 
 http:
@@ -13,11 +13,11 @@ http:
   # ── Middlewares ──────────────────────────────────────────────────────────────
   middlewares:
 
-    # ── Full IronWall stack (ULTIMATE — all checks) ───────────────────────────
-    ironwall-full:
+    # ── Full AXELUS stack (ULTIMATE — all checks) ───────────────────────────
+    axelus-full:
       plugin:
-        ironwall-waf:
-          ironwallUrl: "https://ironwall-mgt:9443"
+        axelus-waf:
+          axelusUrl: "https://axelus-mgt:9443"
           adminKey: "${IRONWALL_ADMIN_KEY}"
           timeoutMs: 50
           geoipEnabled: true
@@ -31,10 +31,10 @@ http:
           maxBodyBytes: 1048576
 
     # ── Lightweight (PROFESSIONAL — GeoIP + rate limit only) ─────────────────
-    ironwall-lite:
+    axelus-lite:
       plugin:
-        ironwall-waf:
-          ironwallUrl: "https://ironwall-mgt:9443"
+        axelus-waf:
+          axelusUrl: "https://axelus-mgt:9443"
           adminKey: "${IRONWALL_ADMIN_KEY}"
           timeoutMs: 30
           geoipEnabled: true
@@ -47,10 +47,10 @@ http:
           failOpen: true
 
     # ── API gateway mode (DPI + rate limit, no GeoIP) ────────────────────────
-    ironwall-api:
+    axelus-api:
       plugin:
-        ironwall-waf:
-          ironwallUrl: "https://ironwall-mgt:9443"
+        axelus-waf:
+          axelusUrl: "https://axelus-mgt:9443"
           adminKey: "${IRONWALL_ADMIN_KEY}"
           timeoutMs: 75
           geoipEnabled: false
@@ -63,7 +63,7 @@ http:
           failOpen: false        # API gateway: fail-closed for security
 
     # ── Security headers ──────────────────────────────────────────────────────
-    ironwall-headers:
+    axelus-headers:
       headers:
         frameDeny: true
         contentTypeNosniff: true
@@ -77,13 +77,13 @@ http:
           img-src 'self' data: https:;
           frame-ancestors 'none';
         customResponseHeaders:
-          X-WAF-Provider: "IronWall-WAF"
+          X-WAF-Provider: "AXELUS-WAF"
           X-Publisher: "OPTIMIUM NEXUS LLC"
           Server: ""
           X-Powered-By: ""
 
     # ── Rate limiting (Traefik native, complementary) ─────────────────────────
-    ironwall-ratelimit:
+    axelus-ratelimit:
       rateLimit:
         average: 100
         burst: 50
@@ -94,25 +94,25 @@ http:
             excludedIPs: ["127.0.0.1/32"]
 
     # ── Compression ───────────────────────────────────────────────────────────
-    ironwall-compress:
+    axelus-compress:
       compress:
         excludedContentTypes:
           - text/event-stream
         minResponseBodyBytes: 1024
 
-    # ── Full chain (IronWall + headers + compress) ────────────────────────────
-    ironwall-chain-full:
+    # ── Full chain (AXELUS + headers + compress) ────────────────────────────
+    axelus-chain-full:
       chain:
         middlewares:
-          - ironwall-full
-          - ironwall-headers
-          - ironwall-compress
+          - axelus-full
+          - axelus-headers
+          - axelus-compress
 
-    ironwall-chain-api:
+    axelus-chain-api:
       chain:
         middlewares:
-          - ironwall-api
-          - ironwall-headers
+          - axelus-api
+          - axelus-headers
 
   # ── Routers ──────────────────────────────────────────────────────────────────
   routers:
@@ -121,7 +121,7 @@ http:
     public-https:
       rule: "Host(`example.com`)"
       entryPoints: ["websecure"]
-      middlewares: ["ironwall-chain-full"]
+      middlewares: ["axelus-chain-full"]
       service: public-backend
       tls:
         certResolver: letsencrypt
@@ -130,7 +130,7 @@ http:
     api-gateway:
       rule: "Host(`api.example.com`)"
       entryPoints: ["websecure"]
-      middlewares: ["ironwall-chain-api"]
+      middlewares: ["axelus-chain-api"]
       service: api-backend
       tls:
         certResolver: letsencrypt
@@ -139,17 +139,17 @@ http:
     admin-panel:
       rule: "Host(`admin.example.com`) && PathPrefix(`/`)"
       entryPoints: ["websecure"]
-      middlewares: ["ironwall-chain-full"]
+      middlewares: ["axelus-chain-full"]
       service: admin-backend
       tls:
         certResolver: letsencrypt
       priority: 100
 
-    # IronWall dashboard itself — internal only
-    ironwall-dashboard:
+    # AXELUS dashboard itself — internal only
+    axelus-dashboard:
       rule: "Host(`waf.internal.example.com`)"
       entryPoints: ["websecure"]
-      service: ironwall-mgt
+      service: axelus-mgt
       tls: {}
 
     # HTTP → HTTPS redirect
@@ -173,7 +173,7 @@ http:
           timeout: "3s"
         sticky:
           cookie:
-            name: ironwall_lb
+            name: axelus_lb
             secure: true
             httpOnly: true
 
@@ -192,27 +192,27 @@ http:
         servers:
           - url: "http://admin-backend:8080"
 
-    ironwall-mgt:
+    axelus-mgt:
       loadBalancer:
         servers:
-          - url: "https://ironwall-mgt:9443"
-        serversTransport: ironwall-transport
+          - url: "https://axelus-mgt:9443"
+        serversTransport: axelus-transport
 
     noop:
       loadBalancer:
         servers:
           - url: "http://noop"
 
-  # ── Server Transports (mTLS to IronWall) ──────────────────────────────────
+  # ── Server Transports (mTLS to AXELUS) ──────────────────────────────────
   serversTransports:
-    ironwall-transport:
-      serverName: "management.ironwall.svc.cluster.local"
+    axelus-transport:
+      serverName: "management.axelus.svc.cluster.local"
       insecureSkipVerify: false
       rootCAs:
-        - "/etc/ironwall/certs/ca.crt"
+        - "/etc/axelus/certs/ca.crt"
       certificates:
-        - certFile: "/etc/ironwall/certs/traefik/cert.pem"
-          keyFile:  "/etc/ironwall/certs/traefik/key.pem"
+        - certFile: "/etc/axelus/certs/traefik/cert.pem"
+          keyFile:  "/etc/axelus/certs/traefik/key.pem"
       maxIdleConnsPerHost: 10
       forwardingTimeouts:
         dialTimeout: "5s"
@@ -228,7 +228,7 @@ http:
 # ── TLS ────────────────────────────────────────────────────────────────────────
 tls:
   options:
-    ironwall-strict:
+    axelus-strict:
       minVersion: VersionTLS13
       curvePreferences:
         - X25519

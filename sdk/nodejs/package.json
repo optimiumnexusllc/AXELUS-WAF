@@ -1,7 +1,7 @@
 {
-  "name": "ironwall-sdk",
+  "name": "axelus-sdk",
   "version": "1.0.0",
-  "description": "IronWall-WAF Node.js/TypeScript SDK — License validation and feature gating",
+  "description": "AXELUS-WAF Node.js/TypeScript SDK — License validation and feature gating",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "module": "dist/index.mjs",
@@ -19,7 +19,7 @@
     "lint":        "eslint src/**/*.ts",
     "prepublishOnly": "npm run build && npm test"
   },
-  "keywords": ["waf", "firewall", "security", "license", "ironwall", "optimium-nexus"],
+  "keywords": ["waf", "firewall", "security", "license", "axelus", "optimium-nexus"],
   "author": {
     "name":  "OPTIMIUM NEXUS LLC",
     "email": "contact@optimiumnexus.com",
@@ -28,11 +28,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url":  "https://github.com/optimiumnexusllc/IronWAll-WAF.git",
+    "url":  "https://github.com/optimiumnexusllc/axelus-waf.git",
     "directory": "sdk/nodejs"
   },
   "homepage": "https://www.optimiumnexus.com/docs/sdk/nodejs",
-  "bugs":     "https://github.com/optimiumnexusllc/IronWAll-WAF/issues",
+  "bugs":     "https://github.com/optimiumnexusllc/axelus-waf/issues",
   "devDependencies": {
     "@types/jest":    "^29.5.11",
     "@types/node":    "^20.11.5",

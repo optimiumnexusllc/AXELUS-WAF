@@ -7,7 +7,7 @@
     { "type": "datasource", "id": "prometheus", "name": "Prometheus", "version": "1.0.0" }
   ],
   "annotations": { "list": [] },
-  "description": "IronWall-WAF — Main Operations Dashboard | OPTIMIUM NEXUS LLC",
+  "description": "AXELUS-WAF — Main Operations Dashboard | OPTIMIUM NEXUS LLC",
   "editable": false,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
@@ -52,7 +52,7 @@
       "type": "stat",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "increase(ironwall_attacks_blocked_total[1h])",
+        "expr": "increase(axelus_attacks_blocked_total[1h])",
         "legendFormat": "Blocked"
       }]
     },
@@ -84,7 +84,7 @@
       "type": "stat",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "rate(ironwall_attacks_blocked_total[5m])",
+        "expr": "rate(axelus_attacks_blocked_total[5m])",
         "legendFormat": "rate"
       }]
     },
@@ -118,7 +118,7 @@
       "type": "stat",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "100 * rate(ironwall_attacks_blocked_total[5m]) / rate(ironwall_requests_total[5m])",
+        "expr": "100 * rate(axelus_attacks_blocked_total[5m]) / rate(axelus_requests_total[5m])",
         "legendFormat": "block%"
       }]
     },
@@ -151,7 +151,7 @@
       "type": "stat",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "ironwall_threat_intel_ips_total",
+        "expr": "axelus_threat_intel_ips_total",
         "legendFormat": "IPs"
       }]
     },
@@ -183,7 +183,7 @@
       "type": "stat",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "increase(ironwall_honeypot_triggers_total[24h])",
+        "expr": "increase(axelus_honeypot_triggers_total[24h])",
         "legendFormat": "triggers"
       }]
     },
@@ -215,7 +215,7 @@
       "type": "stat",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "increase(ironwall_rate_limit_triggered_total[1h])",
+        "expr": "increase(axelus_rate_limit_triggered_total[1h])",
         "legendFormat": "rl"
       }]
     },
@@ -265,22 +265,22 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(ironwall_requests_total[1m])",
+          "expr": "rate(axelus_requests_total[1m])",
           "legendFormat": "Total Requests"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(ironwall_attacks_blocked_total[1m])",
+          "expr": "rate(axelus_attacks_blocked_total[1m])",
           "legendFormat": "Blocked Attacks"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(ironwall_threat_intel_matches_total[1m])",
+          "expr": "rate(axelus_threat_intel_matches_total[1m])",
           "legendFormat": "Threat Intel Matches"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(ironwall_rate_limit_triggered_total[1m])",
+          "expr": "rate(axelus_rate_limit_triggered_total[1m])",
           "legendFormat": "Rate Limited"
         }
       ]
@@ -310,17 +310,17 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "histogram_quantile(0.50, rate(ironwall_detection_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.50, rate(axelus_detection_duration_seconds_bucket[5m]))",
           "legendFormat": "p50"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "histogram_quantile(0.95, rate(ironwall_detection_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.95, rate(axelus_detection_duration_seconds_bucket[5m]))",
           "legendFormat": "p95"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "histogram_quantile(0.99, rate(ironwall_detection_duration_seconds_bucket[5m]))",
+          "expr": "histogram_quantile(0.99, rate(axelus_detection_duration_seconds_bucket[5m]))",
           "legendFormat": "p99"
         }
       ]
@@ -354,7 +354,7 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "sort_desc(sum by (type) (increase(ironwall_attacks_blocked_total{type!=\"\"}[24h])))",
+          "expr": "sort_desc(sum by (type) (increase(axelus_attacks_blocked_total{type!=\"\"}[24h])))",
           "legendFormat": "{{type}}"
         }
       ]
@@ -397,7 +397,7 @@
       "type": "table",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "sort_desc(sum by (type) (increase(ironwall_attacks_blocked_total{type!=\"\"}[24h])))",
+        "expr": "sort_desc(sum by (type) (increase(axelus_attacks_blocked_total{type!=\"\"}[24h])))",
         "legendFormat": "{{type}}",
         "instant": true,
         "format": "table"
@@ -428,22 +428,22 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(ironwall_attacks_blocked_total{severity=\"critical\"}[5m])",
+          "expr": "rate(axelus_attacks_blocked_total{severity=\"critical\"}[5m])",
           "legendFormat": "Critical"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(ironwall_attacks_blocked_total{severity=\"high\"}[5m])",
+          "expr": "rate(axelus_attacks_blocked_total{severity=\"high\"}[5m])",
           "legendFormat": "High"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(ironwall_attacks_blocked_total{severity=\"medium\"}[5m])",
+          "expr": "rate(axelus_attacks_blocked_total{severity=\"medium\"}[5m])",
           "legendFormat": "Medium"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(ironwall_attacks_blocked_total{severity=\"low\"}[5m])",
+          "expr": "rate(axelus_attacks_blocked_total{severity=\"low\"}[5m])",
           "legendFormat": "Low"
         }
       ]
@@ -483,7 +483,7 @@
       "type": "piechart",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "topk(10, sum by (country) (increase(ironwall_geoip_blocked_total[24h])))",
+        "expr": "topk(10, sum by (country) (increase(axelus_geoip_blocked_total[24h])))",
         "legendFormat": "{{country}}"
       }]
     },
@@ -506,7 +506,7 @@
       "type": "timeseries",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "topk(5, rate(ironwall_geoip_blocked_total[5m])) by (country)",
+        "expr": "topk(5, rate(axelus_geoip_blocked_total[5m])) by (country)",
         "legendFormat": "{{country}}"
       }]
     },
@@ -537,17 +537,17 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(process_cpu_seconds_total{job=\"ironwall-mgt\"}[5m]) * 100",
+          "expr": "rate(process_cpu_seconds_total{job=\"axelus-mgt\"}[5m]) * 100",
           "legendFormat": "management"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(process_cpu_seconds_total{job=\"ironwall-detector\"}[5m]) * 100",
+          "expr": "rate(process_cpu_seconds_total{job=\"axelus-detector\"}[5m]) * 100",
           "legendFormat": "detector"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "rate(process_cpu_seconds_total{job=\"ironwall-threat-intel\"}[5m]) * 100",
+          "expr": "rate(process_cpu_seconds_total{job=\"axelus-threat-intel\"}[5m]) * 100",
           "legendFormat": "threat-intel"
         }
       ]
@@ -572,17 +572,17 @@
       "targets": [
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "process_resident_memory_bytes{job=\"ironwall-mgt\"}",
+          "expr": "process_resident_memory_bytes{job=\"axelus-mgt\"}",
           "legendFormat": "management"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "process_resident_memory_bytes{job=\"ironwall-detector\"}",
+          "expr": "process_resident_memory_bytes{job=\"axelus-detector\"}",
           "legendFormat": "detector"
         },
         {
           "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-          "expr": "pg_stat_activity_count{job=\"ironwall-postgres\"}",
+          "expr": "pg_stat_activity_count{job=\"axelus-postgres\"}",
           "legendFormat": "postgres connections"
         }
       ]
@@ -617,7 +617,7 @@
       "type": "stat",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "ironwall_forensics_packets_captured_total",
+        "expr": "axelus_forensics_packets_captured_total",
         "legendFormat": ""
       }]
     },
@@ -644,7 +644,7 @@
       "type": "stat",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "ironwall_forensics_threat_packets_total",
+        "expr": "axelus_forensics_threat_packets_total",
         "legendFormat": ""
       }]
     },
@@ -671,7 +671,7 @@
       "type": "stat",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "ironwall_forensics_storage_bytes",
+        "expr": "axelus_forensics_storage_bytes",
         "legendFormat": ""
       }]
     },
@@ -693,7 +693,7 @@
       "type": "timeseries",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "rate(ironwall_forensics_bytes_captured_total[1m])",
+        "expr": "rate(axelus_forensics_bytes_captured_total[1m])",
         "legendFormat": "bytes/s"
       }]
     },
@@ -722,7 +722,7 @@
       "type": "timeseries",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "rate(ironwall_license_validations_total[5m]) by (tier)",
+        "expr": "rate(axelus_license_validations_total[5m]) by (tier)",
         "legendFormat": "{{tier}}"
       }]
     },
@@ -758,7 +758,7 @@
       "type": "bargauge",
       "targets": [{
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "expr": "ironwall_license_days_remaining by (tier, licensee)",
+        "expr": "axelus_license_days_remaining by (tier, licensee)",
         "legendFormat": "{{tier}} — {{licensee}}",
         "instant": true
       }]
@@ -766,19 +766,19 @@
   ],
   "refresh": "30s",
   "schemaVersion": 38,
-  "tags": ["ironwall", "waf", "security", "optimium-nexus"],
+  "tags": ["axelus", "waf", "security", "optimium-nexus"],
   "templating": {
     "list": [
       {
         "current": {},
         "datasource": { "type": "prometheus", "uid": "${DS_PROMETHEUS}" },
-        "definition": "label_values(ironwall_requests_total, instance)",
+        "definition": "label_values(axelus_requests_total, instance)",
         "hide": 0,
         "includeAll": true,
         "multi": false,
         "name": "instance",
         "options": [],
-        "query": "label_values(ironwall_requests_total, instance)",
+        "query": "label_values(axelus_requests_total, instance)",
         "refresh": 2,
         "regex": "",
         "sort": 1,
@@ -789,8 +789,8 @@
   "time": { "from": "now-3h", "to": "now" },
   "timepicker": {},
   "timezone": "browser",
-  "title": "IronWall-WAF — Operations Center",
-  "uid": "ironwall-main",
+  "title": "AXELUS-WAF — Operations Center",
+  "uid": "axelus-main",
   "version": 1,
   "weekStart": ""
 }

@@ -1,13 +1,13 @@
 """
-IronWall Python SDK — Unit Tests
+AXELUS Python SDK — Unit Tests
 Publisher: OPTIMIUM NEXUS LLC
 """
 import base64
 import json
 import pytest
 from datetime import datetime, timedelta, timezone
-from ironwall import (
-    IronWallClient, Feature, IronWallError, LicenseNotFoundError,
+from axelus import (
+    AXELUSClient, Feature, AXELUSError, LicenseNotFoundError,
     FeatureNotAvailableError, ValidationResult, TIER_FEATURES
 )
 
@@ -37,18 +37,18 @@ def make_license_pem(tier="ENTERPRISE", days=365, is_lifetime=False,
 
 def make_client(tier="ENTERPRISE", days=365, is_lifetime=False,
                 extra_features=None, disabled_features=None, tmp_path=None):
-    """Create an IronWallClient with a mock license file."""
+    """Create an AXELUSClient with a mock license file."""
     pem = make_license_pem(tier, days, is_lifetime, extra_features, disabled_features)
     if tmp_path:
         lic_file = tmp_path / "test.lic"
         lic_file.write_text(pem)
-        return IronWallClient(license_file=str(lic_file), auto_refresh=False)
+        return AXELUSClient(license_file=str(lic_file), auto_refresh=False)
     # Use inline PEM via env trick
     import tempfile, os
     f = tempfile.NamedTemporaryFile(mode='w', suffix='.lic', delete=False)
     f.write(pem)
     f.close()
-    return IronWallClient(license_file=f.name, auto_refresh=False)
+    return AXELUSClient(license_file=f.name, auto_refresh=False)
 
 
 # ── Tier Feature Tests ────────────────────────────────────────────────────────
@@ -104,14 +104,14 @@ class TestTierFeatures:
 
 # ── Client Tests ──────────────────────────────────────────────────────────────
 
-class TestIronWallClient:
+class TestAXELUSClient:
     def test_init_without_license_raises(self):
-        with pytest.raises(IronWallError):
-            IronWallClient(auto_refresh=False)
+        with pytest.raises(AXELUSError):
+            AXELUSClient(auto_refresh=False)
 
     def test_missing_file_raises(self):
         with pytest.raises(LicenseNotFoundError):
-            IronWallClient(license_file="/nonexistent/ironwall.lic", auto_refresh=False)
+            AXELUSClient(license_file="/nonexistent/axelus.lic", auto_refresh=False)
 
     def test_enterprise_valid(self):
         c = make_client("ENTERPRISE")

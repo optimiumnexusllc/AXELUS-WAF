@@ -3,7 +3,7 @@ package model
 import (
 	"time"
 
-	"optimiumnexus.com/patronus/ironwall-2/management/webserver/pkg/log"
+	"optimiumnexus.com/patronus/axelus-2/management/webserver/pkg/log"
 )
 
 // Base is a replacement for gorm.Model without DeletedAt, which is considered to be not good.

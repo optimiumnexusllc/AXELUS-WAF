@@ -1,4 +1,4 @@
-// IronWall-WAF — OpenAPI Auto-Generation Middleware
+// AXELUS-WAF — OpenAPI Auto-Generation Middleware
 // Generates live OpenAPI 3.1.0 spec from code annotations.
 // Serves Swagger UI, ReDoc, and raw YAML/JSON.
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
@@ -190,9 +190,9 @@ func (r *Registry) BuildSpec() *OpenAPI {
 	r.spec = &OpenAPI{
 		OpenAPI: "3.1.0",
 		Info: Info{
-			Title:   "IronWall-WAF API",
+			Title:   "AXELUS-WAF API",
 			Version: "1.0.0",
-			Description: "IronWall-WAF REST API — auto-generated from route annotations\n\n" +
+			Description: "AXELUS-WAF REST API — auto-generated from route annotations\n\n" +
 				"**Publisher:** OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com\n" +
 				"**Contact:** contact@optimiumnexus.com\n\n" +
 				"Generated at: " + time.Now().UTC().Format(time.RFC3339),
@@ -319,8 +319,8 @@ func (a *Annotator) register(method, path, summary, description string, body *Re
 
 // Mount registers the documentation endpoints on a Gin router
 func Mount(r *gin.Engine) {
-	// Load external spec if it exists (from docs/openapi/ironwall-api.yaml)
-	externalSpec, _ := os.ReadFile("docs/openapi/ironwall-api.yaml")
+	// Load external spec if it exists (from docs/openapi/axelus-api.yaml)
+	externalSpec, _ := os.ReadFile("docs/openapi/axelus-api.yaml")
 
 	// Raw spec endpoints
 	r.GET("/docs/openapi.json", func(c *gin.Context) {
@@ -356,7 +356,7 @@ func Mount(r *gin.Engine) {
 
 	// Custom docs viewer (our own)
 	r.StaticFile("/docs/custom", "docs/openapi/index.html")
-	r.StaticFile("/docs/spec",   "docs/openapi/ironwall-api.yaml")
+	r.StaticFile("/docs/spec",   "docs/openapi/axelus-api.yaml")
 
 	fmt.Println("[openapi] Documentation served at:")
 	fmt.Println("  Swagger UI  → /docs")
@@ -372,7 +372,7 @@ func swaggerUIHTML(specURL string) string {
 	return fmt.Sprintf(`<!DOCTYPE html>
 <html>
 <head>
-  <title>IronWall-WAF API — Swagger UI</title>
+  <title>AXELUS-WAF API — Swagger UI</title>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.11.0/swagger-ui.min.css"/>
@@ -407,7 +407,7 @@ window.onload = function() {
     persistAuthorization: true,
     tryItOutEnabled: true,
     requestInterceptor: (request) => {
-      request.headers['X-IronWall-Docs'] = '1';
+      request.headers['X-AXELUS-Docs'] = '1';
       return request;
     },
   });
@@ -423,7 +423,7 @@ func redocHTML(specURL string) string {
 	return fmt.Sprintf(`<!DOCTYPE html>
 <html>
 <head>
-  <title>IronWall-WAF API — ReDoc</title>
+  <title>AXELUS-WAF API — ReDoc</title>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
@@ -499,7 +499,7 @@ func buildSchemas() map[string]*Schema {
 				"tier":              ref("LicenseTier"),
 				"licensee":          str("Company or person name"),
 				"email":             {Type:"string", Format:"email"},
-				"key":               {Type:"string", Example:"IW-ENT-A3F2-B9K1-M7X4-Z2P8"},
+				"key":               {Type:"string", Example:"AX-ENT-A3F2-B9K1-M7X4-Z2P8"},
 				"is_lifetime":       bool_(""),
 				"days_remaining":    {Type:"integer", Description:"-1 = lifetime, 0 = expired"},
 				"expires_at":        {Type:"string", Format:"date-time", Nullable:true},

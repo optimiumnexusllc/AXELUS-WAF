@@ -1,4 +1,4 @@
-// IronWall — Advanced Rate Limiting Engine
+// AXELUS — Advanced Rate Limiting Engine
 // Multi-strategy rate limiting: sliding window, token bucket, leaky bucket.
 // Supports per-IP, per-token, per-endpoint, per-user, and global limits.
 package ratelimit
@@ -176,10 +176,10 @@ func (e *Engine) Middleware() gin.HandlerFunc {
 					})
 					return
 				case ActionThrottle:
-					c.Header("X-IronWall-Throttled", "1")
+					c.Header("X-AXELUS-Throttled", "1")
 					// Let request through but signal slow-down
 				case ActionChallenge:
-					c.Header("X-IronWall-Challenge", "rate_limit")
+					c.Header("X-AXELUS-Challenge", "rate_limit")
 				}
 			}
 		}

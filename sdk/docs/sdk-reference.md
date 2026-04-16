@@ -1,4 +1,4 @@
-# 🔑 IronWall-WAF — Client SDKs
+# 🔑 AXELUS-WAF — Client SDKs
 
 **Publisher: OPTIMIUM NEXUS LLC** — [www.optimiumnexus.com](https://www.optimiumnexus.com)
 **Contact:** [contact@optimiumnexus.com](mailto:contact@optimiumnexus.com)
@@ -9,17 +9,17 @@
 
 ### Install
 ```bash
-pip install ironwall-sdk
+pip install axelus-sdk
 # Or from source:
 pip install ./sdk/python
 ```
 
 ### Basic Usage
 ```python
-from ironwall import IronWallClient, Feature
+from axelus import AXELUSClient, Feature
 
-client = IronWallClient(
-    license_file='/etc/ironwall/ironwall.lic',
+client = AXELUSClient(
+    license_file='/etc/axelus/axelus.lic',
     api_url='https://waf.mycompany.com:9443',   # optional: online validation
 )
 
@@ -48,11 +48,11 @@ except FeatureNotAvailableError as e:
 ### Django Integration
 ```python
 # settings.py
-IRONWALL_LICENSE_FILE = '/etc/ironwall/ironwall.lic'
-MIDDLEWARE = ['ironwall.django.IronWallMiddleware', ...]
+IRONWALL_LICENSE_FILE = '/etc/axelus/axelus.lic'
+MIDDLEWARE = ['axelus.django.AXELUSMiddleware', ...]
 
 # views.py
-from ironwall import Feature
+from axelus import Feature
 
 @client.require_feature(Feature.SIEM)
 def siem_dashboard(request):
@@ -62,9 +62,9 @@ def siem_dashboard(request):
 ### FastAPI Integration
 ```python
 from fastapi import Depends
-from ironwall import IronWallClient, Feature, create_fastapi_dependency
+from axelus import AXELUSClient, Feature, create_fastapi_dependency
 
-client = IronWallClient(license_file='ironwall.lic')
+client = AXELUSClient(license_file='axelus.lic')
 
 @app.get('/forensics')
 async def forensics_endpoint(
@@ -75,13 +75,13 @@ async def forensics_endpoint(
 
 ### Flask Integration
 ```python
-from ironwall import IronWall, Feature
+from axelus import AXELUS, Feature
 
 app = Flask(__name__)
-ironwall = IronWall(app)
+axelus = AXELUS(app)
 
 @app.route('/premium')
-@ironwall.require(Feature.AI_THREAT_HUNTING)
+@axelus.require(Feature.AI_THREAT_HUNTING)
 def premium_view():
     return 'OK'
 ```
@@ -91,7 +91,7 @@ def premium_view():
 |----------|-------------|
 | `IRONWALL_LICENSE_FILE` | Path to `.lic` file |
 | `IRONWALL_LICENSE_KEY`  | Inline license key |
-| `IRONWALL_API_URL`      | IronWall management API URL |
+| `IRONWALL_API_URL`      | AXELUS management API URL |
 | `IRONWALL_ADMIN_KEY`    | Admin API key |
 
 ### Testing
@@ -107,16 +107,16 @@ pytest tests/ -v --tb=short
 
 ### Install
 ```bash
-npm install ironwall-sdk
-# or: yarn add ironwall-sdk
+npm install axelus-sdk
+# or: yarn add axelus-sdk
 ```
 
 ### Basic Usage (TypeScript)
 ```typescript
-import { IronWallClient, Feature, createIronWallClient } from 'ironwall-sdk';
+import { AXELUSClient, Feature, createAXELUSClient } from 'axelus-sdk';
 
-const client = await createIronWallClient({
-  licenseFile: '/etc/ironwall/ironwall.lic',
+const client = await createAXELUSClient({
+  licenseFile: '/etc/axelus/axelus.lic',
   apiUrl:      'https://waf.mycompany.com:9443',  // optional
 });
 
@@ -139,10 +139,10 @@ client.destroy();
 ### Express Middleware
 ```typescript
 import express from 'express';
-import { IronWallClient, Feature } from 'ironwall-sdk';
+import { AXELUSClient, Feature } from 'axelus-sdk';
 
 const app = express();
-const client = await createIronWallClient({ licenseFile: 'ironwall.lic' });
+const client = await createAXELUSClient({ licenseFile: 'axelus.lic' });
 
 // Protect a route
 app.get('/forensics', client.requireFeature(Feature.Forensics), (req, res) => {
@@ -156,9 +156,9 @@ app.use('/premium', client.requireFeature(Feature.AIThreatHunting), premiumRoute
 ### NestJS Guard
 ```typescript
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { IronWallClient, Feature } from 'ironwall-sdk';
+import { AXELUSClient, Feature } from 'axelus-sdk';
 
-const client = new IronWallClient({ licenseFile: 'ironwall.lic' });
+const client = new AXELUSClient({ licenseFile: 'axelus.lic' });
 
 @Controller('siem')
 export class SiemController {
@@ -172,9 +172,9 @@ export class SiemController {
 
 ### CommonJS (JavaScript)
 ```javascript
-const { IronWallClient, Feature } = require('ironwall-sdk');
+const { AXELUSClient, Feature } = require('axelus-sdk');
 
-const client = new IronWallClient({ licenseFile: 'ironwall.lic', autoRefresh: false });
+const client = new AXELUSClient({ licenseFile: 'axelus.lic', autoRefresh: false });
 await client.init();
 
 if (await client.hasFeature(Feature.ThreatIntel)) {

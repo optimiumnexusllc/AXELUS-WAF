@@ -1,4 +1,4 @@
-// IronWall-WAF — Forensics REST API
+// AXELUS-WAF — Forensics REST API
 // Publisher: OPTIMIUM NEXUS LLC — https://www.optimiumnexus.com
 package api
 
@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/optimiumnexusllc/ironwall/premium/forensics/pkg/analyzer"
-	"github.com/optimiumnexusllc/ironwall/premium/forensics/pkg/capture"
+	"github.com/optimiumnexusllc/axelus/premium/forensics/pkg/analyzer"
+	"github.com/optimiumnexusllc/axelus/premium/forensics/pkg/capture"
 )
 
 type Server struct {
@@ -151,7 +151,7 @@ func (s *Server) downloadSessionPCAP(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
-	c.FileAttachment(dest, fmt.Sprintf("ironwall-session-%s.pcap", id))
+	c.FileAttachment(dest, fmt.Sprintf("axelus-session-%s.pcap", id))
 }
 
 // GET /forensics/sessions/:id/replay
