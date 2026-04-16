@@ -137,13 +137,12 @@ services:
     healthcheck:
       test:
       - CMD-SHELL
-      - wget -qO /dev/null http://localhost:9443/api/open/health 2>/dev/null && exit
-        0 || curl -sf http://localhost:9443/api/open/health >/dev/null 2>&1 && exit
-        0 || kill -0 1 2>/dev/null
+      - wget -qO /dev/null --no-check-certificate https://127.0.0.1:1443/api/open/health
+        2>/dev/null && exit 0 || kill -0 1 2>/dev/null
       interval: 15s
       timeout: 10s
       retries: 20
-      start_period: 90s
+      start_period: 30s
   detector:
     container_name: axelus-detector
     image: optimiumnexusllc/axelus-detector:latest
