@@ -10,7 +10,7 @@
 [![Version](https://img.shields.io/badge/version-v1.0.0-green.svg)](version.json)
 [![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](compose.yaml)
 [![Go](https://img.shields.io/badge/go-1.21+-00ADD8.svg)](https://golang.org/)
-[![CI](https://github.com/optimiumnexusllc/axelus-waf/actions/workflows/ci.yml/badge.svg)](https://github.com/optimiumnexusllc/axelus-waf/actions)
+[![CI](https://github.com/optimiumnexusllc/AXELUS-WAF/actions/workflows/ci.yml/badge.svg)](https://github.com/optimiumnexusllc/AXELUS-WAF/actions)
 
 **AXELUS-WAF** is a next-generation, AI-powered Web Application Firewall engineered for enterprise and government environments. Designed and developed by **OPTIMIUM NEXUS LLC**, AXELUS delivers military-grade threat protection with cryptographic licensing, real-time threat intelligence, Kubernetes-native deployment, full SIEM integration, deep packet inspection, deception layers, and a Palantir-grade security dashboard.
 
@@ -61,13 +61,13 @@
 
 ### One-Line Install
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/optimiumnexusllc/axelus-waf/main/scripts/install.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/optimiumnexusllc/AXELUS-WAF/main/scripts/install.sh)
 ```
 
 ### Manual Install
 ```bash
-git clone https://github.com/optimiumnexusllc/axelus-waf.git
-cd IronWAll-WAF
+git clone https://github.com/optimiumnexusllc/AXELUS-WAF.git
+cd AXELUS-WAF
 cp .env.example .env && nano .env
 
 # Core only
@@ -164,7 +164,7 @@ AXELUS-WAF uses a **cryptographic license system** (ED25519 signatures).
 ## 📁 Repository Structure
 
 ```
-IronWAll-WAF/
+AXELUS-WAF/
 ├── compose.yaml                # Core stack
 ├── compose.monitoring.yaml     # Prometheus + Grafana
 ├── compose.premium.yaml        # Premium modules
