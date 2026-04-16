@@ -233,28 +233,35 @@ step
 
 export DEBIAN_FRONTEND=noninteractive
 
-# Forcer IPv4 pour apt (évite les erreurs "Network is unreachable" sur IPv6)
+# ── Préparer apt : IPv4 + miroir stable ──────────────────────────────────────
+
+# Forcer IPv4 (VM sans connectivité IPv6)
 echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4
-log "IPv4 forcé pour apt (IPv6 désactivé sur cette VM)"
 
-# Basculer sur archive.ubuntu.com si le miroir ci. est inaccessible
-if grep -q "ci.archive.ubuntu.com" /etc/apt/sources.list 2>/dev/null; then
-  log "Remplacement du miroir ci.archive.ubuntu.com → archive.ubuntu.com..."
-  sed -i 's|ci.archive.ubuntu.com|archive.ubuntu.com|g' /etc/apt/sources.list
-fi
+# Remplacer sources.list par archive.ubuntu.com (stable, pas de sync partielle)
+UBUNTU_CODENAME=$(lsb_release -cs 2>/dev/null || echo "noble")
+cat > /etc/apt/sources.list << SRCEOF
+deb http://archive.ubuntu.com/ubuntu ${UBUNTU_CODENAME} main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu ${UBUNTU_CODENAME}-updates main restricted universe multiverse
+deb http://archive.ubuntu.com/ubuntu ${UBUNTU_CODENAME}-backports main restricted universe multiverse
+deb http://security.ubuntu.com/ubuntu ${UBUNTU_CODENAME}-security main restricted universe multiverse
+SRCEOF
 
-# apt-get update avec retry automatique (3 tentatives)
+# Nettoyer aussi les sources.list.d (au cas où)
+find /etc/apt/sources.list.d/ -name "*.list" -exec   sed -i 's|ci.archive.ubuntu.com|archive.ubuntu.com|g' {} \; 2>/dev/null || true
+
+apt-get clean -qq
+
+# apt-get update avec retry (3 tentatives, 5s entre chaque)
 APT_UPDATE_OK=false
 for attempt in 1 2 3; do
-  log "apt-get update (tentative ${attempt}/3)..."
-  if apt-get update -qq --fix-missing 2>/dev/null; then
-    APT_UPDATE_OK=true
-    break
+  if apt-get update -qq 2>/dev/null; then
+    APT_UPDATE_OK=true; break
   fi
-  warn "Tentative ${attempt} échouée — nouvelle tentative dans 5s..."
+  warn "apt-get update tentative ${attempt}/3 échouée — retry dans 5s..."
   sleep 5
 done
-$APT_UPDATE_OK || warn "apt-get update partiel — poursuite avec les paquets disponibles"
+$APT_UPDATE_OK || warn "apt-get update partiel — poursuite de l'installation"
 
 apt-get install -y -qq \
   nginx \
