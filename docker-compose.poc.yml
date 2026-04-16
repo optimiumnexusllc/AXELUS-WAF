@@ -103,7 +103,7 @@ services:
     image: optimiumnexusllc/axelus-mgt:latest
     restart: unless-stopped
     ports:
-    - 0.0.0.0:9443:9443
+    - 0.0.0.0:9443:1443
     volumes:
     - ${SAFELINE_DIR:-/data/axelus-waf}/resources/mgt:/app/data
     - ${SAFELINE_DIR:-/data/axelus-waf}/resources/sock:/app/sock
