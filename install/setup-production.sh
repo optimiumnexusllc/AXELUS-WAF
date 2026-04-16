@@ -877,7 +877,21 @@ log "Pull des images optimiumnexusllc/axelus-*..."
 docker compose -f docker-compose.poc.yml --env-file "$ENV_FILE" pull --quiet 2>/dev/null || true
 
 log "Démarrage des services..."
-docker compose -f docker-compose.poc.yml --env-file "$ENV_FILE" up -d --remove-orphans
+docker compose -f docker-compose.poc.yml --env-file "$ENV_FILE" up -d --remove-orphans 2>&1 | \
+  grep -E "Started|Healthy|Created|Error|failed|unhealthy" || true
+
+# Diagnostic automatique si mgt est unhealthy
+sleep 5
+if ! docker ps --filter name=axelus-mgt --filter status=running -q | grep -q .; then
+  warn "axelus-mgt en erreur — affichage des logs pour diagnostic:"
+  echo ""
+  docker logs axelus-mgt --tail 30 2>&1 | sed 's/^/    /'
+  echo ""
+  warn "Variables de connexion DB:"
+  docker exec axelus-pg pg_isready -U axelus -q 2>/dev/null && echo "    PostgreSQL: OK" || echo "    PostgreSQL: KO"
+  docker exec axelus-redis redis-cli -a "$REDIS_PASSWORD" ping 2>/dev/null | grep -q PONG && echo "    Redis: OK" || echo "    Redis: KO"
+  warn "Poursuite de l'installation — relancer avec: axelus restart"
+fi
 
 # Attente healthchecks
 log "Attente des healthchecks..."
