@@ -204,6 +204,7 @@ services:
     - MGT_IP=${SUBNET_PREFIX:-172.22.222}.5
     - LUIGI_PG=postgres://axelus:${POSTGRES_PASSWORD}@${SUBNET_PREFIX:-172.22.222}.2/axelus?sslmode=disable
     volumes:
+    - ${SAFELINE_DIR:-/data/axelus-waf}/resources/luigi:/app/data
     - /etc/localtime:/etc/localtime:ro
     extra_hosts:
     - safeline-postgres:172.22.222.2
