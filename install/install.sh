@@ -508,7 +508,7 @@ services:
   # ── AXELUS WAF Engine (Tengine) ─────────────────────
   waf:
     container_name: axelus-waf
-    image: chaitin/safeline-tengine:latest
+    image: optimiumnexusllc/axelus-tengine:latest
     restart: unless-stopped
     ports:
       - "0.0.0.0:80:80"
@@ -529,7 +529,7 @@ services:
   # ── Management API ──────────────────────────────────
   mgt:
     container_name: axelus-mgt
-    image: chaitin/safeline-mgt:latest
+    image: optimiumnexusllc/axelus-mgt:latest
     restart: unless-stopped
     ports:
       - "0.0.0.0:9443:9443"
@@ -562,7 +562,7 @@ services:
   # ── Detector (AI/ML engine) ─────────────────────────
   detector:
     container_name: axelus-detector
-    image: chaitin/safeline-detector:latest
+    image: optimiumnexusllc/axelus-detector:latest
     restart: unless-stopped
     volumes:
       - ${DATA_DIR}/mgt:/app/data:ro

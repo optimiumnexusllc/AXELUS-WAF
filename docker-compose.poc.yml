@@ -28,10 +28,10 @@ volumes:
 services:
 
   # ── PostgreSQL ──────────────────────────────────────────────────────────────
-  # Using official chaitin SafeLine postgres image (hardened, pre-configured)
+  # AXELUS-WAF mirrored image — optimiumnexusllc/axelus-postgres
   postgres:
     container_name: axelus-pg
-    image: chaitin/safeline-postgres:15.2
+    image: optimiumnexusllc/axelus-postgres:15.2
     restart: unless-stopped
     environment:
       POSTGRES_USER: axelus
@@ -79,7 +79,7 @@ services:
   # The WAF engine — Tengine (fork of Nginx) with AXELUS modules
   waf:
     container_name: axelus-waf
-    image: chaitin/safeline-tengine:latest
+    image: optimiumnexusllc/axelus-tengine:latest
     restart: unless-stopped
     ports:
       - "0.0.0.0:80:80"
@@ -102,7 +102,7 @@ services:
   # Core management API — WAF config, license, dashboards, REST API
   mgt:
     container_name: axelus-mgt
-    image: chaitin/safeline-mgt:latest
+    image: optimiumnexusllc/axelus-mgt:latest
     restart: unless-stopped
     ports:
       - "0.0.0.0:9443:9443"
@@ -134,7 +134,7 @@ services:
   # ML-based attack detection — Zero-Day Shield + behavioral analysis
   detector:
     container_name: axelus-detector
-    image: chaitin/safeline-detector:latest
+    image: optimiumnexusllc/axelus-detector:latest
     restart: unless-stopped
     volumes:
       - ${SAFELINE_DIR:-/data/axelus-waf}/resources/detector:/resources/detector
@@ -153,7 +153,7 @@ services:
   # FastVM — handles real-time request processing
   fvm:
     container_name: axelus-fvm
-    image: chaitin/safeline-fvm:latest
+    image: optimiumnexusllc/axelus-fvm:latest
     restart: unless-stopped
     volumes:
       - /etc/localtime:/etc/localtime:ro
@@ -165,7 +165,7 @@ services:
   # Rules/config sync service
   luigi:
     container_name: axelus-luigi
-    image: chaitin/safeline-luigi:latest
+    image: optimiumnexusllc/axelus-luigi:latest
     restart: unless-stopped
     environment:
       - MGT_IP=${SUBNET_PREFIX:-172.22.222}.5
@@ -182,7 +182,7 @@ services:
   # Anti-bot challenge service
   chaos:
     container_name: axelus-chaos
-    image: chaitin/safeline-chaos:latest
+    image: optimiumnexusllc/axelus-chaos:latest
     restart: unless-stopped
     logging:
       driver: "json-file"

@@ -80,7 +80,7 @@ cat > "$ENV_FILE" << ENVEOF
 # Generated: $(date -u "+%Y-%m-%d %H:%M UTC")
 # DO NOT COMMIT THIS FILE
 
-IMAGE_PREFIX=chaitin
+IMAGE_PREFIX=optimiumnexusllc
 IMAGE_TAG=latest
 ARCH_SUFFIX=
 REGION=
@@ -180,13 +180,13 @@ step "Pulling Docker images (this may take a few minutes...)"
 echo ""
 
 images=(
-  "chaitin/safeline-postgres:15.2"
-  "chaitin/safeline-mgt:latest"
-  "chaitin/safeline-tengine:latest"
-  "chaitin/safeline-detector:latest"
-  "chaitin/safeline-fvm:latest"
-  "chaitin/safeline-luigi:latest"
-  "chaitin/safeline-chaos:latest"
+  "optimiumnexusllc/axelus-postgres:15.2"
+  "optimiumnexusllc/axelus-mgt:latest"
+  "optimiumnexusllc/axelus-tengine:latest"
+  "optimiumnexusllc/axelus-detector:latest"
+  "optimiumnexusllc/axelus-fvm:latest"
+  "optimiumnexusllc/axelus-luigi:latest"
+  "optimiumnexusllc/axelus-chaos:latest"
   "redis:7.2-alpine"
   "prom/prometheus:v2.50.1"
   "grafana/grafana:10.4.0"

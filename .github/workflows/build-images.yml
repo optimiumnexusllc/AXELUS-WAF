@@ -1,0 +1,90 @@
+name: Build & Push AXELUS-WAF Images
+
+# Publisher: OPTIMIUM NEXUS LLC
+# Adds OCI labels and metadata to all axelus-* images then pushes to Docker Hub.
+# REQUIRED SECRETS: DOCKER_USERNAME, DOCKER_TOKEN
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "images/**/Dockerfile"
+      - ".github/workflows/build-images.yml"
+  workflow_dispatch:
+    inputs:
+      image:
+        description: "Image to build (all = all)"
+        required: false
+        default: "all"
+        type: choice
+        options: [all, axelus-mgt, axelus-tengine, axelus-detector, axelus-postgres, axelus-fvm, axelus-luigi, axelus-chaos]
+
+env:
+  ORG: optimiumnexusllc
+
+jobs:
+
+  build:
+    name: Build ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - image: axelus-mgt
+            tag: latest
+          - image: axelus-tengine
+            tag: latest
+          - image: axelus-detector
+            tag: latest
+          - image: axelus-postgres
+            tag: "15.2"
+          - image: axelus-fvm
+            tag: latest
+          - image: axelus-luigi
+            tag: latest
+          - image: axelus-chaos
+            tag: latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: images/${{ matrix.image }}
+          file: images/${{ matrix.image }}/Dockerfile
+          push: true
+          tags: ${{ env.ORG }}/${{ matrix.image }}:${{ matrix.tag }}
+          build-args: |
+            BUILD_DATE=${{ github.run_started_at }}
+            GIT_COMMIT=${{ github.sha }}
+            VERSION=${{ matrix.tag }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Inspect image
+        run: |
+          docker pull "${{ env.ORG }}/${{ matrix.image }}:${{ matrix.tag }}"
+          docker inspect "${{ env.ORG }}/${{ matrix.image }}:${{ matrix.tag }}" \
+            --format="{{range $k,$v := .Config.Labels}}{{$k}}: {{$v}}\n{{end}}" | \
+            grep -E "axelus|opencontainers" | sort || true
+
+  summary:
+    runs-on: ubuntu-latest
+    needs: build
+    if: always()
+    steps:
+      - run: |
+          echo "## AXELUS Build — $(date -u '%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "Result: **${{ needs.build.result }}**" >> $GITHUB_STEP_SUMMARY
+          echo "https://hub.docker.com/u/optimiumnexusllc" >> $GITHUB_STEP_SUMMARY
