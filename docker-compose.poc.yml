@@ -340,3 +340,20 @@ services:
         ipv4_address: ${SUBNET_PREFIX:-172.22.222}.14
     depends_on:
     - waf
+  admin:
+    container_name: axelus-admin
+    build:
+      context: ./admin
+      dockerfile: Dockerfile
+    image: axelus-admin:latest
+    restart: unless-stopped
+    ports:
+    - 0.0.0.0:8085:80
+    depends_on:
+      mgt:
+        condition: service_healthy
+    networks:
+      axelus:
+        ipv4_address: ${SUBNET_PREFIX:-172.22.222}.15
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
