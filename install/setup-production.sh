@@ -470,6 +470,7 @@ ok "SSH durci (no root, max 3 tentatives, bannière)"
 # ═══════════════════════════════════════════════════════════════════════════════
 step
 
+mkdir -p /etc/fail2ban/jail.d /etc/fail2ban/filter.d
 cat > /etc/fail2ban/jail.d/axelus.conf << 'F2BEOF'
 [DEFAULT]
 bantime  = 3600
