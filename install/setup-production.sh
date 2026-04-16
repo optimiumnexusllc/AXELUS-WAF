@@ -233,6 +233,10 @@ step
 
 export DEBIAN_FRONTEND=noninteractive
 
+# Forcer IPv4 pour apt (évite les erreurs "Network is unreachable" sur IPv6)
+echo 'Acquire::ForceIPv4 "true";' > /etc/apt/apt.conf.d/99force-ipv4
+log "IPv4 forcé pour apt (IPv6 désactivé sur cette VM)"
+
 # Basculer sur archive.ubuntu.com si le miroir ci. est inaccessible
 if grep -q "ci.archive.ubuntu.com" /etc/apt/sources.list 2>/dev/null; then
   log "Remplacement du miroir ci.archive.ubuntu.com → archive.ubuntu.com..."
