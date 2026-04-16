@@ -2,227 +2,359 @@
 
 # AXELUS-WAF
 
-<p align="center"><img src="assets/axelus-logo.svg" width="500" alt="AXELUS-WAF"/></p>
+<p align="center"><img src="assets/axelus-logo.svg" width="480" alt="AXELUS-WAF"/></p>
 
-### The Palantir of Web Application Firewalls
+### Next-Generation AI-Powered Web Application Firewall
 
 [![License](https://img.shields.io/badge/license-GPL--3.0-blue.svg)](LICENSE.md)
 [![Version](https://img.shields.io/badge/version-v1.0.0-green.svg)](version.json)
-[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](compose.yaml)
-[![Go](https://img.shields.io/badge/go-1.21+-00ADD8.svg)](https://golang.org/)
+[![Docker](https://img.shields.io/badge/docker-optimiumnexusllc-blue.svg)](https://hub.docker.com/u/optimiumnexusllc)
 [![CI](https://github.com/optimiumnexusllc/AXELUS-WAF/actions/workflows/ci.yml/badge.svg)](https://github.com/optimiumnexusllc/AXELUS-WAF/actions)
+[![Mirror](https://github.com/optimiumnexusllc/AXELUS-WAF/actions/workflows/mirror-images.yml/badge.svg)](https://github.com/optimiumnexusllc/AXELUS-WAF/actions/workflows/mirror-images.yml)
 
-**AXELUS-WAF** is a next-generation, AI-powered Web Application Firewall engineered for enterprise and government environments. Designed and developed by **OPTIMIUM NEXUS LLC**, AXELUS delivers military-grade threat protection with cryptographic licensing, real-time threat intelligence, Kubernetes-native deployment, full SIEM integration, deep packet inspection, deception layers, and a Palantir-grade security dashboard.
+**AXELUS-WAF** est un pare-feu applicatif de nouvelle génération, piloté par l'IA, développé par **OPTIMIUM NEXUS LLC**.
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Architecture](#-architecture) • [Licensing](#-licensing) • [Contributing](#-contributing)
+[Installation POC](#-installation-poc) · [Installation Production](#-installation-production) · [Architecture](#-architecture) · [Modules](#-modules-premium) · [Conformité](#-conformité) · [Docker Hub](#-docker-hub)
 
 ---
-
-**Publisher & Developer**
-[OPTIMIUM NEXUS LLC](https://www.optimiumnexus.com) · [contact@optimiumnexus.com](mailto:contact@optimiumnexus.com)
 
 </div>
 
----
+## Prérequis
 
-## ✨ Features
-
-### 🔒 Core WAF Engine
-- **Semantic AI detection** — ML-based payload analysis, not regex rule lists
-- **OWASP Top 10 protection** — SQLi, XSS, RCE, path traversal, XXE, SSRF
-- **Bot & crawler protection** with adaptive CAPTCHA challenges
-- **Reverse proxy** on Tengine (hardened Nginx fork, battle-tested at scale)
-- **Real-time attack dashboard** with live block feed
-
-### 🆕 AXELUS Premium Modules
-| Module | Description | Tier |
-|--------|-------------|------|
-| 🧠 **Threat Intelligence** | AbuseIPDB + Emerging Threats + custom feeds auto-sync | Enterprise+ |
-| 🗺️ **GeoIP Blocking** | Country/ASN/CIDR blocking with MaxMind GeoIP2, risk scoring | Enterprise+ |
-| 📡 **Multi-Channel Alerting** | Slack, Teams, PagerDuty, Email — severity-based routing | Enterprise+ |
-| 📈 **Prometheus + Grafana** | 30+ metrics, pre-built dashboards, AlertManager | Enterprise+ |
-| 🔗 **SIEM Forwarding** | Elasticsearch, Splunk HEC, Grafana Loki — real-time log streaming | Enterprise+ |
-| 📋 **Compliance Reports** | Automated PCI-DSS, SOC2, ISO 27001 PDF generation | Enterprise+ |
-| 🔍 **Deep Packet Inspection** | 7-layer payload analysis — deserial, XXE, NoSQLi, SSTI, polyglot evasion | Enterprise+ |
-| 🍯 **Deception Layer** | Honeypots, honeytokens, honey cookies, auto-blacklist | Ultimate |
-| ⚡ **Advanced Rate Limiting** | Sliding window, token bucket, leaky bucket — per-IP/token/endpoint | Professional+ |
-| 🔬 **Forensics + PCAP** | Full packet capture, session replay, attack timeline reconstruction | Ultimate |
-| 🏗️ **Kubernetes / Helm** | HPA, PDB, NetworkPolicies, mTLS, multi-namespace RBAC | Enterprise+ |
-| 🔑 **License Management** | ED25519-signed cryptographic licenses, 6 tiers, REST + CLI | All |
+| Composant | POC (démo) | Production (VM unique) |
+|-----------|-----------|----------------------|
+| OS | Ubuntu 22.04 / 24.04 LTS | Ubuntu 22.04 / 24.04 LTS |
+| RAM | 2 GB minimum | 4 GB recommandé |
+| CPU | 2 vCPU | 4 vCPU |
+| Disque | 10 GB | 40 GB SSD |
+| Docker | 24.0+ | 24.0+ |
+| Domaine | Non requis | Optionnel (Let's Encrypt) |
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Installation POC
 
-### Prerequisites
-- Docker 20.10+ and Docker Compose v2+
-- Linux (Ubuntu 20.04+ / Debian 11+ / RHEL 8+)
-- Minimum: 2 vCPU · 4 GB RAM | Recommended: 4 vCPU · 8 GB RAM
+Idéal pour tester AXELUS-WAF en 5 à 10 minutes, sans domaine ni TLS.
 
-### One-Line Install
+### 1 — Installer Docker (si absent)
+
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/optimiumnexusllc/AXELUS-WAF/main/scripts/install.sh)
+curl -fsSL https://get.docker.com | sudo bash
+sudo systemctl enable docker --now
+sudo usermod -aG docker $USER && newgrp docker
 ```
 
-### Manual Install
+### 2 — Cloner et installer
+
 ```bash
 git clone https://github.com/optimiumnexusllc/AXELUS-WAF.git
 cd AXELUS-WAF
-cp .env.example .env && nano .env
+sudo bash install/setup-poc.sh
+```
 
-# Core only
-docker compose up -d
+Le script effectue automatiquement : génération des secrets, création des répertoires, pull des images depuis `optimiumnexusllc/` sur Docker Hub, démarrage du stack (14 services), healthchecks, installation de la CLI `axelus`, activation systemd.
 
-# Core + Monitoring
-docker compose -f compose.yaml -f compose.monitoring.yaml up -d
+### URLs d'accès POC
 
-# Full stack (all premium features)
-docker compose -f compose.yaml -f compose.monitoring.yaml -f compose.premium.yaml up -d
+| Service | URL |
+|---------|-----|
+| WAF Dashboard | `http://SERVER_IP:9443` |
+| Grafana | `http://SERVER_IP:3000` |
+| API Docs | `http://SERVER_IP:9443/docs` |
+| Prometheus | `http://127.0.0.1:9090` (loopback) |
 
-# Dashboard → https://YOUR_IP:9443
-docker logs axelus-mgt | grep "Initial password"
+### Vérification POC
+
+```bash
+axelus status
+curl -s http://localhost:9443/api/open/health
+# Test blocage SQLi — doit retourner 403
+curl -s -o /dev/null -w "%{http_code}" "http://localhost/?id=1+UNION+SELECT+*+FROM+users--"
 ```
 
 ---
 
-## 🏗️ Architecture
+## 🏭 Installation Production
 
+Le script de production durcit le système en 12 étapes (~15 minutes) :
+TLS, firewall UFW, SSH durci, fail2ban, secrets sécurisés, backups automatisés, monitoring avec alertes.
+
+### Cas 1 — Avec un nom de domaine (Let's Encrypt)
+
+Le domaine doit pointer sur le serveur (enregistrement DNS A) avant de lancer le script.
+
+```bash
+git clone https://github.com/optimiumnexusllc/AXELUS-WAF.git
+cd AXELUS-WAF
+
+sudo bash install/setup-production.sh \
+  --domain waf.monentreprise.com \
+  --email  admin@monentreprise.com
 ```
-                            Internet
-                               │
-                      ┌────────▼────────┐
-                      │  Tengine WAF    │ ← Port 80/443
-                      │ (Reverse Proxy) │
-                      └────────┬────────┘
-                               │
-        ┌──────────────────────┼──────────────────────┐
-        │                      │                      │
- ┌──────▼──────┐    ┌──────────▼──────────┐  ┌───────▼──────┐
- │  Semantic   │    │  Deep Packet        │  │   GeoIP +    │
- │  AI Engine  │    │  Inspection (7-lyr) │  │  Rate Limit  │
- └──────┬──────┘    └──────────┬──────────┘  └───────┬──────┘
-        │                      │                      │
-        └──────────────────────┼──────────────────────┘
-                               │
-              ┌────────────────┼────────────────┐
-              │                │                │
-     ┌────────▼──────┐  ┌──────▼──────┐  ┌─────▼──────────┐
-     │  Management   │  │  Honeypot / │  │  Forensics +   │
-     │  API + Dash   │  │  Deception  │  │  PCAP Capture  │
-     └────────┬──────┘  └─────────────┘  └─────┬──────────┘
-              │                                  │
-     ┌────────▼──────┐                  ┌────────▼──────────┐
-     │  PostgreSQL   │                  │  SIEM / Alerting  │
-     └───────────────┘                  │  ES·Splunk·Loki   │
-                                        └───────────────────┘
-              │
-     ┌────────▼──────────────────────────────────────────┐
-     │           Prometheus + Grafana + AlertManager      │
-     └────────────────────────────────────────────────────┘
+
+Avec toutes les options :
+
+```bash
+sudo bash install/setup-production.sh \
+  --domain        waf.monentreprise.com \
+  --email         admin@monentreprise.com \
+  --ssh-key       "ssh-ed25519 AAAA... user@laptop" \
+  --admin-ip      10.0.0.0/8 \
+  --slack-webhook https://hooks.slack.com/services/XXX \
+  --smtp-host     smtp.gmail.com \
+  --smtp-user     alerts@monentreprise.com \
+  --smtp-pass     monmotdepasse \
+  --backup-s3     mon-bucket-backups
 ```
 
 ---
 
-## 📦 Service Map
+### Cas 2 — Sans domaine, avec une IP locale uniquement
 
-| Container | Role | Port |
-|-----------|------|------|
-| `axelus-tengine` | WAF reverse proxy | 80, 443 |
-| `axelus-mgt` | Management API + Dashboard | 9443 |
-| `axelus-detector` | AI semantic detection | internal |
-| `axelus-postgres` | Primary database | internal |
-| `axelus-redis` | Cache + rate limit + honeypot | internal |
-| `axelus-threat-intel` | Feed syncer | internal |
-| `axelus-alerting` | Slack/Teams/PD/Email router | internal |
-| `axelus-siem` | Log forwarder | internal |
-| `axelus-forensics` | PCAP capture + session store | internal |
-| `axelus-honeypot` | Deception layer | internal |
-| `axelus-license-server` | License API | 8090 |
-| `axelus-prometheus` | Metrics | 9090 |
-| `axelus-grafana` | Dashboards | 3000 |
-| `axelus-alertmanager` | Alert routing | 9093 |
+Le script détecte automatiquement qu'une IP est fournie et génère un **certificat auto-signé** (RSA-4096, SAN incluant l'IP). Aucun paramètre supplémentaire requis.
 
----
+```bash
+# IP locale (réseau interne, lab, intranet)
+sudo bash install/setup-production.sh \
+  --domain 192.168.1.100 \
+  --email  admin@monentreprise.com
 
-## 🔑 Licensing
+# Avec restriction d'accès admin à votre sous-réseau
+sudo bash install/setup-production.sh \
+  --domain   192.168.1.100 \
+  --email    admin@monentreprise.com \
+  --admin-ip 192.168.1.0/24
+```
 
-AXELUS-WAF uses a **cryptographic license system** (ED25519 signatures).
+> Le navigateur affichera un avertissement pour le certificat auto-signé.
+> Pour le supprimer : importer `/data/axelus-waf/certs/axelus.crt` dans les autorités de confiance de vos postes.
 
-### Tiers
-| Tier | Sites | RPS | Support | Key Format |
-|------|-------|-----|---------|------------|
-| COMMUNITY | 1 | 500/s | Community | `AX-COM-XXXX-XXXX-XXXX-XXXX` |
-| PROFESSIONAL | 10 | 5,000/s | Email | `AX-PRO-XXXX-XXXX-XXXX-XXXX` |
-| ENTERPRISE | ∞ | 50,000/s | Priority | `AX-ENT-XXXX-XXXX-XXXX-XXXX` |
-| ULTIMATE | ∞ | ∞ | 24/7 Dedicated | `AX-ULT-XXXX-XXXX-XXXX-XXXX` |
-| TRIAL | ∞ | ∞ | Email (30d) | `AX-TRL-XXXX-XXXX-XXXX-XXXX` |
-
-**→ [License Documentation](licensing/README.md)** · **[Admin Dashboard](licensing/web/dashboard.html)**
+```bash
+# Récupérer le certificat pour l'importer
+cat /data/axelus-waf/certs/axelus.crt
+```
 
 ---
 
-## 📁 Repository Structure
+### URLs d'accès Production
+
+Tous les accès passent par Nginx sur le port 443. Les ports internes (9443, 3000, 9090) sont **bloqués par le firewall**.
+
+| Service | URL | Accès |
+|---------|-----|-------|
+| WAF Dashboard | `https://DOMAIN_OU_IP/waf/` | Restreint `--admin-ip` |
+| API REST | `https://DOMAIN_OU_IP/api/` | Restreint `--admin-ip` |
+| Grafana | `https://DOMAIN_OU_IP/grafana/` | Restreint `--admin-ip` |
+| Health check | `https://DOMAIN_OU_IP/health` | Public |
+
+---
+
+### Ce que le script production configure
+
+| Étape | Action |
+|-------|--------|
+| 1 | Vérification RAM, disque, Docker |
+| 2 | nginx, certbot, ufw, fail2ban, auditd, unattended-upgrades |
+| 3 | User `axelus`, répertoires `chmod 750` |
+| 4 | Secrets 32+ chars, `.env` en `chmod 600` propriétaire `axelus` |
+| 5 | **UFW** : deny all, allow 22/80/443 uniquement |
+| 6 | **SSH** : no root, max 3 tentatives, bannière légale |
+| 7 | **fail2ban** : SSH ban 24h (3 échecs), admin ban 1h (10 erreurs 4xx) |
+| 8 | **TLS 1.3** auto-détecté (Let's Encrypt si domaine, auto-signé si IP) + Nginx HSTS |
+| 9 | Prometheus rules (7 alertes) + AlertManager (Slack + email) |
+| 10 | Stack Docker + attente healthchecks |
+| 11 | Backup quotidien 02h, logrotate 30j, auditd, mises à jour sécurité auto |
+| 12 | Systemd watchdog 5min, CLI étendue |
+
+---
+
+### 🔄 Différences POC vs Production
+
+| Point | POC | Production |
+|-------|-----|-----------|
+| TLS | Non (HTTP) | Oui (Let's Encrypt ou auto-signé) |
+| Port admin | 9443 exposé | Fermé — accès via `/waf/` HTTPS |
+| Firewall | Non | UFW strict (22/80/443 uniquement) |
+| SSH | Par défaut | Durci, no root, max 3 tentatives |
+| fail2ban | Non | Oui (SSH + admin) |
+| Secrets | `.env` chmod 640 | `.env` chmod **600** owner `axelus` |
+| Backups | Manuels | Quotidiens automatiques (02h) |
+| Alertes | Non | Prometheus + Slack/email |
+| Mises à jour | Manuelles | Sécurité automatique |
+
+---
+
+### CLI de gestion
+
+```bash
+axelus status          # état des conteneurs
+axelus logs mgt        # logs API en temps réel
+axelus restart         # redémarrer tout
+axelus update          # pull nouvelles images + restart
+axelus backup          # backup immédiat
+axelus restore <file>  # restauration depuis backup .sql.gz
+axelus health          # santé API via HTTPS
+axelus ufw             # état du firewall
+axelus fail2ban        # IPs bannies
+axelus cert            # expiration du certificat TLS
+axelus audit           # log d'audit récent
+axelus compliance      # rapport PCI-DSS instantané
+```
+
+---
+
+## 📦 Docker Hub
+
+Images publiées sous `optimiumnexusllc`, mises à jour mensuellement via GitHub Actions.
+
+```bash
+docker pull optimiumnexusllc/axelus-postgres:15.2
+docker pull optimiumnexusllc/axelus-mgt:latest
+docker pull optimiumnexusllc/axelus-tengine:latest
+docker pull optimiumnexusllc/axelus-detector:latest
+docker pull optimiumnexusllc/axelus-fvm:latest
+docker pull optimiumnexusllc/axelus-luigi:latest
+docker pull optimiumnexusllc/axelus-chaos:latest
+```
+
+→ [hub.docker.com/u/optimiumnexusllc](https://hub.docker.com/u/optimiumnexusllc)
+
+---
+
+## 🏗 Architecture
+
+```
+Internet (HTTPS :443)
+        │
+   ┌────▼────────────────────────────────┐
+   │  Nginx — TLS 1.3 + HSTS             │
+   │  /waf/     → axelus-mgt:9443 (admin)│
+   │  /api/     → axelus-mgt:9443 (admin)│
+   │  /grafana/ → grafana:3000   (admin) │
+   │  /health   → axelus-mgt     (public)│
+   └────┬────────────────────────────────┘
+        │
+   ┌────▼──────────┐   ┌───────────────────┐
+   │  axelus-waf   │──▶│  axelus-mgt :9443 │
+   │  Tengine :443 │   │  Management API   │
+   └───────────────┘   └─────────┬─────────┘
+                                 │
+              ┌──────────────────┼──────────────────┐
+              │                  │                  │
+        ┌─────▼──┐  ┌────────┐  ┌▼───────────┐  ┌──▼───────┐
+        │postgres│  │ redis  │  │  detector  │  │prometheus│
+        └────────┘  └────────┘  │  (ML/AI)   │  │ grafana  │
+                                └────────────┘  └──────────┘
+```
+
+---
+
+## 🔒 Modules Premium
+
+| Module | Description |
+|--------|-------------|
+| ML Inference Pipeline | ONNX, 64 features, 15 classes, A/B testing |
+| WebSocket + gRPC DPI | Inspection L7 RFC 6455, Protobuf wire |
+| BGP Null-Routing | RFC 7999 BLACKHOLE, auto-expiry, FlowSpec |
+| UBA/UEBA | 8 signaux comportementaux, credential stuffing |
+| Kafka Streaming | 10 topics, 100k+ req/s, multi-tenant |
+| GeoIP Blocking | MaxMind GeoIP2, CIDR, ASN |
+| Honeypot | 25 trap paths, auto-blacklist |
+| DDoS Mitigation | EWMA velocity, intégration BGP |
+| Forensics + PCAP | Ring buffer, evidence ZIP SHA-256 |
+| mTLS | SPIFFE URIs, ECDSA-P256, rotation 24h |
+
+---
+
+## 📋 Conformité — 120 contrôles, 10 standards
+
+| Standard | Contrôles |
+|----------|-----------|
+| PCI DSS v4.0 | 20 |
+| ISO/IEC 27001:2022 | 15 |
+| SOC 2 Type II | 11 |
+| NIST CSF 2.0 | 14 |
+| GDPR | 6 |
+| HIPAA | 8 |
+| CIS Controls v8 | 16 |
+| NIS2 Directive | 10 |
+| OWASP Top 10 | 10 |
+| FedRAMP High | 10 |
+
+```bash
+axelus compliance   # rapport PCI-DSS instantané
+```
+
+---
+
+## 🔧 Dépannage
+
+**Conteneurs qui ne démarrent pas**
+```bash
+docker compose -f docker-compose.poc.yml logs --tail 50
+df -h   # espace disque suffisant ?
+```
+
+**Certificat auto-signé — avertissement navigateur**
+```bash
+# Importer dans vos postes (Windows)
+cat /data/axelus-waf/certs/axelus.crt   # copier ce contenu
+# Ouvrir "Gérer les certificats" → Autorités racines → Importer
+
+# curl sans vérification
+curl -k https://192.168.1.100/health
+```
+
+**fail2ban a banni votre IP**
+```bash
+sudo fail2ban-client set sshd unbanip VOTRE_IP
+```
+
+**Renouvellement Let's Encrypt échoue**
+```bash
+sudo certbot renew --dry-run
+sudo systemctl reload nginx
+```
+
+---
+
+## 📁 Structure
 
 ```
 AXELUS-WAF/
-├── compose.yaml                # Core stack
-├── compose.monitoring.yaml     # Prometheus + Grafana
-├── compose.premium.yaml        # Premium modules
-├── compose.licensing.yaml      # License server
-├── compose.forensics.yaml      # Forensics + PCAP
-├── .env.example
-├── management/                 # WAF management API (Go)
-├── geoip/                      # GeoIP blocking engine
-├── licensing/                  # License system (CLI + API + Dashboard)
-│   ├── cmd/axelus-license/   # CLI tool
-│   ├── cmd/license-server/     # HTTP API
-│   ├── pkg/                    # Core packages
-│   ├── web/dashboard.html      # Admin dashboard
-│   └── tests/                  # Unit tests (40+)
-├── premium/
-│   ├── threat-intel/           # Feed syncer
-│   ├── alerting/               # Multi-channel alerts
-│   ├── siem/                   # Log forwarder
-│   ├── compliance/             # Report generator
-│   ├── deepinspect/            # 7-layer DPI engine
-│   ├── honeypot/               # Deception layer
-│   ├── ratelimit/              # Advanced rate limiter
-│   └── forensics/              # PCAP + session forensics
-├── helm/axelus/              # Kubernetes Helm chart
-│   ├── Chart.yaml
-│   ├── values.yaml
-│   └── templates/
-│       ├── management.yaml
-│       ├── networkpolicies.yaml
-│       ├── forensics.yaml
-│       ├── hpa.yaml
-│       ├── pdb.yaml
-│       └── rbac.yaml
-├── monitoring/                 # Prometheus + Alertmanager configs
-├── scripts/
-│   ├── install.sh
-│   ├── backup.sh
-│   └── manage.py
-└── sdk/                        # Ingress-nginx, Kong, Traefik SDKs
+├── install/
+│   ├── setup-poc.sh           # Installation POC (5-10 min)
+│   ├── setup-production.sh    # Installation production (15 min)
+│   └── mirror-images.sh       # Mirroring Docker Hub manuel
+├── docker-compose.poc.yml     # Stack Docker (images optimiumnexusllc)
+├── images/axelus-*/Dockerfile # Dockerfiles des images
+├── .github/workflows/
+│   ├── mirror-images.yml      # Mirroring mensuel automatique
+│   └── build-images.yml       # Build images améliorées
+├── premium/                   # Modules premium (Go)
+├── helm/axelus/               # Helm chart Kubernetes
+├── sdk/python/                # SDK Python
+├── sdk/nodejs/                # SDK Node.js
+└── monitoring/                # Config Prometheus/Grafana
 ```
 
 ---
 
-## 🤝 Contributing
+## 📞 Support
 
-See [CONTRIBUTING.md](CONTRIBUTING.md). Security issues → [contact@optimiumnexus.com](mailto:contact@optimiumnexus.com)
-
----
-
-## 📄 License
-
-**GNU General Public License v3.0** — See [LICENSE.md](LICENSE.md)
+| Canal | Contact |
+|-------|---------|
+| Documentation | https://www.optimiumnexus.com/docs |
+| Email | contact@optimiumnexus.com |
+| GitHub | https://github.com/optimiumnexusllc/AXELUS-WAF/issues |
+| Docker Hub | https://hub.docker.com/u/optimiumnexusllc |
 
 ---
 
 <div align="center">
 
-Designed & engineered by **[OPTIMIUM NEXUS LLC](https://www.optimiumnexus.com)**
+**AXELUS-WAF** — Développé et maintenu par **OPTIMIUM NEXUS LLC**
 
 [www.optimiumnexus.com](https://www.optimiumnexus.com) · [contact@optimiumnexus.com](mailto:contact@optimiumnexus.com)
 

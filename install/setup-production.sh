@@ -95,6 +95,12 @@ done
 
 [[ $EUID -eq 0 ]] || err "Run as root: sudo bash install/setup-production.sh [OPTIONS]"
 [[ -n "$DOMAIN" ]] || err "--domain est requis. Ex: --domain waf.monentreprise.com"
+
+# Détecter automatiquement si DOMAIN est une adresse IP (Let's Encrypt ne fonctionne pas avec les IPs)
+if [[ "$DOMAIN" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  USE_LETSENCRYPT=false
+  log "IP détectée (${DOMAIN}) — Let's Encrypt désactivé automatiquement, utilisation d'un certificat auto-signé"
+fi
 [[ -n "$ADMIN_EMAIL" ]] || err "--email est requis. Ex: --email admin@monentreprise.com"
 
 # ── Banner ────────────────────────────────────────────────────────────────────
@@ -421,7 +427,7 @@ else
     -out    "$DATA_DIR/certs/axelus.crt" \
     -days 365 -nodes \
     -subj "/C=FR/O=OPTIMIUM NEXUS LLC/CN=${DOMAIN}" \
-    -addext "subjectAltName=DNS:${DOMAIN},IP:$(hostname -I | awk '{print $1}')" \
+    -addext "subjectAltName=DNS:${DOMAIN},IP:${DOMAIN},IP:$(hostname -I | awk '{print $1}')" \
     2>/dev/null
   CERT_PATH="$DATA_DIR/certs/axelus.crt"
   KEY_PATH="$DATA_DIR/certs/axelus.key"
