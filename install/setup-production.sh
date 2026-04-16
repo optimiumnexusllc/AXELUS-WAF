@@ -564,6 +564,7 @@ else
 fi
 
 # Configuration Nginx production
+mkdir -p /etc/nginx/sites-available /etc/nginx/sites-enabled
 cat > /etc/nginx/sites-available/axelus-waf << NGINXEOF
 # AXELUS-WAF — Nginx Production Config
 # TLS termination + reverse proxy
@@ -666,7 +667,13 @@ NGINXEOF
 
 ln -sf /etc/nginx/sites-available/axelus-waf /etc/nginx/sites-enabled/
 rm -f /etc/nginx/sites-enabled/default
-nginx -t && systemctl enable nginx --now && systemctl start nginx
+if nginx -t 2>/dev/null; then
+  systemctl enable nginx --now 2>/dev/null || true
+  systemctl restart nginx 2>/dev/null || true
+else
+  warn "Configuration Nginx invalide — vérifier /etc/nginx/sites-available/axelus-waf"
+  nginx -t
+fi
 ok "Nginx configuré (TLS 1.3, HSTS, reverse proxy, restriction IP admin)"
 
 # ═══════════════════════════════════════════════════════════════════════════════
