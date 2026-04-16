@@ -225,13 +225,11 @@ services:
     healthcheck:
       test:
       - CMD-SHELL
-      - wget -qO /dev/null http://127.0.0.1:8088/auth/api/key 2>/dev/null && exit
-        0 || wget -qO /dev/null http://127.0.0.1:9000/ 2>/dev/null && exit 0 || kill
-        -0 1 2>/dev/null
+      - sleep 3 && kill -0 1 2>/dev/null
       interval: 5s
-      timeout: 5s
-      retries: 30
-      start_period: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 15s
     logging:
       driver: json-file
       options:
